@@ -1,0 +1,225 @@
+# SPDX-License-Identifier: MIT
+# CircleFlow © 2026 Masaaki Asamoto（朝元雅明）
+"""操作ページの英語版の文（2026-11-02）。make_sim_page.py に --lang en を付けると使う。
+- HTML：日本語版の HTML の文を、下の HTML_PAIRS で順に置き換える（構造は日本語版と同じ）。置き換え残しの日本語があると止まる
+- 部品の解説：日本語版の TERMS（拡大する範囲 rect を含む）に、名前・押せる文字・解説だけを上書きする
+- 図の中の文字は labels_en.py（押せる文字 words はそれと同じ綴りにする）"""
+import json
+
+LANG = "en"
+TITLE = "CircleFlow: Gas Flow in the Anesthesia Machine and Breathing Circuit"
+
+HTML_PAIRS = [
+    ("<span>麻酔器と呼吸回路のガスの流れ</span>", "<span>Gas flow in the anesthesia machine and breathing circuit</span>"),
+    ('aria-label="使い方"><span class="q">?</span>使い方', 'aria-label="How to use"><span class="q">?</span>How to use'),
+    ('<button id="moreBtn">くわしく</button>', '<button id="moreBtn">Learn more</button>'),
+    ('role="tab">上昇式ベローズ</button>', 'role="tab">Ascending bellows</button>'),
+    ('role="tab">ピストン式</button>', 'role="tab">Piston</button>'),
+    ('<span class="lab">換気</span>', '<span class="lab">Ventilation</span>'),
+    ('class="on">人工呼吸</button>', 'class="on">Ventilator</button>'),
+    ('data-vent="man">用手換気</button>', 'data-vent="man">Manual (bag)</button>'),
+    ('<span class="lab">新鮮ガス</span>', '<span class="lab">Fresh gas</span>'),
+    ('class="on">多め</button>', 'class="on">High</button>'),
+    ('data-flow="low">低流量</button>', 'data-flow="low">Low flow</button>'),
+    ('<b>追跡中</b>', '<b>Following</b>'),
+    ('aria-label="追跡をやめる"', 'aria-label="Stop following"'),
+    ('<button class="x" id="cardX" aria-label="閉じる">', '<button class="x" id="cardX" aria-label="Close">'),
+    ('‹ 前へ', '‹ Prev'), ('次へ ›', 'Next ›'),
+    ('aria-label="一時停止"', 'aria-label="Pause"'),
+    ('aria-label="時刻"', 'aria-label="Time"'),
+    ('0.0 秒', '0.0 s'),
+    ('<span class="lab">速さ</span>', '<span class="lab">Speed</span>'),
+    ('data-term="absorber">吸収剤</button>', 'data-term="absorber">Absorbent</button>'),
+    ('aria-label="吸収剤の使用率"', 'aria-label="Absorbent used"'),
+    ('>1 呼吸目<', '>Breath 1<'),
+    ('<button id="absSwap">交換</button>', '<button id="absSwap">Replace</button>'),
+    ("CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。プログラムは", "CircleFlow © 2026 Masaaki Asamoto. Code:"),
+    ("rel=\"license\">MIT</a>、図と文章は", "rel=\"license\">MIT</a>; figures and text:"),
+    ("deed.ja", "deed.en"),
+    ("rel=\"license\">CC BY 4.0</a>。教育用の模式図で、臨床の判断や機器の操作に用いるものではありません。特定のメーカーとは関係ありません。",
+     "rel=\"license\">CC BY 4.0</a>. An educational schematic, not for clinical decisions or for operating or checking equipment. Not affiliated with any manufacturer. Gas color codes follow Japanese standards."),
+    ("謝辞：帝京大学医学部附属溝口病院 麻酔科の平林剛先生から、呼吸回路と人工呼吸器の方式について助言をいただきました。内容の誤りは著者の責任です。",
+     "Acknowledgments: We thank Dr. Go Hirabayashi (Department of Anesthesiology, Teikyo University School of Medicine Hospital Mizonokuchi) for advice on the breathing circuit and ventilator types. Any errors are the author&rsquo;s own."),
+    ('aria-label="くわしい解説"', 'aria-label="Learn more"'),
+    ('<button class="x" id="moreX" aria-label="閉じる">', '<button class="x" id="moreX" aria-label="Close">'),
+    ("<h2>2 つの方式の違い</h2>", "<h2>How the two types differ</h2>"),
+    ("<tr><th></th><th>上昇式ベローズ</th><th>ピストン式</th></tr>", "<tr><th></th><th>Ascending bellows</th><th>Piston</th></tr>"),
+    ("<tr><td>人工呼吸器を動かす力</td><td>駆動ガス（O₂）がハウジング内でベローズを押し下げる</td><td>モーターがロッドでピストンを押し引きする（駆動ガスを使わない）</td></tr>",
+     "<tr><td>What drives the ventilator</td><td>Drive gas (O₂) in the housing pushes the bellows down</td><td>A motor moves the piston through a rod (no drive gas)</td></tr>"),
+    ("<tr><td>次の吸気ガスのため方</td><td>呼気と新鮮ガスがベローズを下から押し上げてためる</td><td>ピストンが下がって、呼吸バッグのガスと新鮮ガスを吸い込む</td></tr>",
+     "<tr><td>How the next breath is collected</td><td>Exhaled and fresh gas push the bellows up from below</td><td>The piston descends and draws in gas from the reservoir bag and fresh gas</td></tr>"),
+    ("<tr><td>吸気中の新鮮ガス</td><td>吸気に加わって患者へ</td><td>新鮮ガス・デカップリング弁が閉じ、呼吸バッグへ向かう</td></tr>",
+     "<tr><td>Fresh gas during inspiration</td><td>Joins the inspired gas and goes to the patient</td><td>The fresh gas decoupling valve closes; fresh gas goes to the reservoir bag</td></tr>"),
+    ("<tr><td>人工呼吸中の呼吸バッグ</td><td>切替弁で回路から外れ、動かない</td><td>リザーバーとして回路に残り、ふくらみ・しぼむ</td></tr>",
+     "<tr><td>Reservoir bag during ventilation</td><td>Taken out of the circuit by the switch; does not move</td><td>Stays in the circuit as a reservoir; inflates and deflates</td></tr>"),
+    ("<tr><td>回路の陰圧</td><td>ガスを吸い込む動きがないため、構造上起こらない</td><td>吸い込む動きがあるため、PEEP/Pmax 弁と外気取り込み弁で防ぐ</td></tr>",
+     "<tr><td>Negative pressure in the circuit</td><td>Cannot occur by design, because nothing draws gas in</td><td>Possible because the piston draws gas in; prevented by the PEEP/Pmax valve and the auxiliary air valve</td></tr>"),
+    ("<tr><td>余ったガスの出口</td><td>ベローズが上がりきると、余剰ガス弁から排出装置へ</td><td>呼吸バッグが満杯になると、APL バイパス弁から排気逆止弁を通って排出装置へ（用手換気では APL 弁から）</td></tr>",
+     "<tr><td>Where excess gas leaves</td><td>Once the bellows is fully up, through the relief valve to the scavenging system</td><td>Once the bag is full, through the APL bypass valve and exhaust check valve to the scavenging system (through the APL valve in manual ventilation)</td></tr>"),
+    ("<tr><td>新鮮ガスを減らしたときの 1 回換気量</td><td>吸気中に加わる新鮮ガスのぶん減る（本図の低流量の場面では、ベローズの送り出しを増やしてそろえた）</td><td>変わらない（デカップリング弁があり、患者へ送るのはピストンが押し出す量だけ）</td></tr>",
+     "<tr><td>Tidal volume when fresh gas is reduced</td><td>Falls by the fresh gas no longer added during inspiration (in the low-flow scene here, the bellows delivers more to keep it equal)</td><td>Unchanged (the decoupling valve means only the volume pushed by the piston reaches the patient)</td></tr>"),
+    ("<tr><td>呼気終末の回路内圧</td><td>余剰ガス弁の開放圧（2〜3 cmH₂O）が残る</td><td>PEEP/Pmax 弁の設定値まで下がる（設定 0 なら 0 付近）</td></tr>",
+     "<tr><td>Circuit pressure at end-expiration</td><td>The opening pressure of the relief valve (2–3 cmH₂O) remains</td><td>Falls to the PEEP setting (near 0 if PEEP is 0)</td></tr>"),
+    ("<h2>設計の考え方</h2>", "<h2>Design philosophy</h2>"),
+    ("<p>上昇式ベローズは、ベローズが上がりきらなければ次の吸気を送れない代わりに、どのような機械的不具合が起きても患者の気道が陰圧にならない、安全を優先した設計です。ピストン式は、ガスを吸い込む動きによって陰圧が生じうる構造を、新鮮ガス・デカップリングや弁などの制御で補い、正確な換気量や多様な換気モードを実現しています。</p>",
+     "<p>The ascending bellows cannot deliver the next breath unless it rises fully, but in exchange no mechanical fault can make the patient&rsquo;s airway pressure negative: a design that puts safety first. The piston design can create negative pressure because it draws gas in; it compensates with fresh gas decoupling and valves, and in return achieves accurate tidal volumes and many ventilation modes.</p>"),
+    ("<h2>用手換気</h2>", "<h2>Manual ventilation</h2>"),
+    ("<p>人工呼吸器を使わず、呼吸バッグを手で押して換気します。上昇式ベローズでは切替弁を「用手」に倒し、栓の L 字の穴が呼気側の合流点と APL 弁・呼吸バッグの側をつなぎます（ベローズは回路から外れて止まります）。ピストン式では切替弁はなく、ピストンが止まり、もともと回路にある呼吸バッグを押します。どちらも吸気では、押されたバッグのガスが吸収装置を通って CO₂ を除かれ、新鮮ガスと合わさって吸気弁から患者へ送られます（ピストン式では新鮮ガス・デカップリング弁を通ります）。呼気では、呼気と新鮮ガスがバッグへ戻ってふくらませ、満杯になると余ったガスは APL 弁から余剰ガス排出装置へ出ていきます。本図では、手で押す量を人工呼吸の場面の 1 回換気量にそろえています（実際には呼吸ごとに変わります）。</p>",
+     "<p>The patient is ventilated by squeezing the reservoir bag instead of using the ventilator. With the ascending bellows, the switch is turned to Bag, and the L-shaped channel of the plug connects the expiratory junction to the APL valve and bag (the bellows is taken out of the circuit and stops). The piston machine has no such switch: the piston stops and you squeeze the bag that is always in the circuit. In both, during inspiration the squeezed gas passes through the absorber, loses its CO₂, joins the fresh gas and goes through the inspiratory valve to the patient (through the fresh gas decoupling valve on the piston machine). During expiration, exhaled and fresh gas refill the bag; once it is full, excess gas leaves through the APL valve to the scavenging system. Here each squeeze delivers the same tidal volume as the ventilator scenes (in practice it varies from breath to breath).</p>"),
+    ("<h2>二酸化炭素吸収剤の色の変化</h2>", "<h2>Color change of the CO₂ absorbent</h2>"),
+    ("<p>呼気は吸収装置の下から入るため、吸収剤は入口側（下）から使われ、紫の帯が出口側（上）へ進みます。実際には数時間以上かけて進む変化を、数分から十数分に縮めて表示しています（吸収剤の量はどの場面でも同じ）。</p>",
+     "<p>Exhaled gas enters the absorber from below, so the absorbent is used from the inlet (bottom), and the purple band moves toward the outlet (top). A change that takes hours or more in reality is compressed into minutes here (the amount of absorbent is the same in every scene).</p>"),
+    ("<p>「新鮮ガス：多め」では、新鮮ガス流量を分時換気量に近く設定しています。上昇式ベローズでは、呼気の CO₂ の多くは吸収装置に届く前に余剰ガスとして排出されるため、吸収剤の消費は遅く（約 140 呼吸）、使い切っても吸気側に CO₂ はほとんど戻りません。ピストン式では、呼気がいったん呼吸バッグにたまり、ピストンが吸収装置を通して吸い込むため、約 50 呼吸で使い切り、使い切ると吸気側に CO₂ がわずかに戻ります。</p>",
+     "<p>With Fresh gas: High, the fresh gas flow is close to the minute ventilation. With the ascending bellows, much of the exhaled CO₂ leaves as excess gas before reaching the absorber, so the absorbent lasts long (about 140 breaths), and even when exhausted, little CO₂ returns to the inspiratory side. With the piston, exhaled gas first collects in the bag and the piston draws it through the absorber, so the absorbent is used up in about 50 breaths, after which a little CO₂ returns to the inspiratory side.</p>"),
+    ("<p>「新鮮ガス：低流量」では、新鮮ガスを 4 分の 1 に減らしています。呼気のほとんどが吸収装置を通って再び吸われるため、消費が速くなります（約 20〜25 呼吸）。使い切るとオレンジの粒が吸気側の管を通って患者へ戻り、吸気の CO₂ が上がります（カプノグラムの基線が 0 に戻らなくなる）。上昇式ベローズの低流量の場面では、ベローズの送り出しを増やして、1 回換気量を「多め」と同じにしています。</p>",
+     "<p>With Fresh gas: Low flow, the fresh gas is cut to one quarter. Almost all exhaled gas passes through the absorber and is breathed again, so the absorbent is used up faster (about 20–25 breaths). Once it is exhausted, orange particles return to the patient through the inspiratory limb and inspired CO₂ rises (the capnogram baseline no longer returns to zero). In the low-flow bellows scene, the bellows delivers more so that the tidal volume matches the High scene.</p>"),
+    ("<p>2 つの方式で使い切るまでの呼吸数が違うのは、本図の回路の管の長さや余ったガスの出口の位置の違いによるもので、実際の機種どうしの比較ではありません。指示薬の色は、使用後にしばらく置くと白に戻ることがあります。交換の判断は色だけでなく、吸気の CO₂ も合わせて行います。</p>",
+     "<p>The difference in breaths until exhaustion between the two types comes from the tube lengths and the location of the excess gas outlet in this figure; it is not a comparison of real machines. The indicator color can fade back to white after the absorbent rests, so decide when to replace it from inspired CO₂ as well as the color.</p>"),
+    ("<h2>粒の動きの決まり</h2>", "<h2>How the particles move</h2>"),
+    ("<p>粒 1 個は一定体積のガスを表し、管の中では押し出されるように、いつも管の中心線の上を進みます。ベローズ・シリンダー・呼吸バッグ・患者の肺胞はガスがよく混ざる部屋として扱い、粒は空いている席に座り、出るときは選ばれた粒だけが口へ向かいます。肺胞に入ると CO₂ を含む色になり、吸収装置を通ると CO₂ が除かれた色に戻ります。</p>",
+     "<p>Each particle represents a fixed volume of gas. In tubes, particles are pushed along the center line. The bellows, cylinder, reservoir bag and the patient&rsquo;s alveoli are treated as well-mixed chambers: particles take free seats, and only the selected particles move to the outlet. Particles take the with-CO₂ color in the alveoli and return to the without-CO₂ color in the absorber.</p>"),
+    ("<p>患者は、Y ピースから気管（死腔、1 回換気量の約 3 分の 1）を経て 2 葉の肺胞につながります。呼気は受動的で、流量は呼気の始めに最大、その後は減っていき、約 3.7 秒で吐き終わります。1 呼吸は 6 秒（吸気 2 秒・呼気 4 秒）です。</p>",
+     "<p>The patient is connected from the Y-piece through the trachea (dead space, about one third of the tidal volume) to two lobes of alveoli. Expiration is passive: flow is highest at the start and then decreases, ending after about 3.7 s. Each breath lasts 6 s (2 s inspiration, 4 s expiration).</p>"),
+    ("<p class=\"small\">本図は模式図です。部品の形・位置・弁の構成は機種によって異なります（ピストン式は Dräger Fabius 型の構成を参考にしています）。ガスの量や時間、吸収剤の容量は見やすさのために整えた値です。</p>",
+     "<p class=\"small\">This is a schematic. The shape and position of parts and the valve arrangement vary between machines (the piston machine is modeled on the Dräger Fabius layout). Gas volumes, timing and absorbent capacity are adjusted for clarity.</p>"),
+    ('<button id="tourSkip">閉じる</button><button id="tourPrev">戻る</button><button id="tourNext" class="pri">次へ</button>',
+     '<button id="tourSkip">Close</button><button id="tourPrev">Back</button><button id="tourNext" class="pri">Next</button>'),
+]
+
+# 部品の解説（日本語版の TERMS に上書き。拡大する範囲 rect は日本語版のものを使い、英語の文字がはみ出すものだけ RECT で広げる）
+TERMS = {
+    "supply": ("Gas supply & vaporizers", ["Gas supply & vaporizers"],
+               "Gases from the hospital pipelines or cylinders (O₂, air, N₂O) are metered by the flowmeters and mixed, and the vaporizer adds anesthetic vapor. The resulting fresh gas leaves through the common gas outlet to the breathing circuit."),
+    "pipeline": ("Pipeline", ["Pipeline"],
+                 "O₂, air and N₂O arrive through pipes in the wall. To prevent mix-ups, each gas has its own color (in Japan: O₂ green, air yellow, N₂O blue) and its own connector shape."),
+    "cylinder": ("Cylinder", ["Cylinder"],
+                 "A backup for when the pipeline is unavailable. Gas is stored at high pressure. In Japan, O₂ cylinders are black and the others gray."),
+    "regulator": ("Pressure regulator", ["Regulator"],
+                  "Reduces the high cylinder pressure. It is set slightly below pipeline pressure, so pipeline gas is used first whenever the pipeline is connected."),
+    "check": ("Check valve", ["Check valve"],
+              "Lets gas flow only one way (upward), so pipeline and cylinder gas cannot flow back into each other. In the figure, the flap is open only for the gases that are flowing."),
+    "n2ocut": ("N₂O shut-off valve", ["N₂O shut-off", "valve", "O₂ pressure signal"],
+               "Held open by O₂ pressure. If the O₂ supply fails and its pressure drops, a spring closes the valve and stops N₂O: a safety device so that N₂O is not delivered without O₂."),
+    "flowmeter": ("Flowmeter", ["Flowmeters"],
+                  "Opening the knob below (a needle valve) lifts the float in the glass tube. The tube widens toward the top, so the higher the flow, the higher the float. Read the scale at the top of the float."),
+    "vaporizer": ("Vaporizer", ["Vaporizers", "In use"],
+                  "Turns liquid anesthetic into vapor. Part of the gas passes through the vaporizing chamber and picks up vapor; the dial sets how it is mixed with the rest (the bypass), which sets the concentration."),
+    "interlock": ("Interlock", ["Interlock"],
+                  "Prevents two vaporizers from being used at once. Turning one dial makes the blue bar lock the other dial."),
+    "flush": ("O₂ flush", ["O₂ flush"],
+              "Pressing the button sends a large flow of O₂ (about 35–75 L/min) into the circuit, bypassing the flowmeters and vaporizer. It contains no anesthetic. (It is not pressed in this simulator.)"),
+    "cgo": ("Common gas outlet", ["Common gas outlet"],
+            "The outlet where the fresh gas made by the flowmeters and vaporizer leaves the machine for the breathing circuit."),
+    "circuit": ("Breathing circuit", ["Breathing circuit"],
+                "The loop the patient breathes in and out of (circle system). One-way valves set the direction of flow, and the absorber removes exhaled CO₂ so the gas can be breathed again."),
+    "decouple": ("Fresh gas decoupling valve", ["Fresh gas", "decoupling valve"],
+                 "Closes during inspiration so that fresh gas goes to the reservoir bag instead of the patient. As a result, changing the fresh gas flow does not change the tidal volume."),
+    "inspValve": ("Inspiratory valve", ["Inspiratory valve"],
+                  "A one-way valve that opens only toward the patient. Flow lifts the blue disc under the dome; reverse flow presses the disc onto its seat and closes it."),
+    "gauge": ("Pressure gauge", ["Pressure gauge", "cmH₂O"],
+              "Shows the pressure in the breathing circuit (cmH₂O). It rises during inspiration and falls during expiration."),
+    "hose": ("Breathing tubes & Y-piece", ["Breathing", "tubes, Y-piece"],
+             "The inspiratory and expiratory tubes join at the Y-piece, which connects to the mask or tracheal tube. Beyond the Y-piece, inspired and expired gas share the same path."),
+    "patient": ("Patient & trachea (dead space)", ["Patient", "Trachea", "dead space", "(dead space)"],
+                "Gas in the trachea never reaches the alveoli, so it picks up no CO₂ (dead space). At the start of inspiration, the exhaled gas left in the trachea goes back to the alveoli first."),
+    "alveoli": ("Alveoli", ["Alveoli"],
+                "Where CO₂ moves from the blood into the gas. Black particles turn orange (gas with CO₂) here. The lungs expand during inspiration and shrink during expiration."),
+    "expValve": ("Expiratory valve", ["Expiratory valve"],
+                 "A one-way valve that opens only for gas returning from the patient. It closes during inspiration so inspired gas cannot flow into the expiratory limb."),
+    "peep": ("PEEP/Pmax valve", ["PEEP/Pmax valve"],
+             "A valve in the expiratory limb that works together with the piston. During inspiration it is closed, so the gas pushed by the piston goes to the patient rather than to the bag (it opens only if circuit pressure exceeds the limit, Pmax). During expiration it lets exhaled gas pass to the bag but keeps lung pressure at PEEP, so the descending piston cannot pull gas out of the lungs."),
+    "absorber": ("CO₂ absorber", ["CO₂", "absorber"],
+                 "The absorbent removes exhaled CO₂ by a chemical reaction; orange particles turn black as they pass through. Used absorbent turns from white to purple because of an indicator dye (time is compressed here; speed up to see it)."),
+    "apl": ("APL valve", ["APL valve"], {
+        "bellows": "Opens when circuit pressure exceeds the value set by the knob, releasing excess gas to the scavenging system. It limits the pressure when you squeeze the bag. During mechanical ventilation, the bag/vent switch takes it out of the circuit.",
+        "piston": "Opens when circuit pressure exceeds the value set by the knob, releasing excess gas to the scavenging system. It limits the pressure when you squeeze the bag. During mechanical ventilation the APL bypass valve is open, so the APL valve stays closed."}),
+    "bypass": ("APL bypass valve", ["APL bypass valve", "(open in vent mode)"],
+               "Branches from the bag line next to the APL valve. During mechanical ventilation it is open, and once the bag is full, excess gas leaves through it without passing the APL valve. In manual ventilation it closes so that the APL valve can control the pressure."),
+    "exhaust": ("Exhaust check valve", ["Exhaust check valve"],
+                "A check valve that opens only toward the scavenging system. Gas from the APL valve and the APL bypass valve passes through it to the scavenging system and cannot come back."),
+    "bag": ("Reservoir bag", ["Reservoir bag", "Squeeze"], {
+        "bellows": "In manual ventilation, squeeze this bag to send gas to the patient. It refills during expiration; once it is full, excess gas leaves through the APL valve. During mechanical ventilation the bag/vent switch takes it out of the circuit and it does not move.",
+        "piston": "Even during mechanical ventilation it stays in the circuit as a reservoir: it collects exhaled and fresh gas, then deflates as the piston draws gas in. In manual ventilation the piston stops and you squeeze this bag to ventilate the patient."}),
+    "selector": ("Bag/vent switch", ["Bag/vent switch", "Bag", "Vent"],
+                 "Switches between manual ventilation (bag) and mechanical ventilation (bellows). The blue plug turns, and its L-shaped channel changes which paths are connected."),
+    "bellows": ("Bellows", ["Bellows"],
+                "A folded bag. During inspiration, drive gas around it pushes it down and sends the gas inside to the patient. During expiration, exhaled and fresh gas push it back up (ascending bellows). A leak keeps it from rising fully, which makes leaks easy to notice. In manual ventilation it is taken out of the circuit and stops."),
+    "drive": ("Drive gas", ["Drive gas (O₂)"],
+              "O₂ that enters the housing around the bellows and pushes on it from outside. The bellows wall keeps it separate from the gas the patient breathes."),
+    "spill": ("Ventilator relief valve", ["Relief valve"],
+              "Once the bellows has risen fully, it releases excess gas to the scavenging system. During inspiration, drive gas pressure holds it closed. It takes 2–3 cmH₂O to open, so this pressure remains in the circuit at the end of expiration."),
+    "piston": ("Piston", ["Piston", "Motor"],
+               "The motor pushes the piston up, sending gas from the cylinder to the patient. The volume pushed out is the tidal volume. No drive gas is used. The piston descends in late expiration to draw in the next breath. In manual ventilation it stops at the top."),
+    "ambient": ("Auxiliary air valve", ["Aux. air valve", "(vacuum relief)"],
+                "If the circuit runs short of gas while the piston descends, this valve lets in room air so that the circuit does not reach negative pressure. (It does not open in this simulator.)"),
+    "scav": ("Scavenging system", ["Scavenging system", "→ Out of OR", "To room", "Vac"],
+             "Removes excess anesthetic gas from the operating room by suction. Openings to the room keep the suction, or any back-pressure, from reaching the breathing circuit."),
+    "particles": ("Gas particles", ["Gas without CO₂", "Gas with CO₂"],
+                  "Each particle is a small amount of gas: black is gas without CO₂, orange is gas with CO₂. Particles turn orange in the alveoli and black again in the absorber. Click a particle to follow it."),
+    "exhausted": ("Absorbent exhausted", [], ""),
+}
+RECT = {   # 英語の文字がはみ出す部品だけ、拡大する範囲を広げる（{部品: {方式: [x0, y0, x1, y1]}}。ブラウザで文字の枠を測って決めた）
+    "check": {"bellows": [50, 455, 610, 503], "piston": [50, 455, 610, 503]},
+    "regulator": {"bellows": [100, 497, 590, 545], "piston": [100, 497, 590, 545]},
+    "cylinder": {"bellows": [95, 535, 572, 650], "piston": [95, 535, 572, 650]},
+    "cgo": {"bellows": [490, 40, 700, 140], "piston": [490, 40, 700, 140]},
+    "gauge": {"bellows": [810, 150, 990, 212], "piston": [925, 22, 1050, 100]},
+    "inspValve": {"bellows": [835, 50, 1002, 142], "piston": [1010, 45, 1180, 142]},
+    "hose": {"bellows": [915, 95, 1178, 485], "piston": [1090, 100, 1298, 497]},
+    "expValve": {"bellows": [865, 385, 1015, 482], "piston": [1000, 405, 1158, 500]},
+    "peep": {"piston": [935, 435, 1084, 530]},
+    "exhaust": {"piston": [714, 630, 866, 680]},
+    "decouple": {"piston": [795, 35, 956, 140]},
+}
+
+PHASES = {
+    "bellows": [["Insp", 0, 2, "insp", "Drive gas (O₂) pushes the bellows down, sending gas through the absorber and the inspiratory valve to the patient. Fresh gas joins the inspired gas."],
+                ["Exp", 2, 6, "exp", "Exhaled and fresh gas push the bellows up from below. Once it reaches the top, excess gas flows through the relief valve to the scavenging system."]],
+    "piston": [["Insp", 0, 2, "insp", "The piston rises and sends gas through the inspiratory valve to the patient. The fresh gas decoupling valve is closed, so fresh gas flows backward through the absorber to the reservoir bag."],
+               ["Exp 1", 2, 3.6, "exp", "Exhaled gas passes the expiratory and PEEP/Pmax valves into the reservoir bag, which inflates even during mechanical ventilation. Once it is full, excess gas flows to the scavenging system."],
+               ["Exp 2", 3.6, 6, "exp", "The piston descends and draws gas from the bag (through the absorber) and fresh gas through the decoupling valve into the cylinder."]],
+    "bellowsMan": [["Insp", 0, 2, "insp", "Squeezing the bag sends gas through the switch (set to Bag), the absorber and the inspiratory valve to the patient. Fresh gas joins it. The bellows is stopped."],
+                   ["Exp", 2, 6, "exp", "Exhaled and fresh gas return to the bag and inflate it. Once the bag is full, excess gas leaves through the APL valve to the scavenging system."]],
+    "pistonMan": [["Insp", 0, 2, "insp", "The piston is stopped. Squeezing the bag sends gas through the absorber; it joins the fresh gas and passes the decoupling and inspiratory valves to the patient."],
+                  ["Exp", 2, 6, "exp", "Exhaled gas passes the expiratory and PEEP/Pmax valves back to the bag, and fresh gas flows backward through the absorber to the bag. Once the bag is full, excess gas leaves through the APL valve to the scavenging system."]],
+}
+UI = {
+    "now": "What is happening now", "usedUp": "Exhausted", "pause": "Pause", "play": "Play", "start": "Start", "next": "Next",
+    "exhausted": [
+        "The absorbent is purple all the way through and no longer removes CO₂. Orange particles are returning to the patient through the inspiratory limb (rebreathing). Press Replace for fresh absorbent.",
+        "The absorbent is purple all the way through and no longer removes CO₂. In this scene most CO₂ leaves as excess gas, so little returns to the inspiratory side. Press Replace for fresh absorbent."],
+    "steps": [
+        'Each moving particle in the figure is gas: <b>black</b> is gas without CO₂, <b style="color:#e8590c">orange</b> is gas with CO₂. Watch the particles to see how the gas flows.',
+        "Play or pause (or press <kbd>Space</kbd>).",
+        "Switch between the two ventilator types.",
+        "Switch the scene: <b>manual</b> ventilation by squeezing the bag, or <b>low</b> fresh gas flow.",
+        "The inspiration and expiration bar. Press it to stop at that moment and see what is happening (<kbd>←</kbd> <kbd>→</kbd> step 0.1 s).",
+        "Click a particle to follow it with a red ring and trail (<kbd>Esc</kbd> to stop).",
+        "Click a part name with a dotted underline to zoom in on that part and read about it.",
+        "How much of the CO₂ absorbent has been used. Set the speed to 4× or 16× to watch it turn purple.",
+        "More detailed explanations, such as how the two types differ, are here. To see this guide again, use How to use."],
+}
+SIM_TEXT = {
+    "inAbs": "inside the CO₂ absorber", "A": "inspiratory limb", "B": "trachea (dead space)", "C": "expiratory limb",
+    "D": "absorber line", "Ebag": "bag line", "Event": "ventilator line", "F": "absorber line", "G": "decoupling valve line",
+    "P": "piston port", "H": "bag line", "sup": "supply line", "scav": "excess gas", "bag": "in the reservoir bag",
+    "bellows": "in the bellows", "lung": "in the alveoli", "cyl": "in the piston cylinder", "trans": "moving",
+}
+
+
+def terms_js():
+    """日本語版の TERMS に英語の名前・押せる文字・解説を上書きする JavaScript"""
+    over = {k: {"name": n, "words": w, "text": t} for k, (n, w, t) in TERMS.items()}
+    return ("for (const [k, v] of Object.entries(" + json.dumps(over, ensure_ascii=False) + ")) Object.assign(TERMS[k], v);\n"
+            "for (const [k, v] of Object.entries(" + json.dumps(RECT) + ")) Object.assign(TERMS[k].rect, v);\n")
+
+
+def l_js():
+    d = dict(UI, phases=PHASES)
+    return ("const L = Object.assign(" + json.dumps(d, ensure_ascii=False) + ", {\n"
+            "  breath: n => `Breath ${n}`, sec: c => c.toFixed(1) + ' s' });\n")
+
+
+def sim_text_js():
+    return ("window.SIM_TEXT = Object.assign(" + json.dumps(SIM_TEXT, ensure_ascii=False) + ", {\n"
+            "  fmt: (gas, id, co2, where) => `Particle #${id} supplied as ${gas} (${co2 ? 'with CO₂' : 'no CO₂'}, ${where})` });\n")
