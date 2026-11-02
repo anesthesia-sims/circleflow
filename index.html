@@ -17,7 +17,8 @@
   .top { display:flex; align-items:center; gap:10px; margin:2px 0 8px; }
   .top h1 { font-size:20px; margin:0; flex:1; }
   .top h1 span { font-size:14px; font-weight:400; color:var(--sub); margin-left:10px; }
-  .top a.lang { font-size:14px; color:var(--blue); margin-right:4px; }
+  .top a.lang { font-size:14px; color:var(--blue); margin-right:4px; white-space:nowrap; }
+  .top button { white-space:nowrap; }   /* 狭い画面で「How to use」などが 2 行に折れないように（2026-11-02） */
   .langnote { display:flex; align-items:center; gap:10px; margin:0 0 8px; padding:6px 8px 6px 12px; font-size:14px;
     border:1.5px solid var(--blue); border-radius:8px; }
   .langnote[hidden] { display:none; }
@@ -123,7 +124,7 @@
   body.cap .wrap { padding:0; max-width:none; }
   body.cap .chrome { display:none !important; }
   body.cap .stage { border:none; border-radius:0; }
-  @media (max-width:640px) { .top h1 span { display:none; } .seg button { padding:5px 8px; } .card p { font-size:14px; }
+  @media (max-width:640px) { .top h1 span { display:none; } .top { flex-wrap:wrap; } .top h1 { flex:1 0 100%; } .seg button { padding:5px 8px; } .card p { font-size:14px; }
     /* 狭い画面では解説カードを図の上に重ねず、図の下に出す（図が小さいので重ねると部品が隠れる） */
     .card { position:relative; left:auto; bottom:auto; max-width:none; margin:0; border:none; border-top:1.5px solid var(--fg); border-radius:0; transform:none; }
     .card:not(.show) { display:none; } }
