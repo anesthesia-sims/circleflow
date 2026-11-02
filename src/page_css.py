@@ -120,8 +120,34 @@ CSS = r"""
   body.cap .wrap { padding:0; max-width:none; }
   body.cap .chrome { display:none !important; }
   body.cap .stage { border:none; border-radius:0; }
-  @media (max-width:640px) { .top h1 span { display:none; } .top { flex-wrap:wrap; } .top h1 { flex:1 0 100%; } .seg button { padding:5px 8px; } .card p { font-size:14px; }
+  /* 狭い画面（スマートフォンの縦）：段を決めて組む。見出しは 1 行、方式は幅いっぱい、換気と新鮮ガスは左右に並べて
+     名前を上に小さく、図の下は「再生＋バー」「速さ」「吸収剤」の 3 段。成り行きで折り返すと、並びが崩れて見えた（2026-11-02） */
+  @media (max-width:640px) {
+    .wrap { max-width:none; padding:10px 12px 16px; }   /* 画面の高さから決めた幅（最小 620 px）をやめ、画面の幅いっぱいに */
+    .top { gap:6px; }
+    .top h1 { font-size:19px; }
+    .top h1 span { display:none; }
+    .top a.lang { font-size:13px; margin-right:0; }
+    .top button { font-size:13px; padding:5px 8px; }
+    .top button .q { display:none; }
+    .bar { display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
+    #typeSeg { grid-column:1 / -1; }
+    .bar .seg { display:flex; }
+    .bar .seg button { flex:1; padding:6px 4px; font-size:13px; white-space:nowrap; }   /* 英語の Manual (bag) が 2 行に折れて段の高さがそろわないのを防ぐ */
+    .bar .seg.big button { font-size:14px; padding:7px 4px; }
+    .bar .grp { display:flex; flex-direction:column; align-items:stretch; gap:2px; }
+    .bar .grp .lab { font-size:11px; }
+    .under { display:grid; grid-template-columns:auto 1fr; gap:8px 10px; }
+    .tl { min-width:0; }
+    #speedGrp, .abs { grid-column:1 / -1; display:flex; }
+    #speedGrp .seg { display:flex; flex:1; }
+    #speedGrp .seg button { flex:1; padding:5px 0; }
+    .abs .meter { flex:1; width:auto; }
+    .abs .el { min-width:0; font-size:13px; }
+    .card p { font-size:14px; }
     /* 狭い画面では解説カードを図の上に重ねず、図の下に出す（図が小さいので重ねると部品が隠れる） */
     .card { position:relative; left:auto; bottom:auto; max-width:none; margin:0; border:none; border-top:1.5px solid var(--fg); border-radius:0; transform:none; }
     .card:not(.show) { display:none; } }
+  /* 背の低い画面（スマートフォンの横）：高さから幅を決めると狭くなりすぎるので、幅いっぱいにして縦に送る */
+  @media (max-height:500px) and (min-width:641px) { .wrap { max-width:none; } }
 """
