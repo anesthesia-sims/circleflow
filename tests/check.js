@@ -12,6 +12,7 @@ const path = require("path");
 global.window = global;
 global.document = { createElementNS: () => ({ setAttribute() {}, style: {}, dataset: {}, appendChild() {}, insertBefore() {} }) };
 const src = path.join(__dirname, "..", "src");
+eval(fs.readFileSync(path.join(src, "sim_common.js"), "utf8"));
 eval(fs.readFileSync(path.join(src, "sim_bellows.js"), "utf8"));
 eval(fs.readFileSync(path.join(src, "sim_piston.js"), "utf8"));
 

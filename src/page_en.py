@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # CircleFlow © 2026 Masaaki Asamoto（朝元雅明）
-"""操作ページの英語版の文（2026-11-02）。make_sim_page.py に --lang en を付けると使う。
+"""操作ページの英語版の文（2026-11-02）。build_page.py に --lang en を付けると使う。
 - HTML：日本語版の HTML の文を、下の HTML_PAIRS で順に置き換える（構造は日本語版と同じ）。置き換え残しの日本語があると止まる
 - 部品の解説：日本語版の TERMS（拡大する範囲 rect を含む）に、名前・押せる文字・解説だけを上書きする
 - 図の中の文字は labels_en.py（押せる文字 words はそれと同じ綴りにする）"""

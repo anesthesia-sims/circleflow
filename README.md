@@ -35,7 +35,7 @@
 - スペースキー：再生／一時停止
 - ← →：0.1 秒ずつ送る
 - Esc：説明を閉じる／粒の追跡をやめる
-- `index.html?term=inspValve` のように開くと、その部品の説明を開いた状態になります（教科書やスライドから部品へ直接つなぐ用。名前は `src/make_sim_page.py` の `TERMS`）
+- `index.html?term=inspValve` のように開くと、その部品の説明を開いた状態になります（教科書やスライドから部品へ直接つなぐ用。名前は `src/page_terms.py` の `TERMS`）
 - `index.html?type=pistonMan&t=1.5` のように開くと、その場面・時刻で止めた 1 コマになります（動画や図のコマ撮り用）。場面の名前は `bellows`・`bellowsLow`・`bellowsMan`・`bellowsLowMan`・`piston`・`pistonLow`・`pistonMan`・`pistonLowMan` です。
 
 ## 作り直し方
@@ -51,14 +51,15 @@
 
 | ファイル | 役割 |
 |---|---|
-| `src/make_anim_bellows3.py` | 上昇式ベローズの図と経路データを作る（`low`：低流量、`manual`：用手換気） |
-| `src/make_anim_piston2.py` | ピストン式の図と経路データを作る（同上） |
-| `src/sim_bellows.js`・`src/sim_piston.js` | 粒の動きのシミュレーション（ブラウザで動く） |
-| `src/make_sim_page.py` | 8 つの場面を 1 つのページ（`index.html`）にまとめる（`--lang en` で英語版） |
+| `src/figure_bellows.py`・`src/figure_piston.py` | 上昇式ベローズ／ピストン式の図（SVG）と粒の経路データを作る（`low`：低流量、`manual`：用手換気、`en`：英語） |
+| `src/palette.py`・`src/svg.py`・`src/parts.py`・`src/geometry.py` | 2 つの図で共通の、色、SVG の道具、部品（弁・バッグ・肺胞など）の描き方、折れ線の計算 |
 | `src/labels_en.py` | 図の中の文字の英語版（日本語との対応表と、文字の大きさ・位置の調整） |
+| `src/sim_common.js`・`src/sim_bellows.js`・`src/sim_piston.js` | 粒の動きのシミュレーション（ブラウザで動く）。共通部分と方式ごとの部分 |
+| `src/build_page.py` | 8 つの場面を 1 つのページにまとめる（`--lang en` で英語版） |
+| `src/page_css.py`・`src/page_html.py`・`src/page_js.py`・`src/page_terms.py` | ページの見た目、HTML、操作の JavaScript、部品の解説と画面の文（日本語） |
 | `src/page_en.py` | ページの英語版の文（画面・部品の解説・場面の説明・使い方） |
-| `src/make_text_list.py` | ページに出る解説文をすべて Markdown に書き出す |
-| `tests/check.js` | 1 つの場面の粒の動きの点検 |
+| `tests/check.js` | 1 つの場面の粒の動きの点検（`check.sh` が 8 場面に対して回す） |
+| `tools/text_list.py` | ページに出る解説文をすべて Markdown に書き出す |
 
 ## 模式図としての注意
 
@@ -117,7 +118,7 @@ For beginners, the screen shows only the figure and the controls; explanations a
 - **Time bar**: press the inspiration / expiration bar to stop at that moment and see what is happening.
 - **Learn more**: how the two types differ, and details of absorbent use.
 - Space: play / pause; ← →: step 0.1 s; Esc: close an explanation or stop following a particle.
-- Open `en/index.html?term=inspValve` to start with that part's explanation open (for linking from textbooks or slides; the names are the keys of `TERMS` in `src/make_sim_page.py`).
+- Open `en/index.html?term=inspValve` to start with that part's explanation open (for linking from textbooks or slides; the names are the keys of `TERMS` in `src/page_terms.py`).
 - Open `en/index.html?type=pistonMan&t=1.5` to get a still frame of that scene at that time (for video or figure capture). Scene names: `bellows`, `bellowsLow`, `bellowsMan`, `bellowsLowMan`, `piston`, `pistonLow`, `pistonMan`, `pistonLowMan`.
 
 ## Building
@@ -133,14 +134,15 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 
 | File | Purpose |
 |---|---|
-| `src/make_anim_bellows3.py` | Draws the ascending-bellows figure and particle paths (`low`: low flow, `manual`: manual ventilation, `en`: English labels) |
-| `src/make_anim_piston2.py` | Same for the piston type |
-| `src/sim_bellows.js`, `src/sim_piston.js` | Particle simulation (runs in the browser) |
-| `src/make_sim_page.py` | Combines the 8 scenes into one page (`--lang en` for English) |
+| `src/figure_bellows.py`, `src/figure_piston.py` | Draw the figure (SVG) and particle paths for each ventilator type (`low`: low flow, `manual`: manual ventilation, `en`: English labels) |
+| `src/palette.py`, `src/svg.py`, `src/parts.py`, `src/geometry.py` | Shared by both figures: colors, SVG helpers, part drawings (valves, bag, alveoli, …), polyline math |
 | `src/labels_en.py` | English labels for the figures (mapping from Japanese, with per-label size and position) |
+| `src/sim_common.js`, `src/sim_bellows.js`, `src/sim_piston.js` | Particle simulation (runs in the browser): shared part and the two ventilator types |
+| `src/build_page.py` | Combines the 8 scenes into one page (`--lang en` for English) |
+| `src/page_css.py`, `src/page_html.py`, `src/page_js.py`, `src/page_terms.py` | Page styles, HTML, interaction script, and the Japanese explanations and UI text |
 | `src/page_en.py` | English page text (controls, part explanations, scene narration, tour) |
-| `src/make_text_list.py` | Writes all explanation text shown on a page to Markdown |
-| `tests/check.js` | Particle check for one scene |
+| `tests/check.js` | Particle check for one scene (`check.sh` runs it for all 8) |
+| `tools/text_list.py` | Writes all explanation text shown on a page to Markdown |
 
 ## Notes on the schematic
 

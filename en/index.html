@@ -6153,36 +6153,13 @@
   fmt: (gas, id, co2, where) => `Particle #${id} supplied as ${gas} (${co2 ? 'with CO₂' : 'no CO₂'}, ${where})` });
 </script>
 <script>
-/* SPDX-License-Identifier: MIT
- * CircleFlow © 2026 Masaaki Asamoto（朝元雅明）。プログラムは MIT ライセンス、図と文章は CC BY 4.0
- */
-/* 上昇式ベローズ回路のガスの粒シミュレーション（ブラウザ実行時）
- *
- * モデル
- *  - 粒 1 個 ＝ 一定体積のガス。1 本の流れの中では、粒は間隔 SP（px）で並ぶ。どの管も同じ断面とみなす
- *    （tubeSpacing で管ごとに係数を変えられる。係数 >1 は細い管）
- *  - 管（A〜E・余剰ガス S・供給路）は「押し出し流れ」。粒は弧長 s で表し、場面ごとの流量（粒/秒）×間隔 の
- *    速さで進む。管の端を越えた分は次の管に持ち越すので、合流点で止まらない
- *  - 粒はいつも管の中心線の上を動く（行き先を目で追いやすくするため）。合流点で 2 つの流れが同じ管に
- *    入って粒が近づきすぎたときは、管の中の均し（RELAX_*）で前後に離れる。
- *    以前は管の幅の中で左右に 2.4 px ずらす「レーン」を使っていたが、粒の直径（約 8.6 px）より小さく
- *    重なりはほとんど防げず、管の中心から外れた粒が目立つだけだったのでやめた（2026-11-02）
- *  - ためる場所（ベローズ・肺）は「よく混ざる部屋」。粒は固定の席に座り、出るときは選ばれた粒だけが
- *    口へ向かう。ほかの粒は動かない。選び方は決定的な擬似乱数（seed 固定）で、ベローズは底に近い席を、
- *    肺は古い粒を選びやすい。出る時刻は等間隔で、口に着いた粒はそのまま管の流れに乗る
- *  - 色：肺に入ると CO2 を含む（紫）、吸収装置で CO2 が除かれる（黒）
- *  - 吸収剤：入口（下）から 9 層。CO2 を含む粒が吸収剤の層に入ると CO2 が除かれ、入口から数えて最初の
- *    まだ使える層とその上の 2 層が少しずつ使われる（0.6・0.3・0.1 の割合）。使用済みの帯（指示薬の紫）は
- *    入口から出口へ進む。全層を使い切ると CO2 は除かれない。押し出し流れの粒は吸収装置の入口付近で
- *    行き来するだけなので、除去の位置は層の入口にまとめ、使われる吸収剤の位置で前線を表す。
- *    容量は実際の数時間を数分に縮めた値。交換は時刻つきの出来事として記録し、巻き戻しても再現する
- *  - 時刻は固定刻み（DT）で進め、周期ごとに状態を保存する。巻き戻しは保存点から計算し直すので、
- *    どの時刻でも同じ状態になる（動画のコマ撮りにも使える）
- *  - 用手換気（geo.bag があるとき。2026-11-02）：切替弁を用手に倒した回路。ベローズの代わりに呼吸バッグが
- *    回路のガスをためる。流れの決まりはベローズと同じ（吸気は手で押したバッグから、呼気はバッグへ戻り、
- *    満杯になると APL 弁から余剰ガス排出装置へ）。管 E は合流点 → 切替弁 → APL 弁の分岐（VP）で、バッグの席は
- *    差し込み口を中心にバッグと一緒にふくらみ・しぼむ
- */
+// SPDX-License-Identifier: MIT
+// CircleFlow © 2026 Masaaki Asamoto（朝元雅明）
+/* 粒のシミュレーションの共通部分（sim_bellows.js・sim_piston.js の前に読み込む）。
+ *  - 乱数（決まった種から同じ列。巻き戻しのため状態を取り出せる）、折れ線上の位置、キー列の補間
+ *  - 刻みなどの定数と、粒の色
+ *  - SimBase：2 つの方式で同じメソッド（粒の出し入れ、重みつきの選択、部屋から口への移動、吸収剤、検査点、追跡）
+ * window.CircleFlowSim に置き、各シミュレーションの先頭で取り出す */
 (function () {
   "use strict";
 
@@ -6248,7 +6225,6 @@
   const RELAX_MIN = 0.5;                   // 同じ管の粒がこれ×間隔より近いと、少しずつ離す
   const RELAX_V = 60;                      // 離す速さ（px/秒）
   const C_FRESH = "#2b2b2b", C_CO2 = "#e8590c";   // CO2 を含む粒はオレンジ（2026-11-02。旧：紫）
-  const TUBES = ["A", "B", "C", "D", "E"];
   function hexRGB(h) { return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); }
   function interp(keyT, keyV, x) {
     for (let i = 0; i < keyT.length - 1; i++) {
@@ -6269,8 +6245,112 @@
   };
   const simText = () => Object.assign({}, SIM_TEXT_JA, (typeof window !== "undefined" && window.SIM_TEXT) || {});
 
-  class BellowsSim {
+  /** 2 つの方式で同じ部分。方式ごとのクラス（BellowsSim・PistonSim）がこれを継承する */
+  class SimBase {
+    /** 時刻 tc（周期内）の肺胞の粒の数（連続値） */
+    lungVol(tc) {
+      return tc < this.TI ? this.g.LUNG_MIN + this.VT * tc / this.TI : this.g.LUNG_MIN + this.VT * (1 - this.exhFrac(tc - this.TI));
+    }
+    add(fields) {
+      const p = Object.assign({ id: this.nextId++, kind: (this.nextId % 2) ? "O2" : "N2O", co2: false, age: 0 }, fields);
+      this.particles.push(p);
+      this.byId.set(p.id, p);
+      return p;
+    }
+    remove(p) {
+      const i = this.particles.indexOf(p);
+      if (i >= 0) this.particles.splice(i, 1);
+      this.byId.delete(p.id);
+      if (this.tracked === p.id) { this.tracked = null; this.trail = []; }
+    }
+    pickWeighted(items, weightFn) {
+      let total = 0;
+      const ws = items.map(it => { const w = weightFn(it); total += w; return w; });
+      let r = this.rng.next() * total;
+      for (let i = 0; i < items.length; i++) { r -= ws[i]; if (r <= 0) return items[i]; }
+      return items[items.length - 1];
+    }
+    startTransit(p, path, speed, dest) {
+      p.st = "trans"; p.path = path; p.u = 0; p.speed = speed; p.dest = dest;
+      p.pathL = pathLen(path);
+    }
+    /** 吸収剤全体の使用率（0〜1） */
+    absUsed() { return this.absUse.reduce((a, b) => a + b, 0) / this.absUse.length; }
+    /** 吸気側の管（吸収装置の出口〜Y ピース）にいる、CO2 を含む粒の数 */
+    inspCO2() { return this.particles.filter(p => p.st === "tube" && p.tube === "A" && p.co2).length; }
+    /** いまの時刻で吸収剤を新しいものに交換する（巻き戻して再生しても同じ時刻に交換される） */
+    swapAbsorbent() {
+      const n = this.n;
+      if (!this.swaps.includes(n)) this.swaps.push(n);
+      this.absUse.fill(0);
+      for (const k of [...this.checkpoints.keys()]) {
+        if (k * this.STEPS_PER_CYC > n) this.checkpoints.delete(k);
+        else if (k * this.STEPS_PER_CYC === n) this.checkpoints.set(k, this.snapshot());
+      }
+    }
+    saveCheckpoint() {
+      const k = Math.round(this.n / this.STEPS_PER_CYC);
+      if (this.checkpoints.has(k)) return;
+      this.checkpoints.set(k, this.snapshot());
+    }
+    /** 図の座標 (x, y) にいちばん近い粒を追跡対象にする（遠ければ解除） */
+    trackNear(x, y, maxDist) {
+      let best = null, bd = (maxDist || 14);
+      for (const p of this.particles) {
+        const [px, py] = this.xy(p);
+        const d = Math.hypot(px - x, py - y);
+        if (d < bd) { bd = d; best = p; }
+      }
+      this.tracked = best ? best.id : null;
+      this.trail = [];
+      return best;
+    }
+  }
+
+  window.CircleFlowSim = { mulberry32, Poly, along, pathLen, interp, hexRGB, DT, WARM_CYCLES, LEAD, MIN_TRIP, RELAX_MIN, RELAX_V, C_FRESH, C_CO2, simText, SimBase };
+})();
+
+</script>
+<script>
+/* SPDX-License-Identifier: MIT
+ * CircleFlow © 2026 Masaaki Asamoto（朝元雅明）。プログラムは MIT ライセンス、図と文章は CC BY 4.0
+ */
+/* 上昇式ベローズ回路のガスの粒シミュレーション（ブラウザ実行時）
+ *
+ * モデル
+ *  - 粒 1 個 ＝ 一定体積のガス。1 本の流れの中では、粒は間隔 SP（px）で並ぶ。どの管も同じ断面とみなす
+ *    （tubeSpacing で管ごとに係数を変えられる。係数 >1 は細い管）
+ *  - 管（A〜E・余剰ガス S・供給路）は「押し出し流れ」。粒は弧長 s で表し、場面ごとの流量（粒/秒）×間隔 の
+ *    速さで進む。管の端を越えた分は次の管に持ち越すので、合流点で止まらない
+ *  - 粒はいつも管の中心線の上を動く（行き先を目で追いやすくするため）。合流点で 2 つの流れが同じ管に
+ *    入って粒が近づきすぎたときは、管の中の均し（RELAX_*）で前後に離れる。
+ *    以前は管の幅の中で左右に 2.4 px ずらす「レーン」を使っていたが、粒の直径（約 8.6 px）より小さく
+ *    重なりはほとんど防げず、管の中心から外れた粒が目立つだけだったのでやめた（2026-11-02）
+ *  - ためる場所（ベローズ・肺）は「よく混ざる部屋」。粒は固定の席に座り、出るときは選ばれた粒だけが
+ *    口へ向かう。ほかの粒は動かない。選び方は決定的な擬似乱数（seed 固定）で、ベローズは底に近い席を、
+ *    肺は古い粒を選びやすい。出る時刻は等間隔で、口に着いた粒はそのまま管の流れに乗る
+ *  - 色：肺に入ると CO2 を含む（紫）、吸収装置で CO2 が除かれる（黒）
+ *  - 吸収剤：入口（下）から 9 層。CO2 を含む粒が吸収剤の層に入ると CO2 が除かれ、入口から数えて最初の
+ *    まだ使える層とその上の 2 層が少しずつ使われる（0.6・0.3・0.1 の割合）。使用済みの帯（指示薬の紫）は
+ *    入口から出口へ進む。全層を使い切ると CO2 は除かれない。押し出し流れの粒は吸収装置の入口付近で
+ *    行き来するだけなので、除去の位置は層の入口にまとめ、使われる吸収剤の位置で前線を表す。
+ *    容量は実際の数時間を数分に縮めた値。交換は時刻つきの出来事として記録し、巻き戻しても再現する
+ *  - 時刻は固定刻み（DT）で進め、周期ごとに状態を保存する。巻き戻しは保存点から計算し直すので、
+ *    どの時刻でも同じ状態になる（動画のコマ撮りにも使える）
+ *  - 用手換気（geo.bag があるとき。2026-11-02）：切替弁を用手に倒した回路。ベローズの代わりに呼吸バッグが
+ *    回路のガスをためる。流れの決まりはベローズと同じ（吸気は手で押したバッグから、呼気はバッグへ戻り、
+ *    満杯になると APL 弁から余剰ガス排出装置へ）。管 E は合流点 → 切替弁 → APL 弁の分岐（VP）で、バッグの席は
+ *    差し込み口を中心にバッグと一緒にふくらみ・しぼむ
+ */
+(function () {
+  "use strict";
+
+  const { mulberry32, Poly, along, pathLen, interp, hexRGB, DT, WARM_CYCLES, LEAD, MIN_TRIP, RELAX_MIN, RELAX_V, C_FRESH, C_CO2, simText, SimBase } = window.CircleFlowSim;
+  const TUBES = ["A", "B", "C", "D", "E"];
+
+  class BellowsSim extends SimBase {
     constructor(geo, seed) {
+      super();
       this.g = geo;
       this.seed = seed || 7;
       this.tubes = {};
@@ -6319,10 +6399,6 @@
     exRate(dt) {
       if (dt < 0 || dt >= this.tEnd) return 0;
       return this.vtAct * Math.exp(-dt / this.tau) / (this.tau * this.exNorm);
-    }
-    /** 時刻 tc（周期内）の肺胞の粒の数（連続値） */
-    lungVol(tc) {
-      return tc < this.TI ? this.g.LUNG_MIN + this.VT * tc / this.TI : this.g.LUNG_MIN + this.VT * (1 - this.exhFrac(tc - this.TI));
     }
     lungScale(tc) {
       const L = this.g.lung;
@@ -6415,19 +6491,6 @@
       this.saveCheckpoint();
     }
 
-    add(fields) {
-      const p = Object.assign({ id: this.nextId++, kind: (this.nextId % 2) ? "O2" : "N2O", co2: false, age: 0 }, fields);
-      this.particles.push(p);
-      this.byId.set(p.id, p);
-      return p;
-    }
-    remove(p) {
-      const i = this.particles.indexOf(p);
-      if (i >= 0) this.particles.splice(i, 1);
-      this.byId.delete(p.id);
-      if (this.tracked === p.id) { this.tracked = null; this.trail = []; }
-    }
-
     // ---------- 供給路 ----------
     spawnTime(k) {
       const path = this.supply[k & 1];
@@ -6444,13 +6507,6 @@
     }
 
     // ---------- 席の選び方（決定的な擬似乱数） ----------
-    pickWeighted(items, weightFn) {
-      let total = 0;
-      const ws = items.map(it => { const w = weightFn(it); total += w; return w; });
-      let r = this.rng.next() * total;
-      for (let i = 0; i < items.length; i++) { r -= ws[i]; if (r <= 0) return items[i]; }
-      return items[items.length - 1];
-    }
     pickBellowsEntry() {
       const free = [];
       this.bSlots.forEach((v, i) => { if (v === null) free.push(i); });
@@ -6492,10 +6548,6 @@
     enterTube(p, nm, s) {
       p.st = "tube"; p.tube = nm; p.s = s;
       delete p.path; delete p.dest;
-    }
-    startTransit(p, path, speed, dest) {
-      p.st = "trans"; p.path = path; p.u = 0; p.speed = speed; p.dest = dest;
-      p.pathL = pathLen(path);
     }
     bellowsCount() { return this.bSlots.reduce((n, v) => n + (v !== null ? 1 : 0), 0); }
     lungCount() { return this.lSlots.reduce((n, v) => n + (v !== null ? 1 : 0), 0); }
@@ -6712,20 +6764,6 @@
         carry = amt - take;
       }
     }
-    /** 吸収剤全体の使用率（0〜1） */
-    absUsed() { return this.absUse.reduce((a, b) => a + b, 0) / this.absUse.length; }
-    /** 吸気側の管（吸収装置の出口〜Y ピース）にいる、CO2 を含む粒の数 */
-    inspCO2() { return this.particles.filter(p => p.st === "tube" && p.tube === "A" && p.co2).length; }
-    /** いまの時刻で吸収剤を新しいものに交換する（巻き戻して再生しても同じ時刻に交換される） */
-    swapAbsorbent() {
-      const n = this.n;
-      if (!this.swaps.includes(n)) this.swaps.push(n);
-      this.absUse.fill(0);
-      for (const k of [...this.checkpoints.keys()]) {
-        if (k * this.STEPS_PER_CYC > n) this.checkpoints.delete(k);
-        else if (k * this.STEPS_PER_CYC === n) this.checkpoints.set(k, this.snapshot());
-      }
-    }
 
     // ---------- 位置 ----------
     xy(p) {
@@ -6745,11 +6783,6 @@
     }
 
     // ---------- 保存と巻き戻し ----------
-    saveCheckpoint() {
-      const k = Math.round(this.n / this.STEPS_PER_CYC);
-      if (this.checkpoints.has(k)) return;
-      this.checkpoints.set(k, this.snapshot());
-    }
     snapshot() {
       return JSON.stringify({
         n: this.n, rng: this.rng.state, nextId: this.nextId, nextK: this.nextK,
@@ -6845,18 +6878,6 @@
         if (col !== gr.last) { gr.el.setAttribute("fill", col); gr.last = col; }
       }
     }
-    /** 図の座標 (x, y) にいちばん近い粒を追跡対象にする（遠ければ解除） */
-    trackNear(x, y, maxDist) {
-      let best = null, bd = (maxDist || 14);
-      for (const p of this.particles) {
-        const [px, py] = this.xy(p);
-        const d = Math.hypot(px - x, py - y);
-        if (d < bd) { bd = d; best = p; }
-      }
-      this.tracked = best ? best.id : null;
-      this.trail = [];
-      return best;
-    }
     describe(p) {
       if (!p) return "";
       const inAbs = p.st === "tube" && p.tube === "D" && p.s >= this.g.absD[0] && p.s <= this.g.absD[1];
@@ -6898,89 +6919,12 @@
 (function () {
   "use strict";
 
-  function mulberry32(a) {
-    return {
-      next() {
-        a |= 0; a = (a + 0x6D2B79F5) | 0;
-        let t = Math.imul(a ^ (a >>> 15), 1 | a);
-        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-      },
-      get state() { return a; },
-      set state(v) { a = v | 0; },
-    };
-  }
-
-  class Poly {
-    constructor(pts) {
-      this.pts = pts;
-      this.cum = [0];
-      for (let i = 1; i < pts.length; i++) {
-        const [ax, ay] = pts[i - 1], [bx, by] = pts[i];
-        this.cum.push(this.cum[i - 1] + Math.hypot(bx - ax, by - ay));
-      }
-      this.L = this.cum[this.cum.length - 1];
-    }
-    xy(s) {
-      s = Math.min(Math.max(s, 0), this.L);
-      const c = this.cum, p = this.pts;
-      let i = 1;
-      while (i < c.length - 1 && s > c[i]) i++;
-      const seg = c[i] - c[i - 1];
-      const r = seg ? (s - c[i - 1]) / seg : 0;
-      let x = p[i - 1][0] + (p[i][0] - p[i - 1][0]) * r, y = p[i - 1][1] + (p[i][1] - p[i - 1][1]) * r;
-      return [x, y];
-    }
-  }
-
-  function along(pts, u) {
-    const lens = [];
-    let total = 0;
-    for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); lens.push(l); total += l; }
-    let d = Math.min(Math.max(u, 0), 1) * total;
-    for (let i = 0; i < lens.length; i++) {
-      if (d <= lens[i] || i === lens.length - 1) {
-        const r = lens[i] ? Math.min(d / lens[i], 1) : 0;
-        return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * r, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * r];
-      }
-      d -= lens[i];
-    }
-    return pts[pts.length - 1];
-  }
-  function pathLen(pts) {
-    let t = 0;
-    for (let i = 1; i < pts.length; i++) t += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
-    return t;
-  }
-  function interp(keyT, keyV, x) {
-    for (let i = 0; i < keyT.length - 1; i++) {
-      if (keyT[i] <= x && x <= keyT[i + 1]) {
-        return keyT[i + 1] > keyT[i] ? keyV[i] + (keyV[i + 1] - keyV[i]) * (x - keyT[i]) / (keyT[i + 1] - keyT[i]) : keyV[i + 1];
-      }
-    }
-    return keyV[keyV.length - 1];
-  }
-  function hexRGB(h) { return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); }
-
-  const DT = 1 / 120;
-  const WARM_CYCLES = 6;
-  const LEAD = 0.35;
-  const MIN_TRIP = 0.12;
-  const RELAX_MIN = 0.5, RELAX_V = 60;
-  const C_FRESH = "#2b2b2b", C_CO2 = "#e8590c";   // CO2 を含む粒はオレンジ（2026-11-02。旧：紫）
+  const { mulberry32, Poly, along, pathLen, interp, hexRGB, DT, WARM_CYCLES, LEAD, MIN_TRIP, RELAX_MIN, RELAX_V, C_FRESH, C_CO2, simText, SimBase } = window.CircleFlowSim;
   const TUBES = ["A", "B", "C", "F", "G", "P", "H"];
-  // 粒の説明（追跡中の札）の文。英語版のページは window.SIM_TEXT で置き換える（2026-11-02）
-  const SIM_TEXT_JA = {
-    inAbs: "二酸化炭素吸収装置の中", A: "吸気側の管", B: "気管（死腔）", C: "呼気側の管", D: "吸収装置側の管",
-    Ebag: "呼吸バッグ側の管", Event: "人工呼吸器側の管", F: "吸収装置側の管", G: "デカップリング弁側の管", P: "ピストンの口",
-    H: "呼吸バッグ側の管", sup: "供給路", scav: "余剰ガス", bag: "呼吸バッグの中", bellows: "ベローズの中", lung: "肺胞の中",
-    cyl: "ピストンのシリンダーの中", trans: "移動中",
-    fmt: (gas, id, co2, where) => `${gas} として供給された粒 #${id}（${co2 ? "CO₂ を含む" : "CO₂ なし"}、${where}）`,
-  };
-  const simText = () => Object.assign({}, SIM_TEXT_JA, (typeof window !== "undefined" && window.SIM_TEXT) || {});
 
-  class PistonSim {
+  class PistonSim extends SimBase {
     constructor(geo, seed) {
+      super();
       this.g = geo;
       this.seed = seed || 7;
       this.tubes = {};
@@ -7027,9 +6971,6 @@
     exRate(dt) {
       if (dt < 0 || dt >= this.tEnd) return 0;
       return this.vtAct * Math.exp(-dt / this.tau) / (this.tau * this.exNorm);
-    }
-    lungVol(tc) {
-      return tc < this.TI ? this.g.LUNG_MIN + this.VT * tc / this.TI : this.g.LUNG_MIN + this.VT * (1 - this.exhFrac(tc - this.TI));
     }
     lungScale(tc) {
       const L = this.g.lung;
@@ -7113,19 +7054,6 @@
       this.saveCheckpoint();
     }
 
-    add(fields) {
-      const p = Object.assign({ id: this.nextId++, kind: (this.nextId % 2) ? "O2" : "N2O", co2: false, age: 0 }, fields);
-      this.particles.push(p);
-      this.byId.set(p.id, p);
-      return p;
-    }
-    remove(p) {
-      const i = this.particles.indexOf(p);
-      if (i >= 0) this.particles.splice(i, 1);
-      this.byId.delete(p.id);
-      if (this.tracked === p.id) { this.tracked = null; this.trail = []; }
-    }
-
     // ---------- 供給路 ----------
     spawnTime(k) {
       const path = this.supply[k & 1];
@@ -7142,13 +7070,6 @@
     }
 
     // ---------- 席の選び方 ----------
-    pickWeighted(items, weightFn) {
-      let total = 0;
-      const ws = items.map(it => { const w = weightFn(it); total += w; return w; });
-      let r = this.rng.next() * total;
-      for (let i = 0; i < items.length; i++) { r -= ws[i]; if (r <= 0) return items[i]; }
-      return items[items.length - 1];
-    }
     freeOf(slots) { const a = []; slots.forEach((v, i) => { if (v === null) a.push(i); }); return a; }
     seatedOf(slots) { const a = []; slots.forEach((v, i) => { if (v !== null && this.byId.get(v).st === "slot") a.push(i); }); return a; }
     pickCylEntry() { const f = this.freeOf(this.cSlots); return f.length ? this.pickWeighted(f, i => 1 / (this.cSlotDef[i][1] + 1)) : -1; }
@@ -7176,10 +7097,6 @@
     enterTube(p, nm, s) {
       p.st = "tube"; p.tube = nm; p.s = s;
       delete p.path; delete p.dest;
-    }
-    startTransit(p, path, speed, dest) {
-      p.st = "trans"; p.path = path; p.u = 0; p.speed = speed; p.dest = dest;
-      p.pathL = pathLen(path);
     }
     toRoom(p, store, idx, path, speed) {
       ({ c: this.cSlots, g: this.gSlots, l: this.lSlots })[store][idx] = p.id;
@@ -7423,18 +7340,6 @@
         carry = amt - take;
       }
     }
-    absUsed() { return this.absUse.reduce((a, b) => a + b, 0) / this.absUse.length; }
-    /** 吸気側の管（ピストンの口〜Y ピース）にいる、CO2 を含む粒の数 */
-    inspCO2() { return this.particles.filter(p => p.st === "tube" && p.tube === "A" && p.co2).length; }
-    swapAbsorbent() {
-      const n = this.n;
-      if (!this.swaps.includes(n)) this.swaps.push(n);
-      this.absUse.fill(0);
-      for (const k of [...this.checkpoints.keys()]) {
-        if (k * this.STEPS_PER_CYC > n) this.checkpoints.delete(k);
-        else if (k * this.STEPS_PER_CYC === n) this.checkpoints.set(k, this.snapshot());
-      }
-    }
 
     // ---------- 位置 ----------
     xy(p) {
@@ -7454,11 +7359,6 @@
     }
 
     // ---------- 保存と巻き戻し ----------
-    saveCheckpoint() {
-      const k = Math.round(this.n / this.STEPS_PER_CYC);
-      if (this.checkpoints.has(k)) return;
-      this.checkpoints.set(k, this.snapshot());
-    }
     snapshot() {
       return JSON.stringify({
         n: this.n, rng: this.rng.state, nextId: this.nextId, nextK: this.nextK,
@@ -7550,17 +7450,6 @@
         const col = "rgb(" + [0, 1, 2].map(i => Math.round(f[i] + (u[i] - f[i]) * v)).join(",") + ")";
         if (col !== gr.last) { gr.el.setAttribute("fill", col); gr.last = col; }
       }
-    }
-    trackNear(x, y, maxDist) {
-      let best = null, bd = (maxDist || 14);
-      for (const p of this.particles) {
-        const [px, py] = this.xy(p);
-        const d = Math.hypot(px - x, py - y);
-        if (d < bd) { bd = d; best = p; }
-      }
-      this.tracked = best ? best.id : null;
-      this.trail = [];
-      return best;
     }
     describe(p) {
       if (!p) return "";

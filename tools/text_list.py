@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # CircleFlow © 2026 Masaaki Asamoto（朝元雅明）
 """できあがったページ（index.html）から、画面に出る解説文をすべて取り出して、確認用の一覧（Markdown）を作る。
-使い方: python3 make_text_list.py ページ.html 出力.md
+使い方: python3 tools/text_list.py index.html 一覧.md
 文を手で写さないので、一覧とページの文は必ず同じになる。解説文を直したら作り直す（書き込み済みの一覧は上書きしないこと）。
 必要なもの：Node.js（ページの中の JavaScript のオブジェクトをそのまま読むため）"""
 import json
@@ -47,7 +47,7 @@ def main(page, out):
     T, order = d["TERMS"], d["TERM_ORDER"]
     num = {k: i + 1 for i, k in enumerate(order)}
     L = ["# CircleFlow 解説文の一覧（確認用）\n",
-         "CircleFlow のページで、部品の名前や時刻のバーを押したときに出る解説文を、すべて書き出したものです（`make_text_list.py` でページから自動で取り出しました。図の中の文字と、動画用の字幕は含みません）。\n",
+         "CircleFlow のページで、部品の名前や時刻のバーを押したときに出る解説文を、すべて書き出したものです（`tools/text_list.py` でページから自動で取り出しました。図の中の文字と、動画用の字幕は含みません）。\n",
          "**書いた人**：Claude（朝元の指示で作成。専門家の確認はまだ）。\n",
          "**確認のしかた**：各項目の「□ 確認」に印を付け、直したいところは「修正：」の後に書いてください。書き込んだこのファイルを渡してもらえれば、ページに反映します。\n",
          "**書き方の方針**：初めて学ぶ人向けに、1 項目 2〜3 文。仕組みを形と動きで見せる図に添える文なので、図で見えることは短く、見えないこと（なぜそうなっているか）を書いています。\n",
@@ -84,7 +84,7 @@ def main(page, out):
     L += [f"{i}. {s}" for i, s in enumerate(d["steps"], 1)]
     L += ["\n- □ 確認　修正：\n", "## 6. この一覧に入れていない文\n",
           "- 「くわしく」の中の説明（2 つの方式の比較表・用手換気・吸収剤・粒の決まり）：以前のページ下の説明とほぼ同じ文です",
-          "- 図の中の部品の名前と、動画用の字幕（`?t=` で開いたコマに出る 1 行）：生成スクリプト `make_anim_bellows3.py`・`make_anim_piston2.py` にあります"]
+          "- 図の中の部品の名前と、動画用の字幕（`?t=` で開いたコマに出る 1 行）：生成スクリプト `src/figure_bellows.py`・`src/figure_piston.py` にあります"]
     open(out, "w", encoding="utf-8").write("\n".join(L) + "\n")
 
 

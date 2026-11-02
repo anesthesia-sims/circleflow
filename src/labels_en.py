@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # CircleFlow © 2026 Masaaki Asamoto（朝元雅明）
-"""図の中の文字の英語版（2026-11-02）。make_anim_bellows3.py・make_anim_piston2.py に en を付けると、text() がこの表で
+"""図の中の文字の英語版（2026-11-02）。figure_bellows.py・figure_piston.py に en を付けると、text() がこの表で
 日本語を英語に置き換える。値は文字列、または {"t": 文字列, "size": 大きさ, "dx": 横のずれ, "dy": 縦のずれ, "anchor": 揃え}。
 方式ごとに変えたいときは ("b", 日本語)・("p", 日本語) をキーにする（b：上昇式ベローズ、p：ピストン式）。
 英語は日本語より横に長いので、大きさと位置をここで調整する。表にない日本語が残ったら生成スクリプトが止まる"""

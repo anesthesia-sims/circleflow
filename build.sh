@@ -11,14 +11,14 @@ scene() {   # scene 言語 名前 生成スクリプト [low] [manual]
   python3 "src/$gen" "build/$lang/$name.svg" color "build/$lang/$name.json" $( [ "$lang" = en ] && echo en ) "$@"
 }
 for lang in ja en; do
-  scene $lang bellows       make_anim_bellows3.py
-  scene $lang bellowsLow    make_anim_bellows3.py low
-  scene $lang bellowsMan    make_anim_bellows3.py manual
-  scene $lang bellowsLowMan make_anim_bellows3.py low manual
-  scene $lang piston        make_anim_piston2.py
-  scene $lang pistonLow     make_anim_piston2.py low
-  scene $lang pistonMan     make_anim_piston2.py manual
-  scene $lang pistonLowMan  make_anim_piston2.py low manual
+  scene $lang bellows       figure_bellows.py
+  scene $lang bellowsLow    figure_bellows.py low
+  scene $lang bellowsMan    figure_bellows.py manual
+  scene $lang bellowsLowMan figure_bellows.py low manual
+  scene $lang piston        figure_piston.py
+  scene $lang pistonLow     figure_piston.py low
+  scene $lang pistonMan     figure_piston.py manual
+  scene $lang pistonLowMan  figure_piston.py low manual
 done
 
 args() {    # args 言語：8 つの場面の「名前 svg 経路データ」
@@ -26,8 +26,9 @@ args() {    # args 言語：8 つの場面の「名前 svg 経路データ」
     printf '%s build/%s/%s.svg build/%s/%s.json ' "$name" "$1" "$name" "$1" "$name"
   done
 }
+SIMS="src/sim_common.js src/sim_bellows.js src/sim_piston.js"
 # 公開する URL（GitHub Pages）。言語版どうしの印（hreflang）に使う
 URL=https://anesthesia-sims.github.io/circleflow/
-python3 src/make_sim_page.py --other en/ --href-ja $URL --href-en ${URL}en/ index.html src/sim_bellows.js src/sim_piston.js $(args ja)
-python3 src/make_sim_page.py --lang en --other ../ --href-ja $URL --href-en ${URL}en/ en/index.html src/sim_bellows.js src/sim_piston.js $(args en)
+python3 src/build_page.py --other en/ --href-ja $URL --href-en ${URL}en/ index.html $SIMS $(args ja)
+python3 src/build_page.py --lang en --other ../ --href-ja $URL --href-en ${URL}en/ en/index.html $SIMS $(args en)
 echo "index.html と en/index.html を作りました"
