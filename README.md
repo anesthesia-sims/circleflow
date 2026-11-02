@@ -40,7 +40,7 @@
 
 ## 作り直し方
 
-図（SVG）と粒の経路データは Python のスクリプトが作り、粒の動きはブラウザの中で JavaScript が計算します。
+図（SVG）と粒の経路データは Python のスクリプトが作り、粒の動きはブラウザの中で JavaScript が計算します。`src/` を直したら、次の 2 つで作り直して点検します。
 
 ```sh
 ./build.sh    # build/ に 8 つの場面の図と経路データを日本語・英語で作り、index.html と en/index.html にまとめる（Python 3、標準ライブラリだけ）
@@ -57,18 +57,8 @@
 | `src/make_sim_page.py` | 8 つの場面を 1 つのページ（`index.html`）にまとめる（`--lang en` で英語版） |
 | `src/labels_en.py` | 図の中の文字の英語版（日本語との対応表と、文字の大きさ・位置の調整） |
 | `src/page_en.py` | ページの英語版の文（画面・部品の解説・場面の説明・使い方） |
-| `src/make_text_list.py` | ページに出る解説文をすべて取り出し、確認用の一覧（Markdown）を作る |
+| `src/make_text_list.py` | ページに出る解説文をすべて Markdown に書き出す |
 | `tests/check.js` | 1 つの場面の粒の動きの点検 |
-
-## 開発（このリポジトリが正本）
-
-CircleFlow の生成スクリプト・シミュレーション・ページの正本は、このリポジトリです（2026-11-02 から）。直すときは次の順に進めます。
-
-1. `src/` を直す（図の文字の英語は `src/labels_en.py`、ページの英語の文は `src/page_en.py`）
-2. `./build.sh` で日本語版・英語版を作り直し、`./check.sh` で 8 つの場面を点検する（英語版に訳し残しの日本語があると `build.sh` が止まります）
-3. 画面で確かめてから、`index.html`・`en/index.html` と `src/` をいっしょにコミットして送信する。`main` に送ると GitHub Pages の公開ページが更新されます
-
-解説文を直したときは、`python3 src/make_text_list.py index.html 一覧.md` で、画面に出る文を確認用の一覧（Markdown）にできます。
 
 ## 模式図としての注意
 
@@ -132,7 +122,7 @@ For beginners, the screen shows only the figure and the controls; explanations a
 
 ## Building
 
-Python scripts draw the figures (SVG) and the particle paths; JavaScript computes the particle motion in the browser.
+Python scripts draw the figures (SVG) and the particle paths; JavaScript computes the particle motion in the browser. After editing `src/`, rebuild and check with:
 
 ```sh
 ./build.sh    # builds the 8 scenes in Japanese and English and writes index.html and en/index.html (Python 3, standard library only)
@@ -149,16 +139,8 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 | `src/make_sim_page.py` | Combines the 8 scenes into one page (`--lang en` for English) |
 | `src/labels_en.py` | English labels for the figures (mapping from Japanese, with per-label size and position) |
 | `src/page_en.py` | English page text (controls, part explanations, scene narration, tour) |
-| `src/make_text_list.py` | Extracts all explanation text from a page into a review list (Markdown) |
+| `src/make_text_list.py` | Writes all explanation text shown on a page to Markdown |
 | `tests/check.js` | Particle check for one scene |
-
-## Development (this repository is the source of truth)
-
-This repository is the canonical source of the scripts, simulation and pages (since 2026-11-02). To make a change:
-
-1. Edit `src/` (English figure labels in `src/labels_en.py`, English page text in `src/page_en.py`).
-2. Run `./build.sh` to rebuild both languages and `./check.sh` to check the 8 scenes (`build.sh` stops if any Japanese text is left untranslated in the English page).
-3. Check the result in a browser, then commit `index.html`, `en/index.html` and `src/` together and push. Pushing to `main` updates the GitHub Pages site.
 
 ## Notes on the schematic
 
