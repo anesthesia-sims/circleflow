@@ -74,6 +74,7 @@
 
 | 版 | 日付 | 内容 |
 |---|---|---|
+| 1.2.1 | 2026-11-03 | 3 つの方式の図の幅をそろえた（上昇式ベローズとボリュームリフレクタ式の蛇管を長く）。スマートフォンでは速さを 1 つのボタンで順送りにして操作部を 1 段減らした |
 | 1.2.0 | 2026-11-03 | ボリュームリフレクタ式に用手換気の場面を追加（全 12 場面）。呼吸バッグと切替弁を図に加えた |
 | 1.1.0 | 2026-11-03 | ボリュームリフレクタ式（Getinge Flow-i 型）を追加（人工呼吸の 2 場面）。解説の文を読者向けに整理 |
 | 1.0.0 | 2026-11-02 | 公開。上昇式ベローズとピストン式の 8 場面、日本語版と英語版、部品の解説と使い方のツアー |
@@ -169,6 +170,7 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.2.1 | 2026-11-03 | All three figures now have the same width (longer breathing tubes in the bellows and volume reflector figures). On phones, speed is a single button that cycles through the settings, saving one row of controls |
 | 1.2.0 | 2026-11-03 | Manual ventilation scenes for the volume reflector type (12 scenes in all). Reservoir bag and bag/vent switch added to the figure |
 | 1.1.0 | 2026-11-03 | Volume reflector type (modeled on the Getinge Flow-i) with two ventilator scenes. Explanations rewritten for readers |
 | 1.0.0 | 2026-11-02 | First release: ascending bellows and piston types, 8 scenes, Japanese and English pages, part explanations and a guided tour |

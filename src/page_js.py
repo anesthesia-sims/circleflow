@@ -253,9 +253,14 @@ MAIN_JS = r"""
   document.querySelectorAll('[data-vent]').forEach(b => b.onclick = () => show(key(family(type), low, b.dataset.vent === 'man')));
   playBtn.onclick = () => setPlaying(!playing);
   $('absSwap').onclick = () => { sim.seek(t); sim.swapAbsorbent(); sim.render(layer); updateAbs(t); };
+  $('speedCycle').onclick = () => {                           // 狭い画面：速さを順送り
+    const bs = [...document.querySelectorAll('[data-speed]')], i = bs.findIndex(x => x.classList.contains('on'));
+    bs[(i + 1) % bs.length].click();
+  };
   document.querySelectorAll('[data-speed]').forEach(b => b.onclick = () => {
     speed = parseFloat(b.dataset.speed);
     document.querySelectorAll('[data-speed]').forEach(x => x.classList.toggle('on', x === b));
+    $('speedCycle').textContent = b.textContent;
   });
 
   // くわしい解説
@@ -324,7 +329,7 @@ MAIN_JS = r"""
       { els: () => [figs[type].querySelector('text[data-term="inspValve"]')],
         txt: L.steps[6],
         act: () => openTerm('inspValve'), afterFocus: true, undo: () => closeCard() },
-      { els: () => [$('absbox'), $('speedGrp')], at: r => [r[2] - 40, (r[1] + r[3]) / 2],
+      { els: () => [$('absbox'), $('speedGrp').offsetParent ? $('speedGrp') : $('speedCycle')], at: r => [r[2] - 40, (r[1] + r[3]) / 2],
         txt: L.steps[7] },
       { els: () => [$('moreBtn')], txt: L.steps[8] },
     ];

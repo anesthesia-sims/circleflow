@@ -33,6 +33,7 @@ BODY_MID = r"""
 <div class="under chrome">
   <button id="play" aria-label="一時停止"></button>
   <div class="tl"><div class="tl-bar" id="tlBar" role="slider" aria-label="時刻" aria-valuemin="0" aria-valuemax="6"></div><output id="tout">0.0 秒</output></div>
+  <button id="speedCycle" aria-label="速さ" title="速さ">1×</button>
   <div class="grp" id="speedGrp"><span class="lab">速さ</span><div class="seg">
     <button data-speed="0.25">¼</button><button data-speed="0.5">½</button><button data-speed="1" class="on">1×</button><button data-speed="4">4×</button><button data-speed="16">16×</button></div></div>
   <div class="abs" id="absbox">

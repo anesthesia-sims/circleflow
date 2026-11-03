@@ -123,6 +123,7 @@ CSS = r"""
   body.cap .stage { border:none; border-radius:0; }
   /* 狭い画面（スマートフォンの縦）：段を決めて組む。見出しは 1 行、方式は幅いっぱい、換気と新鮮ガスは左右に並べて
      名前を上に小さく、図の下は「再生＋バー」「速さ」「吸収剤」の 3 段。成り行きで折り返すと、並びが崩れて見えた（2026-11-02） */
+  #speedCycle { display:none; }   /* 狭い画面だけ：速さを 1 つのボタンで順送り（¼ → ½ → 1× → 4× → 16×） */
   @media (max-width:640px) {
     .wrap { max-width:none; padding:10px 12px 16px; }   /* 画面の高さから決めた幅（最小 620 px）をやめ、画面の幅いっぱいに */
     .top { gap:6px; }
@@ -139,9 +140,11 @@ CSS = r"""
     #typeSeg .full { display:none; } #typeSeg .short { display:inline; }
     .bar .grp { display:flex; flex-direction:column; align-items:stretch; gap:2px; }
     .bar .grp .lab { font-size:11px; }
-    .under { display:grid; grid-template-columns:auto 1fr; gap:8px 10px; }
+    .under { display:grid; grid-template-columns:auto 1fr auto; gap:8px 10px; align-items:center; }
+    #speedGrp { display:none; }
+    #speedCycle { display:block; min-width:52px; padding:7px 8px; font-size:14px; font-weight:700; border:1.5px solid var(--fg); border-radius:8px; background:#fff; color:var(--fg); }
     .tl { min-width:0; }
-    #speedGrp, .abs { grid-column:1 / -1; display:flex; }
+    .abs { grid-column:1 / -1; display:flex; }
     #speedGrp .seg { display:flex; flex:1; }
     #speedGrp .seg button { flex:1; padding:5px 0; }
     .abs .meter { flex:1; width:auto; }

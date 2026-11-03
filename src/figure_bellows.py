@@ -23,7 +23,7 @@ from svg import CYC, GAS_W, TI, add, anim, dashed, flush_pipes, gate_open, label
 
 MODE = sys.argv[2] if len(sys.argv) > 2 else "2c"
 LUNG_TISSUE, EXP_C, EXP_ARROW, PIPE, CYL, WICK = (palette.by_mode(MODE)[k] for k in ("LUNG_TISSUE", "EXP_C", "EXP_ARROW", "PIPE", "CYL", "WICK"))
-W, H = 1200, 860
+W, H = 1340, 860           # 2026-11-03：ピストン式と同じ幅にそろえた（患者の側を右へ 140 px、蛇管を長く）
 _FLAGS = set(sys.argv[4:])
 LOW_FLOW = "low" in _FLAGS
 MANUAL = "manual" in _FLAGS               # 用手換気の場面（切替弁を用手に倒し、呼吸バッグを手で押して換気する。2026-11-02）
@@ -109,13 +109,13 @@ EXP_Y = 462                       # 呼気側の横の管（2026-11-02：呼気�
 SX, SY = 900, 592                 # 切替弁（2026-11-01：人工呼吸器の基部の高さに合わせて 12 px 下げた）
 IV_X = 880                        # 吸気弁
 EV_X = 985                        # 呼気弁
-YX, YY = 1070, 270                # Y ピース
+YX, YY = 1210, 270                # Y ピース（2026-11-03：幅をそろえるため患者の側を 140 px 右へ）
 
 # ================= 土台 =================
 add(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
 add(f'<rect width="{W}" height="{H}" fill="#fff"/>')
 add(f'<rect x="12" y="12" width="668" height="{PANEL_B-12}" rx="10" fill="none" stroke="{B}" stroke-width="1.8" stroke-dasharray="7 6"/>')
-add(f'<rect x="692" y="12" width="496" height="{PANEL_B-12}" rx="10" fill="none" stroke="{B}" stroke-width="1.8" stroke-dasharray="7 6"/>')
+add(f'<rect x="692" y="12" width="636" height="{PANEL_B-12}" rx="10" fill="none" stroke="{B}" stroke-width="1.8" stroke-dasharray="7 6"/>')
 text("ガス供給機構・気化器", 28, 44, 22, weight=700, color=B)
 text("呼吸回路", 708, 44, 22, weight=700, color=B)
 PIPE_MARK = len(out)
@@ -318,14 +318,14 @@ one_way_valve(IV_X, MAN_Y, 1, INSP_FILL, open_phase="insp")
 IP = (IV_X + 32 + 16, MAN_Y)               # 吸気弁の口（つばの位置）
 EP = (EV_X + 32 + 16, EXP_Y)               # 呼気弁の口
 # Y ピース：枝の向きは、つながる蛇管の終わりの向きに合わせる
-C_I = (990, MAN_Y)                         # 吸気蛇管の曲がり具合（制御点）
-C_E = (1108, EXP_Y)                        # 呼気蛇管の曲がり具合
+C_I = (1130, MAN_Y)                         # 吸気蛇管の曲がり具合（制御点）
+C_E = (1248, EXP_Y)                        # 呼気蛇管の曲がり具合
 YL = 36
 _ui = unit(C_I[0], C_I[1], YX, YY)
 _ue = unit(C_E[0], C_E[1], YX, YY)
 YI = (YX - YL * _ui[0], YY - YL * _ui[1])  # 吸気側の枝の口
 YE = (YX - YL * _ue[0], YY - YL * _ue[1])  # 呼気側の枝の口
-YP = (1098, YY)                            # 患者側の口
+YP = (1238, YY)                            # 患者側の口
 # 回路内圧計
 pipe([(AX, 180), (AX + 30, 180)], inner=INSP, w=9)
 add(f'<circle cx="{AX+50}" cy="180" r="20" fill="#fff" stroke="{K}" stroke-width="2.2"/>')
@@ -359,7 +359,7 @@ hose((IP[0] + 3, IP[1]), C_I, YI, INSP)
 hose((EP[0] + 3, EP[1]), C_E, YE, EXP)
 # 患者（2026-11-01 変更）：Y ピースの口から気管（死腔）が右へ、そして下へ降り、気管分岐部で 2 葉の肺胞につながる。
 # 気管の中のガスは CO2 を受け取らない。肺胞の輪郭は容量に合わせて伸び縮みする（SMIL）
-TR_X = 1150                                 # 気管の縦の部分の x
+TR_X = 1290                                 # 気管の縦の部分の x
 HIL = (TR_X, 362)                           # 気管分岐部（肺胞の入口。肺の伸縮の中心）
 LOBES = (TR_X - 19, TR_X + 19)              # 左右の肺葉の中心 x
 LOBE_W, LOBE_T, LOBE_B = 30, 386, 492       # 肺葉の幅と上下（気管支に長さをもたせるため分岐部から 24 px 下）
@@ -575,8 +575,8 @@ pipe([(HXc, VY1 + 9), (HXc, SC_T)], inner=EXP)   # 2026-11-02：点線から管�
 # 余剰ガス排出装置（2026-11-02）：金属の箱の中に透明なため（リザーバー）。回路から来たガスはためを通って右端の
 # 吸引の口（黒：吸引の配管の色）から手術室の外へ吸い出される。ためは上の口で大気に開いていて、吸引が強すぎても
 # 弱すぎても回路に陰圧・陽圧がかからない（開放型）
-rect(760, SC_T, 416, 44, fill=METAL, rx=8)
-_rx0, _rx1 = APX + 26, 1152
+rect(760, SC_T, 556, 44, fill=METAL, rx=8)
+_rx0, _rx1 = APX + 26, 1292
 add(f'<rect x="{_rx0}" y="{SC_T+11}" width="{_rx1-_rx0}" height="22" rx="5" fill="{GLASS}" stroke="{K}" stroke-width="1.4"/>')
 add(f'<line x1="{_rx0+6}" y1="{SC_T+14.5}" x2="{_rx1-6}" y2="{SC_T+14.5}" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>')
 add(f'<line x1="{_rx0+6}" y1="{SC_T+29.5}" x2="{_rx1-6}" y2="{SC_T+29.5}" stroke="{GLASS_SHADE}" stroke-width="2.5" stroke-linecap="round"/>')
@@ -587,7 +587,7 @@ for _vx in (1040, 1054):                                         # 大気への�
 text("大気", 1047.0, SC_T - 6, 12, "middle", color="#333")
 add(f'<rect x="{_rx1}" y="{SC_T+13}" width="18" height="18" rx="2" fill="{K}"/>')   # 吸引の口
 text("吸引", _rx1 + 9, SC_T + 26, 9, "middle", 700, "#fff", halo=False)
-text("→ 手術室外へ", 1120, SC_T - 7, 16, "middle", color="#333")
+text("→ 手術室外へ", 1260, SC_T - 7, 16, "middle", color="#333")
 
 
 # ================= 経路データ（JS シミュレーション用） =================
@@ -732,7 +732,7 @@ for ph, label_, msg in _CAPS:
     text(label_, 56, CAP_Y + 1, 18, "middle", 700, "#fff", halo=False)
     text(msg, 100, CAP_Y + 1, 17, halo=False)
     add('</g>')
-BX, BW = 1010, 170
+BX, BW = 1150, 170
 add(f'<rect x="{BX}" y="{CAP_Y-8}" width="{BW*TI/CYC:.1f}" height="10" fill="#444"/>')
 add(f'<rect x="{BX + BW*TI/CYC:.1f}" y="{CAP_Y-8}" width="{BW*(1-TI/CYC):.1f}" height="10" fill="{EXP_ARROW}"/>')
 add(f'<rect x="{BX}" y="{CAP_Y-14}" width="3" height="22" fill="#d33"><animate attributeName="x" values="{BX};{BX+BW}" dur="{CYC}s" repeatCount="indefinite"/></rect>')
@@ -753,7 +753,7 @@ label("⑦", "気化器", 500, VB + 66, "right")
 label("⑧", "共通ガス出口", CGO_X + 10, 56, "left")
 # 呼吸回路
 label("⑨", "吸気弁", IV_X, 62, "right")
-text("蛇管・", 1062, 165, 18); text("Yピース", 1062, 189, 18)
+text("蛇管・", 1202, 165, 18); text("Yピース", 1202, 189, 18)
 text("二酸化炭素", 848, 335, 18); text("吸収装置", 848, 359, 18)
 label("⑪", "呼気弁", EV_X, EXP_Y - 58, "left")
 text("APL弁", APX + 10, SY - 14, 19, "middle")   # 2026-11-02：APL 弁の真上（管のすぐ上）へ。旧：label(…, SY - 46, "left") で左上に離れていた
