@@ -6,10 +6,13 @@
  * 上昇式ベローズ（sim_bellows.js）と同じ決まりで動く。違いは人工呼吸器の部分：
  *  - ためる場所は「部屋」ではなく、長い管 R（ボリュームリフレクタ、合流点 J → 奥の端 K）。押し出し流れなので
  *    J から入ったガスは J から出る（後入れ先出し）。両端のガスは混ざらない
+ *  - 新鮮ガスは吸気中だけ入る（Flow-i では新鮮ガスがおもに吸気中に流れる。2026-11-03）。1 呼吸の量はほかの方式と同じで、
+ *    吸気のあいだに FG_INSP 粒/秒。供給路の粒は spawnTime() で周期ごとに吸気の中へ並べる
  *  - 吸気：奥の端 K からリフレクタガス（O2 の粒。灰）が VR 粒/秒で入り、R の中のガスを J 側へ押し出す。
- *    押し出されたガスは吸収装置（D）を通り、新鮮ガスと合わさって吸気弁から患者へ。患者に入る量は VT_P（新鮮ガスの量によらない）
- *  - 呼気：呼気（C）と、吸収装置を逆向きに通った新鮮ガス（D）が J から R へ入る。そのぶん K から出たガス
- *    （O2 と最も古いガス）が PEEP/APL 弁を通って余剰ガス排出装置へ（S）
+ *    押し出されたガスは吸収装置（D）を通り、新鮮ガスと合わさって吸気弁から患者へ。患者に入る量は VT_P（新鮮ガスの量によらない。
+ *    多めでは新鮮ガスが 12 粒で、リフレクタが押し出すのは 1 粒だけ）
+ *  - 呼気：呼気（C）が J から R へ入る（吸収装置 D は止まる）。そのぶん K から出たガス（O2 と最も古いガス）が
+ *    PEEP/APL 弁を通って余剰ガス排出装置へ（S）
  *  - 定常状態では、呼吸ごとに新鮮ガスの量だけ境目が K 側へ戻るので、O2 は J まで届かない（届いた回数は reflLeak に数える）
  */
 (function () {
@@ -31,7 +34,9 @@
       this.SP = geo.SP;
       this.spc = {};
       for (const k of TUBES) this.spc[k] = geo.SP * ((geo.tubeSpacing || {})[k] || 1);
-      this.FG = geo.FG_RATE;                                  // 粒/秒
+      this.FG = geo.FG_RATE;                                  // 1 周期の平均（粒/秒）
+      this.FGI = geo.FG_INSP;                                 // 吸気中の新鮮ガスの流量（粒/秒）
+      this.nFG = Math.round(geo.FG_PER_BREATH);               // 1 呼吸あたりの新鮮ガスの粒の数
       this.vr = geo.VR;                                       // リフレクタガスが押し出す流量（粒/秒）
       this.VT = geo.VT_P;                                     // 患者に入る量（粒）
       this.STEPS_PER_CYC = Math.round(this.CYC / DT);
@@ -71,10 +76,10 @@
     flows(tc) {
       const s = this.spc;
       if (tc < this.TI) {
-        return { A: (this.vr + this.FG) * s.A, B: (this.vr + this.FG) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
+        return { A: (this.vr + this.FGI) * s.A, B: (this.vr + this.FGI) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
       }
       const ex = this.exRate(tc - this.TI);
-      return { A: 0, B: -ex * s.B, C: ex * s.C, D: -this.FG * s.D, R: (ex + this.FG) * s.R };
+      return { A: 0, B: -ex * s.B, C: ex * s.C, D: 0, R: ex * s.R };          // 呼気中は新鮮ガスが止まり、D は動かない
     }
 
     lSlotXY(idx, tc) {
@@ -116,17 +121,19 @@
         const p = this.add({ st: "slot", store: "l", slot: idx, co2: true });
         this.lSlots[idx] = p.id;
       }
-      const Lmax = Math.max(...this.supply.map(p => p.L));
-      this.nextK = Math.ceil((t0 - Lmax / g.SUP_V) * this.FG);
+      this.nextK = this.nFG * Math.floor(t0 / this.CYC);     // 到着が t0 より後の粒はすべて含む（供給路に置けないものは捨てる）
       this.spawnSupply();
       while (this.n < 0) this.step();
       this.saveCheckpoint();
     }
 
     // ---------- 供給路 ----------
+    /** k 番目の新鮮ガスの粒を供給路の入口に出す時刻。到着（合流点 JFG）は周期 c の吸気の中に nFG 粒を等間隔に並べる */
     spawnTime(k) {
       const path = this.supply[k & 1];
-      return (k + (this.g.supplyPhase || 0)) / this.FG - path.L / this.g.SUP_V;
+      const c = Math.floor(k / this.nFG), j = k - c * this.nFG;
+      const arrive = c * this.CYC + (j + 0.5) / this.FGI;
+      return arrive - path.L / this.g.SUP_V;
     }
     spawnSupply() {
       const t = this.t;

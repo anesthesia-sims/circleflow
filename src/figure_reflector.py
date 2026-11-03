@@ -29,12 +29,16 @@ LOW_FLOW = "low" in _FLAGS
 MANUAL = False                            # 用手換気の場面はまだない（呼吸バッグがリフレクタの奥につながる構成。次の段階）
 LANG = "en" if "en" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
 svg.configure(LANG, "r")
-# 新鮮ガス（粒/秒）。通常は 2（1 呼吸 12 粒、分時換気量に近い）。低流量は 0.5（1 呼吸 3 粒、分時換気量の約 1/4）
+# 新鮮ガス。1 呼吸あたりの粒の数はほかの方式と同じ（多め 12 粒、低流量 3 粒）。Flow-i では新鮮ガスがおもに吸気中に
+# 流れるので、本図では吸気中だけ入れる（2026-11-03 著者の判断。一定にすると、多めの場面で呼気の最後に入る新鮮ガスだけが
+# 次の吸気で押し出され、吸収装置に CO2 が届かなかった）。FG_RATE は 1 周期の平均（粒/秒）、FG_INSP は吸気中の流量
 FG_RATE = 0.5 if LOW_FLOW else 2.0
+FG_PER_BREATH = FG_RATE * CYC
+FG_INSP = FG_PER_BREATH / TI
 # 患者に入る量 VT_P は新鮮ガスの量によらず 13 粒（ピストン式と同じ）。リフレクタガス（O2）が押し出す量 VR は、
-# 吸気中に加わる新鮮ガスのぶんを引いた残り（多め：4.5 粒/秒、低流量：6.0 粒/秒）
+# 吸気中に加わる新鮮ガスのぶんを引いた残り（多め：0.5 粒/秒、低流量：5.0 粒/秒）
 VT_P = 13.0
-VR = VT_P / TI - FG_RATE
+VR = VT_P / TI - FG_INSP
 # 呼気は受動的：流量は呼気の始めに最大で、時定数 TAU で指数関数的に減る。T_EXH で吐き終える（残りは無視）
 TAU = 1.2                  # 呼気の時定数（秒）。模式として I:E と図の大きさに合わせた値（実機の肺は 0.5〜1 秒程度）
 T_EXH = (CYC - TI) - 0.3   # 吐き終わるまでの時間（秒）
@@ -86,7 +90,7 @@ CGO_X = 650                       # 共通ガス出口
 
 AX = 790                          # 二酸化炭素吸収装置
 ABS_CAP = 15.0                    # 吸収剤 1 層が吸える CO2 の粒の数（実際の数時間以上を数分に縮めた値）。
-                                  # 低流量では約 27 呼吸、新鮮ガス多めでは約 150 呼吸で全層を使い切る（どちらも同じ吸収剤）
+                                  # 低流量では約 22 呼吸で全層を使い切る。多めでは押し出すのが呼気の最後に入った死腔のガス 1 粒だけで、CO2 は届かない
 CT, CB = 286, 426                 # 2026-11-02：呼気側の横の管を上げるのに合わせて 14 px 上げた
 EXP_Y = 462                       # 呼気側の横の管（2026-11-02：呼気弁がベローズのハウジングに接していたので 18 px 上げた）
 SX, SY = 900, 592                 # 切替弁（2026-11-01：人工呼吸器の基部の高さに合わせて 12 px 下げた）
@@ -553,9 +557,9 @@ TUBE_SPACING["R"] = round(plen(TUBES["R"]) / (40.0 * R_CAP), 4)
 GEO = {
     "kind": "reflector",
     "CYC": CYC, "TI": TI, "FG_RATE": FG_RATE, "VT_P": VT_P, "VR": VR,
+    # 新鮮ガスは吸気中だけ：1 呼吸 FG_PER_BREATH 粒を、吸気のあいだに FG_INSP 粒/秒で入れる（sim_reflector.js の spawnTime）
+    "FG_INSP": FG_INSP, "FG_PER_BREATH": FG_PER_BREATH,
     "SP": 40.0, "SUP_V": 88.0, "SCAV_V": 120.0, "LUNG_MIN": LUNG_MIN,
-    # 新鮮ガスの粒が回路に届く時刻のずれ（到着の間隔に対する割合）。上昇式ベローズの図と同じ
-    "supplyPhase": 0.5 if LOW_FLOW else 0.0,
     "tubeSpacing": TUBE_SPACING,
     "tubes": TUBES,
     "absD": [_cD[2], _cD[3]],                                  # D の弧長のうち吸収装置の範囲
@@ -582,8 +586,8 @@ C_FRESH, C_EXPG, C_DRV = "#2b2b2b", C_CO2_DOT, "#7a7a7a"   # 粒の色（新鮮�
 add('<g class="svgcap">')
 CAP_Y = 830
 add(f'<rect x="12" y="{CAP_Y-28}" width="{W-24}" height="44" rx="8" fill="#f4f1fb" stroke="#cbbfe8"/>')
-_CAPS = (("insp", "吸気", "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置と吸気弁を通って患者へ送られる"),
-         ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ"))
+_CAPS = (("insp", "吸気", "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置を通って新鮮ガスと合わさり患者へ"),
+         ("exp", "呼気", "呼気がリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ（新鮮ガスは止まる）"))
 for ph, label_, msg in _CAPS:
     add(gate_open(ph))
     add(f'<rect x="24" y="{CAP_Y-20}" width="64" height="28" rx="6" fill="{K if ph == "insp" else EXP_ARROW}"/>')
