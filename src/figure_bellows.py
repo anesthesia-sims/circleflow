@@ -585,9 +585,9 @@ add(f'<line x1="{_rx0+6}" y1="{SC_T+14.5}" x2="{_rx1-6}" y2="{SC_T+14.5}" stroke
 add(f'<line x1="{_rx0+6}" y1="{SC_T+29.5}" x2="{_rx1-6}" y2="{SC_T+29.5}" stroke="{GLASS_SHADE}" stroke-width="2.5" stroke-linecap="round"/>')
 for _ex in (APX + 36, HXc):                                       # 上から来る管（ホース）の入口
     add(f'<rect x="{_ex-3.5}" y="{SC_T-1.2}" width="7" height="13" fill="{GLASS}"/>')
-for _vx in (1040, 1054):                                         # 大気への口
+for _vx in (1150, 1164):                                         # 大気への口（2026-11-03：余剰ガス弁からの管（x = 1063）と重なったので右へ）
     add(f'<rect x="{_vx-3}" y="{SC_T-1.2}" width="6" height="13" fill="{GLASS}"/>')
-text("大気", 1047.0, SC_T - 6, 12, "middle", color="#333")
+text("大気", 1157.0, SC_T - 6, 12, "middle", color="#333")
 add(f'<rect x="{_rx1}" y="{SC_T+13}" width="18" height="18" rx="2" fill="{K}"/>')   # 吸引の口
 text("吸引", _rx1 + 9, SC_T + 26, 9, "middle", 700, "#fff", halo=False)
 text("→ 手術室外へ", 1260, SC_T - 7, 16, "middle", color="#333")
