@@ -8,13 +8,14 @@ MAIN_JS = r"""
   const CYC = 6.0, NS = 'http://www.w3.org/2000/svg';
   const PHASES = L.phases;
 
-  const TYPES = ['bellows', 'bellowsLow', 'bellowsMan', 'bellowsLowMan', 'piston', 'pistonLow', 'pistonMan', 'pistonLowMan'];
+  const TYPES = ['bellows', 'bellowsLow', 'bellowsMan', 'bellowsLowMan', 'piston', 'pistonLow', 'pistonMan', 'pistonLowMan', 'reflector', 'reflectorLow'];
   const $ = id => document.getElementById(id);
   const figs = {};
   for (const k of TYPES) figs[k] = document.querySelector('#fig-' + k + ' svg');
   PHASES.bellowsLow = PHASES.bellows; PHASES.pistonLow = PHASES.piston;
   PHASES.bellowsLowMan = PHASES.bellowsMan; PHASES.pistonLowMan = PHASES.pistonMan;
-  const family = tp => tp.startsWith('piston') ? 'piston' : 'bellows';
+  PHASES.reflectorLow = PHASES.reflector;
+  const family = tp => tp.startsWith('piston') ? 'piston' : tp.startsWith('reflector') ? 'reflector' : 'bellows';
   const key = (fam, lo, mn) => fam + (lo ? 'Low' : '') + (mn ? 'Man' : '');
   let low = false, man = false;                                  // 新鮮ガス：低流量、換気：用手換気
   Object.values(figs).forEach(s => s.pauseAnimations());
@@ -31,7 +32,7 @@ MAIN_JS = r"""
   // 粒：実行時シミュレーション。8 つの場面はそれぞれ独立に動く（初めて表示するときに作る）
   const sims = {}, layers = {};
   for (const k of TYPES) layers[k] = figs[k].querySelector('g[id^="particles"]');
-  const getSim = k => (sims[k] = sims[k] || (family(k) === 'piston' ? new PistonSim(window.SCENE_GEO[k], 7) : new BellowsSim(window.SCENE_GEO[k], 7)));
+  const getSim = k => (sims[k] = sims[k] || (family(k) === 'piston' ? new PistonSim(window.SCENE_GEO[k], 7) : family(k) === 'reflector' ? new ReflectorSim(window.SCENE_GEO[k], 7) : new BellowsSim(window.SCENE_GEO[k], 7)));
   let sim = null, layer = null;
   const drawSim = tt => { sim.seek(tt); sim.render(layer); };
 
@@ -48,7 +49,7 @@ MAIN_JS = r"""
   // ---------- 部品の名前：クリックで拡大して解説 ----------
   const WORD = {};
   for (const [id, tm] of Object.entries(TERMS)) for (const w of tm.words) WORD[w] = id;
-  const rectOf = (id, tp) => TERMS[id].rect ? TERMS[id].rect[family(tp)] || null : null;
+  const rectOf = (id, tp) => TERMS[id].rect ? TERMS[id].rect[family(tp)] || (family(tp) === 'reflector' ? TERMS[id].rect.bellows : null) || null : null;   // ボリュームリフレクタ式の図は上昇式ベローズと同じ配置なので、範囲がなければそちらを使う
   for (const k of TYPES) figs[k].querySelectorAll('text').forEach(el => {
     if (el.closest('.svgcap') || el.closest('.svgnote')) return;
     const id = WORD[el.textContent.trim()];
@@ -182,6 +183,7 @@ MAIN_JS = r"""
     document.querySelectorAll('[data-flow]').forEach(b => b.classList.toggle('on', (b.dataset.flow === 'low') === low));
     document.querySelectorAll('[data-vent]').forEach(b => b.classList.toggle('on', (b.dataset.vent === 'man') === man));
     buildTimeline(tp);
+    $('ventGrp').hidden = family(tp) === 'reflector';   // ボリュームリフレクタ式には用手換気の場面がまだない
     underline(tp);
     document.documentElement.style.setProperty('--ar', (BASE[tp][2] / BASE[tp][3]).toFixed(4));
   };
@@ -246,7 +248,7 @@ MAIN_JS = r"""
   tlBar.addEventListener('pointerup', () => { if (!dragging) return; dragging = false; openPhase(phaseAt(((t % CYC) + CYC) % CYC)); });
 
   // 方式の切り替え：新鮮ガスと換気の選択はそのまま、時刻は 0 から
-  document.querySelectorAll('#typeSeg button').forEach(b => b.onclick = () => { show(key(b.dataset.type, low, man)); t = 0; });
+  document.querySelectorAll('#typeSeg button').forEach(b => b.onclick = () => { show(key(b.dataset.type, low, man && b.dataset.type !== 'reflector')); t = 0; });
   // 新鮮ガス・換気の切り替え：経過時間はそのまま（同じ時間での吸収剤の減り方を比べられる）
   document.querySelectorAll('[data-flow]').forEach(b => b.onclick = () => show(key(family(type), b.dataset.flow === 'low', man)));
   document.querySelectorAll('[data-vent]').forEach(b => b.onclick = () => show(key(family(type), low, b.dataset.vent === 'man')));

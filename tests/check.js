@@ -6,6 +6,8 @@
 //  - 巻き戻し：ある時刻へ進めた状態と、いったん戻ってから同じ時刻へ進めた状態が同じか（true であること）
 //  - 1 回換気量：1 呼吸ごとに肺胞へ入った粒の数（30 呼吸の平均・最小・最大）
 //  - 吸収剤：全層を使い切った呼吸（300 呼吸まで）
+//  - ボリュームリフレクタ式だけ：吸気の終わりにリフレクタにある O2 の粒の数と、O2 の境目が患者側の端から何粒目か（30 呼吸の最小）、
+//    O2 が患者側の端まで届いて回路に入った回数（0 であること）
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -15,10 +17,11 @@ const src = path.join(__dirname, "..", "src");
 eval(fs.readFileSync(path.join(src, "sim_common.js"), "utf8"));
 eval(fs.readFileSync(path.join(src, "sim_bellows.js"), "utf8"));
 eval(fs.readFileSync(path.join(src, "sim_piston.js"), "utf8"));
+eval(fs.readFileSync(path.join(src, "sim_reflector.js"), "utf8"));
 
 const file = process.argv[2];
 const geo = JSON.parse(fs.readFileSync(file, "utf8"));
-const make = () => (geo.kind === "piston" ? new PistonSim(geo, 7) : new BellowsSim(geo, 7));
+const make = () => (geo.kind === "piston" ? new PistonSim(geo, 7) : geo.kind === "reflector" ? new ReflectorSim(geo, 7) : new BellowsSim(geo, 7));
 const CYC = geo.CYC;
 
 // 回路の外
@@ -60,8 +63,16 @@ const mean = vts.reduce((s, v) => s + v, 0) / vts.length;
 let full = null;
 for (let c = 1; c <= 300 && full === null; c++) { sim.seek(c * CYC); if (sim.absUsed() >= 0.999) full = c; }
 
-const ok = outside === 0 && rewind;
+// ボリュームリフレクタ式：吸気の終わりの O2 の数と境目の深さ、O2 が回路に入った回数
+let refl = "";
+if (geo.kind === "reflector") {
+  let o2min = Infinity, o2max = 0, depthMin = Infinity;
+  for (let c = 1; c <= 30; c++) { sim.seek((c - 1) * CYC + geo.TI - 0.01); const r = sim.reflStat(); o2min = Math.min(o2min, r.o2); o2max = Math.max(o2max, r.o2); depthMin = Math.min(depthMin, r.depth); }
+  sim.seek(30 * CYC);
+  refl = `  リフレクタの O₂ ${o2min}〜${o2max} 粒（境目は患者側から ${depthMin} 粒目以上）  O₂ が回路に入った回数 ${sim.reflLeak}`;
+}
+const ok = outside === 0 && rewind && (geo.kind !== "reflector" || sim.reflLeak === 0);
 console.log(`${path.basename(file, ".json").padEnd(14)} 回路の外 ${outside}  巻き戻し ${rewind}  ` +
             `1回換気量 平均 ${mean.toFixed(2)}（${Math.min(...vts)}〜${Math.max(...vts)}）  ` +
-            `吸収剤を使い切る呼吸 ${full === null ? "300 呼吸までに使い切らない" : full}  ${ok ? "OK" : "NG"}`);
+            `吸収剤を使い切る呼吸 ${full === null ? "300 呼吸までに使い切らない" : full}${refl}  ${ok ? "OK" : "NG"}`);
 process.exitCode = ok ? 0 : 1;

@@ -73,6 +73,16 @@ EN = {
     "APLバイパス弁": {"t": "APL bypass valve", "size": 13},
     "（人工呼吸中に開く）": {"t": "(open in vent mode)", "size": 11},
     "排気逆止弁": {"t": "Exhaust check valve", "size": 12},
+    # ボリュームリフレクタ式（figure_reflector.py）
+    "ボリュームリフレクタ": {"t": "Volume reflector", "size": 15},
+    "リフレクタガス（O₂）": {"t": "Reflector gas (O₂)", "size": 13},                    # 凡例
+    "リフレクタガスモジュール（O₂）": {"t": "Reflector gas module (O₂)", "size": 12},
+    "電磁弁": {"t": "solenoid", "size": 10},
+    "PEEP/APL弁": {"t": "PEEP/APL valve", "size": 14},
+    "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置と吸気弁を通って患者へ送られる":
+        {"t": "Reflector gas (O₂) pushes gas out of the reflector; it flows through the absorber and inspiratory valve to the patient", "size": 15},
+    "呼気と新鮮ガスがリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ":
+        {"t": "Exhaled and fresh gas enter the reflector; O₂ and the oldest gas at the far end leave through the PEEP/APL valve", "size": 15},
     # 図の中の説明文（コマ撮りだけに出る）
     "人工呼吸中も呼吸バッグは": "During ventilation, the bag",
     "リザーバーとして回路に残り、": "stays in the circuit as a",

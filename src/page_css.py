@@ -31,6 +31,7 @@ CSS = r"""
   .seg button + button { border-left:1.5px solid var(--blue); }
   .seg button.on { background:var(--blue); color:#fff; }
   .seg.big button { font-size:15px; font-weight:700; padding:6px 14px; }
+  #typeSeg .short { display:none; }   /* 狭い画面では方式の名前を短く（ボリュームリフレクタ式 → リフレクタ式） */
   .grp { display:inline-flex; align-items:center; gap:6px; }
   .grp .lab { font-size:13px; color:var(--sub); }
   #play { width:40px; height:34px; border-radius:50%; border:1.5px solid var(--blue); background:var(--blue); color:#fff; cursor:pointer;
@@ -135,6 +136,7 @@ CSS = r"""
     .bar .seg { display:flex; }
     .bar .seg button { flex:1; padding:6px 4px; font-size:13px; white-space:nowrap; }   /* 英語の Manual (bag) が 2 行に折れて段の高さがそろわないのを防ぐ */
     .bar .seg.big button { font-size:14px; padding:7px 4px; }
+    #typeSeg .full { display:none; } #typeSeg .short { display:inline; }
     .bar .grp { display:flex; flex-direction:column; align-items:stretch; gap:2px; }
     .bar .grp .lab { font-size:11px; }
     .under { display:grid; grid-template-columns:auto 1fr; gap:8px 10px; }

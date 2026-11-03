@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: MIT
-# CircleFlow の 8 つの場面（2 方式 × 新鮮ガス 多め・低流量 × 人工呼吸・用手換気）の図と経路データを作り、
+# CircleFlow の 10 の場面（上昇式ベローズ・ピストン式：新鮮ガス 多め・低流量 × 人工呼吸・用手換気、ボリュームリフレクタ式：多め・低流量）の図と経路データを作り、
 # 日本語のページ index.html と英語のページ en/index.html にまとめる。必要なもの：Python 3（標準ライブラリだけ）
 set -e
 cd "$(dirname "$0")"
@@ -19,14 +19,16 @@ for lang in ja en; do
   scene $lang pistonLow     figure_piston.py low
   scene $lang pistonMan     figure_piston.py manual
   scene $lang pistonLowMan  figure_piston.py low manual
+  scene $lang reflector     figure_reflector.py
+  scene $lang reflectorLow  figure_reflector.py low
 done
 
 args() {    # args 言語：8 つの場面の「名前 svg 経路データ」
-  for name in bellows bellowsLow bellowsMan bellowsLowMan piston pistonLow pistonMan pistonLowMan; do
+  for name in bellows bellowsLow bellowsMan bellowsLowMan piston pistonLow pistonMan pistonLowMan reflector reflectorLow; do
     printf '%s build/%s/%s.svg build/%s/%s.json ' "$name" "$1" "$name" "$1" "$name"
   done
 }
-SIMS="src/sim_common.js src/sim_bellows.js src/sim_piston.js"
+SIMS="src/sim_common.js src/sim_bellows.js src/sim_piston.js src/sim_reflector.js"
 # 公開する URL（GitHub Pages）。言語版どうしの印（hreflang）に使う
 URL=https://anesthesia-sims.github.io/circleflow/
 python3 src/build_page.py --other en/ --href-ja $URL --href-en ${URL}en/ index.html $SIMS $(args ja)
