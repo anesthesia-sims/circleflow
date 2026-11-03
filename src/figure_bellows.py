@@ -565,7 +565,10 @@ if MANUAL:   # 用手換気で止まっていることの注記。操作ペー�
 SC_T = 680
 pipe([(APX + 20, SY + 30), (APX + 36, SY + 30), (APX + 36, SC_T)], inner=EXP)   # 2026-11-02：点線から管に（APL 弁の出口 → 余剰ガス排出装置）
 # 余剰ガス弁（スピル弁）：ベローズの基部から箱の底を抜けて余剰ガス排出装置へ
-channels([[(HXc, BASE_B), (HXc, VY1 - 6)]])
+# 台座の中の通路から下へ分かれ、底を抜けて余剰ガス弁まで 1 本の通路（2026-11-03：以前は底から別の通路を描いていて、その角張った
+# 黒い端が台座の通路にかぶさり、遮られて見えた）
+add(f'<path d="M {HXc},{SY} L {HXc},{VY1 - 6}" fill="none" stroke="{K}" stroke-width="{GAS_W-3}" stroke-linecap="butt"/>')
+add(f'<path d="M {HXc},{SY} L {HXc},{VY1 - 6}" fill="none" stroke="{EXP}" stroke-width="{GAS_W-7}" stroke-linecap="butt"/>')
 # 2026-11-02：逆止弁と同じ構造を下向きにした断面。ベローズが上がりきったあと（呼気の終わり）だけ弁板が開き、
 # 回路の余ったガスを余剰ガス排出装置へ逃がす。吸気中は駆動ガスの圧で閉じている
 _fo = T_FULL / CYC
@@ -610,7 +613,7 @@ if MANUAL:
     VP = (APX, SY)
     TUBES["E"] = [(SX, EXP_Y), (SX, SY), VP]
     TUBES["S"] = [VP, (APX, SY + 19.5), (APX + 12, SY + 19.5), (APX + 12, SY + 30), (APX + 36, SY + 30),
-                  (APX + 36, SC_T + 22), (1170, SC_T + 22)]
+                  (APX + 36, SC_T + 22), (1300, SC_T + 22)]
 _bc = (BG_P - 44, SY)                              # 呼吸バッグの中心（大きさ 1 のとき）
 BAG_SLOTS = [(_bc[0] + dx, _bc[1] + dy) for dy in (-18, -9, 0, 9, 18) for dx in (-18, -9, 0, 9, 18)
              if (dx / 26) ** 2 + (dy / 24) ** 2 <= 1]

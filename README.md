@@ -74,6 +74,7 @@
 
 | 版 | 日付 | 内容 |
 |---|---|---|
+| 1.2.3 | 2026-11-03 | 上昇式ベローズの用手換気で余剰ガスの粒が排出装置の途中で消えていたのを直した。ベローズの台座から余剰ガス弁への通路が遮られて見えていたのを直した |
 | 1.2.2 | 2026-11-03 | 幅をそろえたぶん、上昇式ベローズとボリュームリフレクタ式の麻酔器側（弁・ベローズ・リフレクタ）を右へ広げて配置を整えた。スマートフォンでは上部の操作（方式・換気・新鮮ガス）を押すたびに切り替わる 3 つのボタン 1 段にした |
 | 1.2.1 | 2026-11-03 | 3 つの方式の図の幅をそろえた（上昇式ベローズとボリュームリフレクタ式の蛇管を長く）。スマートフォンでは速さを 1 つのボタンで順送りにして操作部を 1 段減らした |
 | 1.2.0 | 2026-11-03 | ボリュームリフレクタ式に用手換気の場面を追加（全 12 場面）。呼吸バッグと切替弁を図に加えた |
@@ -171,6 +172,7 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.2.3 | 2026-11-03 | Fixed excess-gas particles vanishing partway along the scavenging system in the bellows manual scenes, and the channel from the bellows base to the relief valve that looked blocked |
 | 1.2.2 | 2026-11-03 | Rebalanced the machine side of the bellows and volume reflector figures (valves, bellows, reflector spread to the right). On phones, the top controls (type, ventilation, fresh gas) are one row of three buttons that cycle when tapped |
 | 1.2.1 | 2026-11-03 | All three figures now have the same width (longer breathing tubes in the bellows and volume reflector figures). On phones, speed is a single button that cycles through the settings, saving one row of controls |
 | 1.2.0 | 2026-11-03 | Manual ventilation scenes for the volume reflector type (12 scenes in all). Reservoir bag and bag/vent switch added to the figure |
