@@ -74,6 +74,7 @@
 
 | 版 | 日付 | 内容 |
 |---|---|---|
+| 1.2.5 | 2026-11-04 | ピストン式の人工呼吸で、呼気②に呼吸バッグから出る粒が速すぎたのを直した（出発を早め、管の流れに近い速さで進む） |
 | 1.2.4 | 2026-11-03 | 上昇式ベローズの余剰ガス排出装置で、大気への口が余剰ガス弁からの管と重なっていたのを右へ移した |
 | 1.2.3 | 2026-11-03 | 上昇式ベローズの用手換気で余剰ガスの粒が排出装置の途中で消えていたのを直した。ベローズの台座から余剰ガス弁への通路が遮られて見えていたのを直した |
 | 1.2.2 | 2026-11-03 | 幅をそろえたぶん、上昇式ベローズとボリュームリフレクタ式の麻酔器側（弁・ベローズ・リフレクタ）を右へ広げて配置を整えた。スマートフォンでは上部の操作（方式・換気・新鮮ガス）を押すたびに切り替わる 3 つのボタン 1 段にした |
@@ -173,6 +174,7 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.2.5 | 2026-11-04 | Particles leaving the reservoir bag during the piston's second expiratory phase no longer rush: they leave earlier and move at a speed close to the flow in the tube |
 | 1.2.4 | 2026-11-03 | Moved the room-air openings of the scavenging system in the bellows figure, which overlapped the pipe from the relief valve |
 | 1.2.3 | 2026-11-03 | Fixed excess-gas particles vanishing partway along the scavenging system in the bellows manual scenes, and the channel from the bellows base to the relief valve that looked blocked |
 | 1.2.2 | 2026-11-03 | Rebalanced the machine side of the bellows and volume reflector figures (valves, bellows, reflector spread to the right). On phones, the top controls (type, ventilation, fresh gas) are one row of three buttons that cycle when tapped |

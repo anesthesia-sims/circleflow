@@ -25,6 +25,8 @@
   "use strict";
 
   const { mulberry32, Poly, along, pathLen, interp, hexRGB, DT, WARM_CYCLES, LEAD, MIN_TRIP, RELAX_MIN, RELAX_V, C_FRESH, C_CO2, simText, SimBase } = window.CircleFlowSim;
+  const BAG_EXIT_RATIO = 2;                 // 呼気②でバッグから出る粒の速さ：管 H の流れの何倍まで（2026-11-04）
+  const BAG_EXIT_MAX_LEAD = 1.2;            // そのために出発を早める時間の上限（秒）
   const TUBES = ["A", "B", "C", "F", "G", "P", "H"];
 
   class PistonSim extends SimBase {
@@ -285,7 +287,7 @@
     /** 呼吸バッグ：呼気②のあいだ、ピストンが吸い込む量のうち新鮮ガスと呼気で足りない分を出す（速さは呼気の曲線で変わる） */
     planBag(tPhase, gap0, nAvail) {
       const sp = this.spc.H, h = 0.002, dur = this.T3 - this.T2;
-      const speed = u => Math.max(0, this.vd - this.FG - this.exRate(this.T2 - this.TI + u)) * sp;
+      const speed = u => Math.max(0, this.vd - this.FG - this.exRate(this.T2 - this.TI + u)) * sp;   // 管 H の流れ（px/秒）
       let D = 0;
       for (let u = 0; u < dur; u += h) D += speed(u + h / 2) * h;
       const { V1, n } = this.planCount(sp, D, gap0, nAvail), out = [];
@@ -293,9 +295,19 @@
       for (let k = 1; k <= n; k++) {
         const target = V1 + (k - 1) * sp;
         while (X < target - 1e-9 && u < dur) { X += speed(u + h / 2) * h; u += h; }
-        out.push(tPhase + Math.min(u, dur) + DT);
+        const tArr = tPhase + Math.min(u, dur) + DT;
+        // 出発を早める時間：管 H の流れが遅いときは、バッグから口までの道のりを流れの BAG_EXIT_RATIO 倍の速さで進める時間だけ前に出る
+        // （上限 BAG_EXIT_MAX_LEAD 秒。呼気②の始まる LEAD 秒前より早くは出ない）。到着時刻は変えないので、粒の数の収支は変わらない（2026-11-04）
+        const lead = Math.min(Math.max(LEAD, this.bagExitLen() / (BAG_EXIT_RATIO * Math.max(speed(Math.min(u, dur)), 1))), BAG_EXIT_MAX_LEAD, tArr - (tPhase - LEAD));
+        out.push({ t: tArr, lead });
       }
       return out;
+    }
+    /** 呼吸バッグの席から口（BAGM）を通って APL の分岐までの道のりの平均（px） */
+    bagExitLen() {
+      const nd = this.g.nodes, tc = this.T2;
+      let s = 0; for (let i = 0; i < this.gSlotDef.length; i++) s += pathLen([this.slotXY("g", i, tc), nd.BAGM, nd.APL]);
+      return s / Math.max(1, this.gSlotDef.length);
     }
     /** 用手換気の吸気：呼吸バッグを一定の速さで押す */
     planBagManual(tPhase, gap0, nAvail) {
@@ -413,7 +425,7 @@
       }
       while (this.relC.length && t >= this.relC[0] - LEAD) this.releaseFrom("c", this.relC.shift());
       while (this.relL.length && t >= this.relL[0] - LEAD) this.releaseFrom("l", this.relL.shift());
-      while (this.relG.length && t >= this.relG[0] - LEAD) this.releaseFrom("g", this.relG.shift());
+      while (this.relG.length && t >= (this.relG[0].t ?? this.relG[0]) - (this.relG[0].lead ?? LEAD)) { const r = this.relG.shift(); this.releaseFrom("g", r.t ?? r); }
       // 吸収装置（上昇式ベローズ版と同じ）
       const rows = this.absRows, sLo = rows[0][0], sHi = rows[rows.length - 1][1];
       for (const p of this.particles) {
