@@ -53,6 +53,7 @@ EN = {
     "手で押す": {"t": "Squeeze", "size": 14},
     ("r", "呼吸バッグ"): {"t": "Reservoir bag", "size": 13},
     "切替弁": {"t": "Bag/vent switch", "size": 15},
+    ("r", "切替弁"): {"t": "Bag/vent switch", "size": 10},
     "用手": {"t": "Bag", "size": 14},
     "人工呼吸": {"t": "Vent", "size": 13},
     "ベローズ": "Bellows",

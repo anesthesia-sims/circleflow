@@ -102,7 +102,7 @@ if MANUAL:
     T_FULL = TI + next(k * 0.005 for k in range(1, 20000) if _bag_fill(k * 0.005) >= VT_B)   # バッグが満杯になる時刻
     BAG_KT = [0.0, TI] + [TI + k * 0.05 for k in range(1, int((T_FULL - TI) / 0.05))] + [T_FULL, CYC]
     BAG_SC = [1.0, NB_MIN / NB_FULL] + [min(1.0, (NB_MIN + _bag_fill(t - TI)) / NB_FULL) for t in BAG_KT[2:]]
-    BAG_S = [0.85 * (0.72 + 0.33 * v) for v in BAG_SC]   # バッグの大きさ（置き場所が狭いので 0.85 倍。満杯で 0.89）
+    BAG_S = [0.8 * (0.72 + 0.33 * v) for v in BAG_SC]    # バッグの大きさ（置き場所が狭いので 0.8 倍。満杯で 0.84）
 
 AX = 790                          # 二酸化炭素吸収装置
 ABS_CAP = 15.0                    # 吸収剤 1 層が吸える CO2 の粒の数（実際の数時間以上を数分に縮めた値）。
@@ -526,15 +526,27 @@ rect(APX - 12, APY + 58, 24, 12, fill=METAL, rx=2, sw=1.8)                      
 for _k in range(1, 6):
     add(f'<line x1="{APX-12+4*_k}" y1="{APY+59}" x2="{APX-12+4*_k}" y2="{APY+69}" stroke="{K}" stroke-width="1"/>')
 add('</g>')
+# 呼吸バッグと切替弁（2026-11-03）：奥の端 K のすぐ右の分岐から下向きにぶら下げる（差し込み口を上にして 90° 回す）。
+# 枝の途中の切替弁は、人工呼吸では閉じてバッグを回路から外し（バッグは止まっている）、用手換気では開く。
+# 用手換気では手で押してしぼみ、呼気でふくらむ。粒の席（GEO の bag.slots）も同じ回転と倍率で動く
+BT_X, BT_Y = 1072, RYS[3] + 26
+pipe([(BT_X, RYS[3]), (BT_X, BT_Y + 2)], inner=EXP)
+SV_Y = RYS[3] + 13
+rect(BT_X - 9, SV_Y - 7, 18, 14, fill=METAL, rx=2)                                                  # 切替弁の箱
+add(f'<rect x="{BT_X-3.5}" y="{SV_Y-7}" width="7" height="14" fill="{EXP}"/>')                         # 通路
 if MANUAL:
-    # 呼吸バッグ（2026-11-03）：奥の端 K のすぐ右の分岐から下向きにぶら下げる（差し込み口を上にして 90° 回す）。
-    # 吸気で手で押してしぼみ、呼気でふくらむ。粒の席（GEO の bag.slots）も同じ回転と倍率で動く
-    BT_X, BT_Y = 1072, RYS[3] + 16
-    pipe([(BT_X, RYS[3]), (BT_X, BT_Y + 2)], inner=EXP)
-    add(f'<g transform="rotate(-90 {BT_X} {BT_Y})">')
+    add(f'<rect x="{BT_X-1.2}" y="{SV_Y-5}" width="2.4" height="10" fill="{B}" stroke="{K}" stroke-width="0.8"/>')    # 開：板が通路に沿う
+else:
+    add(f'<rect x="{BT_X-4.5}" y="{SV_Y-1.2}" width="9" height="2.4" fill="{B}" stroke="{K}" stroke-width="0.8"/>')   # 閉：板が通路をふさぐ
+text("切替弁", BT_X - 14, SV_Y + 4, 12, "end", 700)
+add(f'<g transform="rotate(-90 {BT_X} {BT_Y})">')
+if MANUAL:
     breathing_bag(BT_X, BT_Y, EXP, BAG_S, BAG_KT)
-    add('</g>')
-    text("呼吸バッグ", BT_X - 34, BT_Y + 32, 14, "end", 700)
+else:
+    breathing_bag(BT_X, BT_Y, EXP, [0.84, 0.84], [0.0, CYC])                                            # 人工呼吸：満杯の大きさで止まっている
+add('</g>')
+text("呼吸バッグ", BT_X - 34, BT_Y + 32, 14, "end", 700)
+if MANUAL:
     add(gate_open("insp"))
     text("手で押す", BT_X - 44, BT_Y + 51, 14, "end", 700)
     add(f'<line x1="{BT_X-40}" y1="{BT_Y+46}" x2="{BT_X-34}" y2="{BT_Y+46}" stroke="{K}" stroke-width="2.5"/>')
