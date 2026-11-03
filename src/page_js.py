@@ -8,13 +8,13 @@ MAIN_JS = r"""
   const CYC = 6.0, NS = 'http://www.w3.org/2000/svg';
   const PHASES = L.phases;
 
-  const TYPES = ['bellows', 'bellowsLow', 'bellowsMan', 'bellowsLowMan', 'piston', 'pistonLow', 'pistonMan', 'pistonLowMan', 'reflector', 'reflectorLow'];
+  const TYPES = ['bellows', 'bellowsLow', 'bellowsMan', 'bellowsLowMan', 'piston', 'pistonLow', 'pistonMan', 'pistonLowMan', 'reflector', 'reflectorLow', 'reflectorMan', 'reflectorLowMan'];
   const $ = id => document.getElementById(id);
   const figs = {};
   for (const k of TYPES) figs[k] = document.querySelector('#fig-' + k + ' svg');
   PHASES.bellowsLow = PHASES.bellows; PHASES.pistonLow = PHASES.piston;
   PHASES.bellowsLowMan = PHASES.bellowsMan; PHASES.pistonLowMan = PHASES.pistonMan;
-  PHASES.reflectorLow = PHASES.reflector;
+  PHASES.reflectorLow = PHASES.reflector; PHASES.reflectorLowMan = PHASES.reflectorMan;
   const family = tp => tp.startsWith('piston') ? 'piston' : tp.startsWith('reflector') ? 'reflector' : 'bellows';
   const key = (fam, lo, mn) => fam + (lo ? 'Low' : '') + (mn ? 'Man' : '');
   let low = false, man = false;                                  // 新鮮ガス：低流量、換気：用手換気
@@ -183,7 +183,6 @@ MAIN_JS = r"""
     document.querySelectorAll('[data-flow]').forEach(b => b.classList.toggle('on', (b.dataset.flow === 'low') === low));
     document.querySelectorAll('[data-vent]').forEach(b => b.classList.toggle('on', (b.dataset.vent === 'man') === man));
     buildTimeline(tp);
-    $('ventGrp').hidden = family(tp) === 'reflector';   // ボリュームリフレクタ式には用手換気の場面がまだない
     underline(tp);
     document.documentElement.style.setProperty('--ar', (BASE[tp][2] / BASE[tp][3]).toFixed(4));
   };
@@ -248,7 +247,7 @@ MAIN_JS = r"""
   tlBar.addEventListener('pointerup', () => { if (!dragging) return; dragging = false; openPhase(phaseAt(((t % CYC) + CYC) % CYC)); });
 
   // 方式の切り替え：新鮮ガスと換気の選択はそのまま、時刻は 0 から
-  document.querySelectorAll('#typeSeg button').forEach(b => b.onclick = () => { show(key(b.dataset.type, low, man && b.dataset.type !== 'reflector')); t = 0; });
+  document.querySelectorAll('#typeSeg button').forEach(b => b.onclick = () => { show(key(b.dataset.type, low, man)); t = 0; });
   // 新鮮ガス・換気の切り替え：経過時間はそのまま（同じ時間での吸収剤の減り方を比べられる）
   document.querySelectorAll('[data-flow]').forEach(b => b.onclick = () => show(key(family(type), b.dataset.flow === 'low', man)));
   document.querySelectorAll('[data-vent]').forEach(b => b.onclick = () => show(key(family(type), low, b.dataset.vent === 'man')));

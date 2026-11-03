@@ -21,10 +21,12 @@ for lang in ja en; do
   scene $lang pistonLowMan  figure_piston.py low manual
   scene $lang reflector     figure_reflector.py
   scene $lang reflectorLow  figure_reflector.py low
+  scene $lang reflectorMan    figure_reflector.py manual
+  scene $lang reflectorLowMan figure_reflector.py low manual
 done
 
-args() {    # args 言語：8 つの場面の「名前 svg 経路データ」
-  for name in bellows bellowsLow bellowsMan bellowsLowMan piston pistonLow pistonMan pistonLowMan reflector reflectorLow; do
+args() {    # args 言語：12 の場面の「名前 svg 経路データ」
+  for name in bellows bellowsLow bellowsMan bellowsLowMan piston pistonLow pistonMan pistonLowMan reflector reflectorLow reflectorMan reflectorLowMan; do
     printf '%s build/%s/%s.svg build/%s/%s.json ' "$name" "$1" "$name" "$1" "$name"
   done
 }

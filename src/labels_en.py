@@ -51,6 +51,7 @@ EN = {
     "呼吸バッグ": {"t": "Reservoir bag", "size": 11, "dx": 2},
     ("p", "呼吸バッグ"): {"t": "Reservoir bag", "size": 13, "dx": 3},
     "手で押す": {"t": "Squeeze", "size": 14},
+    ("r", "呼吸バッグ"): {"t": "Reservoir bag", "size": 13},
     "切替弁": {"t": "Bag/vent switch", "size": 15},
     "用手": {"t": "Bag", "size": 14},
     "人工呼吸": {"t": "Vent", "size": 13},
@@ -81,6 +82,10 @@ EN = {
     "PEEP/APL弁": {"t": "PEEP/APL valve", "size": 14},
     "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置を通って新鮮ガスと合わさり患者へ":
         {"t": "Reflector gas (O₂) pushes gas out of the reflector; it flows through the absorber, joins the fresh gas and goes to the patient", "size": 14},
+    "呼吸バッグを手で押すと、ガスはリフレクタと吸収装置を通り、新鮮ガスと合わさって患者へ送られる":
+        {"t": "Squeezing the bag pushes gas through the reflector and absorber; it joins the fresh gas and goes to the patient", "size": 14},
+    "呼気と新鮮ガスがリフレクタへ入り、奥の呼吸バッグをふくらませる。満杯になると PEEP/APL 弁から排出装置へ":
+        {"t": "Exhaled and fresh gas enter the reflector and refill the bag at the far end; once full, excess leaves through the PEEP/APL valve", "size": 14},
     "呼気がリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ（新鮮ガスは止まる）":
         {"t": "Exhaled gas enters the reflector; O₂ and the oldest gas at the far end leave through the PEEP/APL valve (fresh gas pauses)", "size": 14},
     # 図の中の説明文（コマ撮りだけに出る）

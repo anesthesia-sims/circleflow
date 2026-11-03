@@ -14,11 +14,14 @@
  *  - 呼気：呼気（C）が J から R へ入る（吸収装置 D は止まる）。そのぶん K から出たガス（O2 と最も古いガス）が
  *    PEEP/APL 弁を通って余剰ガス排出装置へ（S）
  *  - 定常状態では、呼吸ごとに新鮮ガスの量だけ境目が K 側へ戻るので、O2 は J まで届かない（届いた回数は reflLeak に数える）
+ *  - 用手換気（geo.bag があるとき。2026-11-03）：呼吸バッグが奥の端 K につながり、リフレクタガスは止まる。新鮮ガスは一定。
+ *    吸気は手で押したバッグのガスが K から R へ入って J 側へ押し出し、呼気は呼気と新鮮ガスが R へ入って K からバッグへ。
+ *    バッグが満杯になると K から出た粒は PEEP/APL 弁（APL 弁として働く）から余剰ガス排出装置へ。決まりは sim_bellows.js の用手換気と同じ
  */
 (function () {
   "use strict";
 
-  const { mulberry32, Poly, along, pathLen, hexRGB, DT, WARM_CYCLES, LEAD, MIN_TRIP, RELAX_MIN, RELAX_V, C_FRESH, C_CO2, simText, SimBase } = window.CircleFlowSim;
+  const { mulberry32, Poly, along, pathLen, interp, hexRGB, DT, WARM_CYCLES, LEAD, MIN_TRIP, RELAX_MIN, RELAX_V, C_FRESH, C_CO2, simText, SimBase } = window.CircleFlowSim;
   const TUBES = ["A", "B", "C", "D", "R"];
   const C_REFL = "#7a7a7a";                               // リフレクタガス（O2）の粒：駆動ガスと同じ灰（押すためのガス）
 
@@ -37,10 +40,11 @@
       this.FG = geo.FG_RATE;                                  // 1 周期の平均（粒/秒）
       this.FGI = geo.FG_INSP;                                 // 吸気中の新鮮ガスの流量（粒/秒）
       this.nFG = Math.round(geo.FG_PER_BREATH);               // 1 呼吸あたりの新鮮ガスの粒の数
-      this.vr = geo.VR;                                       // リフレクタガスが押し出す流量（粒/秒）
+      this.vr = geo.VR;                                       // リフレクタガス（用手換気では呼吸バッグ）が押し出す流量（粒/秒）
+      this.manual = !!geo.bag;                                // 用手換気：呼吸バッグが奥の端 K につながり、リフレクタガスは止まる
+      this.bSlotDef = this.manual ? geo.bag.slots : [];
       this.VT = geo.VT_P;                                     // 患者に入る量（粒）
       this.STEPS_PER_CYC = Math.round(this.CYC / DT);
-      this.manual = false;
       this.lSlotDef = geo.lung.slots;
       this.hilum = geo.lung.hilum;
       this.tau = geo.exhale.tau; this.tEnd = geo.exhale.tEnd;
@@ -75,6 +79,11 @@
     /** 時刻 tc（周期内）の各管の流れの速さ（px/s、＋は管の向き）。R は J → K の向きが＋ */
     flows(tc) {
       const s = this.spc;
+      if (this.manual) {                                       // 用手換気：新鮮ガスは一定。吸気は手で押したバッグから、呼気はバッグへ
+        if (tc < this.TI) return { A: (this.vr + this.FG) * s.A, B: (this.vr + this.FG) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
+        const ex = this.exRate(tc - this.TI);
+        return { A: 0, B: -ex * s.B, C: ex * s.C, D: -this.FG * s.D, R: (ex + this.FG) * s.R };
+      }
       if (tc < this.TI) {
         return { A: (this.vr + this.FGI) * s.A, B: (this.vr + this.FGI) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
       }
@@ -82,6 +91,11 @@
       return { A: 0, B: -ex * s.B, C: ex * s.C, D: 0, R: ex * s.R };          // 呼気中は新鮮ガスが止まり、D は動かない
     }
 
+    bSlotXY(idx, tc) {                                        // 呼吸バッグの席：差し込み口を中心に、バッグの大きさに合わせて動く
+      const [x, y] = this.bSlotDef[idx], [px, py] = this.g.bag.pivot, b = this.g.bag;
+      const sc = interp(b.keyT, b.keyS, tc === undefined ? this.tc(this.t) : tc);
+      return [px + (x - px) * sc, py + (y - py) * sc];
+    }
     lSlotXY(idx, tc) {
       const [x, y] = this.lSlotDef[idx], [hx, hy] = this.hilum;
       const sc = this.lungScale(tc === undefined ? this.tc(this.t) : tc);
@@ -96,7 +110,8 @@
       this.byId = new Map();
       this.nextId = 1;
       this.lSlots = new Array(this.lSlotDef.length).fill(null);
-      this.relL = [];
+      this.bSlots = new Array(this.bSlotDef.length).fill(null);   // 呼吸バッグの席（用手換気）
+      this.relL = []; this.relB = [];
       this.planned = { i: false, e: false };
       this.vtAct = this.VT;
       this.absUse = new Array(this.absRows.length).fill(0);
@@ -121,7 +136,13 @@
         const p = this.add({ st: "slot", store: "l", slot: idx, co2: true });
         this.lSlots[idx] = p.id;
       }
-      this.nextK = this.nFG * Math.floor(t0 / this.CYC);     // 到着が t0 より後の粒はすべて含む（供給路に置けないものは捨てる）
+      for (let i = 0; i < (this.manual ? g.NB_FULL : 0); i++) {   // 呼吸バッグは満杯（呼気の終わり）から
+        const p = this.add({ st: "slot", store: "b", slot: i, co2: true });
+        this.bSlots[i] = p.id;
+      }
+      const Lmax = Math.max(...this.supply.map(p => p.L));
+      this.nextK = this.manual ? Math.ceil((t0 - Lmax / g.SUP_V) * this.FG)      // 用手換気：一定の流量（到着 k/FG）
+                               : this.nFG * Math.floor(t0 / this.CYC);         // 到着が t0 より後の粒はすべて含む（供給路に置けないものは捨てる）
       this.spawnSupply();
       while (this.n < 0) this.step();
       this.saveCheckpoint();
@@ -131,6 +152,7 @@
     /** k 番目の新鮮ガスの粒を供給路の入口に出す時刻。到着（合流点 JFG）は周期 c の吸気の中に nFG 粒を等間隔に並べる */
     spawnTime(k) {
       const path = this.supply[k & 1];
+      if (this.manual) return (k + (this.g.supplyPhase || 0)) / this.FG - path.L / this.g.SUP_V;   // 用手換気：一定の流量
       const c = Math.floor(k / this.nFG), j = k - c * this.nFG;
       const arrive = c * this.CYC + (j + 0.5) / this.FGI;
       return arrive - path.L / this.g.SUP_V;
@@ -168,6 +190,40 @@
       return this.pickWeighted(occ, i => Math.pow(this.byId.get(this.lSlots[i]).age + 1, 2));
     }
 
+    // ---------- 呼吸バッグ（用手換気） ----------
+    bagCount() { return this.bSlots.reduce((n, v) => n + (v !== null ? 1 : 0), 0); }
+    bagWeight(i) { const [x, y] = this.bSlotDef[i], [mx, my] = this.g.nodes.BAGM; return 1 / (Math.hypot(x - mx, y - my) + 15); }   // 口に近い席ほど出入りしやすい
+    pickBagEntry() {
+      const free = [];
+      this.bSlots.forEach((v, i) => { if (v === null) free.push(i); });
+      if (!free.length) return -1;
+      return this.pickWeighted(free, i => this.bagWeight(i));
+    }
+    pickBagExit() {
+      const occ = [];
+      this.bSlots.forEach((v, i) => { if (v !== null && this.byId.get(v).st === "slot") occ.push(i); });
+      if (!occ.length) return -1;
+      return this.pickWeighted(occ, i => this.bagWeight(i));
+    }
+    /** 奥の端 K からバッグの口を通って席までの道 */
+    bagPath(idx, tc) { const g = this.g; return [g.nodes.K, g.nodes.BAGM, this.bSlotXY(idx, tc)]; }
+    planBag(tPhase, gap0, nAvail) {
+      const sp = this.spc.R, v = this.vr * sp, out = [];
+      const { V1, n } = this.planCount(sp, v * this.TI, gap0, nAvail);
+      for (let k = 1; k <= n; k++) out.push(tPhase + (V1 + (k - 1) * sp) / v + DT);
+      return out;
+    }
+    releaseBag(tArr) {
+      const idx = this.pickBagExit();
+      if (idx < 0) return false;
+      const p = this.byId.get(this.bSlots[idx]);
+      this.bSlots[idx] = null;
+      const path = this.bagPath(idx, this.tc(this.t)).reverse();
+      const speed = pathLen(path) / Math.max(tArr - this.t, MIN_TRIP);
+      this.startTransit(p, path, speed, { type: "tube", tube: "R", far: true });
+      return true;
+    }
+
     // ---------- 管の出入り ----------
     enterTube(p, nm, s) {
       p.st = "tube"; p.tube = nm; p.s = s;
@@ -189,7 +245,14 @@
         }
         case "C": this.enterTube(p, "R", over); break;          // 呼気はリフレクタへ
         case "D": this.enterTube(p, "A", over); break;          // 回路の入口へ
-        case "R": p.st = "scav"; p.s = over * (g.SCAV_V / Math.max(F.R, 1)); break;   // 奥の端 K から PEEP/APL 弁を通って排出へ
+        case "R": {                                       // 奥の端 K：用手換気ではバッグへ（満杯なら PEEP/APL 弁から排出へ）。人工呼吸では PEEP/APL 弁から排出へ
+          if (this.manual && this.bagCount() < g.NB_FULL) {
+            const idx = this.pickBagEntry();
+            this.bSlots[idx] = p.id;
+            this.startTransit(p, this.bagPath(idx, this.tc(this.t)), Math.max(Math.abs(F.R), 60), { type: "slot", store: "b", slot: idx });
+          } else { p.st = "scav"; p.s = over * (g.SCAV_V / Math.max(F.R, 1)); }
+          break;
+        }
       }
     }
     exitNear(p, over) {
@@ -234,10 +297,19 @@
         const n = Math.max(0, this.lungCount() + leaving - g.LUNG_MIN);
         this.relL = this.planLung(tPhase, gap, n); this.planned.e = true;
       }
+      if (this.manual && ph === "e" && !this.planned.i && tc >= this.CYC - LEAD) {   // 用手換気：次の吸気でバッグから出る粒の予定
+        const dt = this.CYC - tc, tPhase = this.t + dt;
+        const { gap, leaving } = this.farGapAt("R", dt);
+        const n = Math.max(0, Math.min(g.NB_FULL, this.bagCount() + leaving) - g.NB_MIN);
+        this.relB = this.planBag(tPhase, gap, n); this.planned.i = true;
+      }
     }
     scheduleReleases(ph, tPhase) {
       const g = this.g;
-      if (ph === "e") {
+      if (ph === "i") {
+        if (this.manual && !this.planned.i) this.relB = this.planBag(tPhase, this.farGapAt("R", 0).gap, Math.max(0, this.bagCount() - g.NB_MIN));
+        this.planned.i = false;
+      } else {
         if (!this.planned.e) this.relL = this.planLung(tPhase, this.farGapAt("B", 0).gap, Math.max(0, this.lungCount() - g.LUNG_MIN));
         this.planned.e = false;
       }
@@ -294,7 +366,7 @@
           if (p.s > this.tubes.S.L) this.remove(p);
         }
       }
-      if (ph === "i") this.spawnReflGas();
+      if (ph === "i" && !this.manual) this.spawnReflGas();
       for (const nm of TUBES) {
         const arr = this.particles.filter(p => p.st === "tube" && p.tube === nm).sort((a, b) => a.s - b.s);
         const dmin = RELAX_MIN * this.spc[nm], L = this.tubes[nm].L, mv = RELAX_V * DT;
@@ -304,6 +376,7 @@
         }
       }
       while (this.relL.length && t >= this.relL[0] - LEAD) { const tr = this.relL.shift(); this.releaseLung(tr); }
+      while (this.relB.length && t >= this.relB[0] - LEAD) { const tr = this.relB.shift(); this.releaseBag(tr); }
       const rows = this.absRows, sLo = rows[0][0], sHi = rows[rows.length - 1][1];
       for (const p of this.particles) {
         if (p.st !== "tube" || p.tube !== "D" || !p.co2 || p.s < sLo || p.s >= sHi) continue;
@@ -341,10 +414,10 @@
         case "tube": return this.tubes[p.tube].xy(p.s);
         case "sup": return this.supply[p.sup].xy(p.s);
         case "scav": return this.tubes.S.xy(p.s);
-        case "slot": return this.lSlotXY(p.slot, tc);
+        case "slot": return p.store === "b" ? this.bSlotXY(p.slot, tc) : this.lSlotXY(p.slot, tc);
         case "trans": {
           const path = p.path.slice();
-          if (p.dest.type === "slot") path[path.length - 1] = this.lSlotXY(p.dest.slot, tc);
+          if (p.dest.type === "slot") path[path.length - 1] = p.dest.store === "b" ? this.bSlotXY(p.dest.slot, tc) : this.lSlotXY(p.dest.slot, tc);
           return along(path, p.u / p.pathL);
         }
       }
@@ -362,17 +435,17 @@
     snapshot() {
       return JSON.stringify({
         n: this.n, rng: this.rng.state, nextId: this.nextId, nextK: this.nextK,
-        relL: this.relL, lastPhase: this.lastPhase, planned: this.planned, vtAct: this.vtAct,
+        relL: this.relL, relB: this.relB, lastPhase: this.lastPhase, planned: this.planned, vtAct: this.vtAct,
         absUse: this.absUse, absorbed: this.absorbed, reflLeak: this.reflLeak,
-        lSlots: this.lSlots, particles: this.particles,
+        lSlots: this.lSlots, bSlots: this.bSlots, particles: this.particles,
       });
     }
     restore(snap) {
       const o = JSON.parse(snap);
       this.n = o.n; this.rng.state = o.rng; this.nextId = o.nextId; this.nextK = o.nextK;
-      this.relL = o.relL; this.lastPhase = o.lastPhase; this.planned = o.planned; this.vtAct = o.vtAct;
+      this.relL = o.relL; this.relB = o.relB; this.lastPhase = o.lastPhase; this.planned = o.planned; this.vtAct = o.vtAct;
       this.absUse = o.absUse; this.absorbed = o.absorbed; this.reflLeak = o.reflLeak;
-      this.lSlots = o.lSlots;
+      this.lSlots = o.lSlots; this.bSlots = o.bSlots;
       this.particles = o.particles;
       this.byId = new Map(this.particles.map(p => [p.id, p]));
     }
@@ -456,7 +529,7 @@
       const inAbs = p.st === "tube" && p.tube === "D" && p.s >= this.g.absD[0] && p.s <= this.g.absD[1];
       const T = simText();
       const where = { tube: inAbs ? T.inAbs : { A: T.A, B: T.B, C: T.C, D: T.D, R: T.R }[p.tube],
-        sup: T.sup, scav: T.scav, slot: T.lung, trans: T.trans }[p.st];
+        sup: T.sup, scav: T.scav, slot: p.store === "b" ? T.bag : T.lung, trans: T.trans }[p.st];
       return T.fmt(p.refl ? T.reflGas : (p.kind === "O2" ? "O₂" : "N₂O"), p.id, p.co2, where);
     }
   }

@@ -17,8 +17,8 @@ import palette
 import svg
 from geometry import cum, plen, qpts, unit
 from palette import *   # noqa: F401,F403  色と字体（K・B・METAL・GLASS など）
-from parts import FM_W_BOT, FM_W_TOP, alveoli_path, bronchus, check_valve, collar, hose, one_way_valve, port, valve_detour
-from svg import CYC, GAS_W, TI, add, dashed, flush_pipes, gate_open, label, leader, out, pipe, rect, text
+from parts import FM_W_BOT, FM_W_TOP, alveoli_path, breathing_bag, bronchus, check_valve, collar, hose, one_way_valve, port, valve_detour
+from svg import CYC, GAS_W, TI, add, arrow, dashed, flush_pipes, gate_open, label, leader, out, pipe, rect, text
 
 
 MODE = sys.argv[2] if len(sys.argv) > 2 else "2c"
@@ -26,7 +26,7 @@ LUNG_TISSUE, EXP_C, EXP_ARROW, PIPE, CYL, WICK = (palette.by_mode(MODE)[k] for k
 W, H = 1200, 860
 _FLAGS = set(sys.argv[4:])
 LOW_FLOW = "low" in _FLAGS
-MANUAL = False                            # 用手換気の場面はまだない（呼吸バッグがリフレクタの奥につながる構成。次の段階）
+MANUAL = "manual" in _FLAGS                 # 用手換気の場面：呼吸バッグをリフレクタの奥の端につなぎ、リフレクタガスを止める（2026-11-03）
 LANG = "en" if "en" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
 svg.configure(LANG, "r")
 # 新鮮ガス。1 呼吸あたりの粒の数はほかの方式と同じ（多め 12 粒、低流量 3 粒）。Flow-i では新鮮ガスがおもに吸気中に
@@ -38,7 +38,14 @@ FG_INSP = FG_PER_BREATH / TI
 # 患者に入る量 VT_P は新鮮ガスの量によらず 13 粒（ピストン式と同じ）。リフレクタガス（O2）が押し出す量 VR は、
 # 吸気中に加わる新鮮ガスのぶんを引いた残り（多め：0.5 粒/秒、低流量：5.0 粒/秒）
 VT_P = 13.0
-VR = VT_P / TI - FG_INSP
+if MANUAL:
+    # 用手換気（2026-11-03）：上昇式ベローズの用手換気と同じ決まり。新鮮ガスは一定で、呼吸バッグが押し出す量 VT_B は
+    # 吸気中に加わる新鮮ガスを引いた残り（多め 9 粒、低流量 12 粒）。バッグの粒の数は満杯 NB_FULL、押し切って NB_MIN
+    NB_FULL, NB_MIN = (14, 2) if LOW_FLOW else (14, 5)
+    VT_B = NB_FULL - NB_MIN
+    VR = VT_B / TI
+else:
+    VR = VT_P / TI - FG_INSP
 # 呼気は受動的：流量は呼気の始めに最大で、時定数 TAU で指数関数的に減る。T_EXH で吐き終える（残りは無視）
 TAU = 1.2                  # 呼気の時定数（秒）。模式として I:E と図の大きさに合わせた値（実機の肺は 0.5〜1 秒程度）
 T_EXH = (CYC - TI) - 0.3   # 吐き終わるまでの時間（秒）
@@ -87,6 +94,15 @@ OX = 420
 VAPS = (500, 580)                 # 気化器 2 台
 FLUSH_X = 632
 CGO_X = 650                       # 共通ガス出口
+
+if MANUAL:
+    def _bag_fill(t):
+        """呼気開始 t 秒後に呼吸バッグへ届いた粒の数（呼気＋新鮮ガス）"""
+        return VT_P * exh_frac(t) + FG_RATE * t
+    T_FULL = TI + next(k * 0.005 for k in range(1, 20000) if _bag_fill(k * 0.005) >= VT_B)   # バッグが満杯になる時刻
+    BAG_KT = [0.0, TI] + [TI + k * 0.05 for k in range(1, int((T_FULL - TI) / 0.05))] + [T_FULL, CYC]
+    BAG_SC = [1.0, NB_MIN / NB_FULL] + [min(1.0, (NB_MIN + _bag_fill(t - TI)) / NB_FULL) for t in BAG_KT[2:]]
+    BAG_S = [0.85 * (0.72 + 0.33 * v) for v in BAG_SC]   # バッグの大きさ（置き場所が狭いので 0.85 倍。満杯で 0.89）
 
 AX = 790                          # 二酸化炭素吸収装置
 ABS_CAP = 15.0                    # 吸収剤 1 層が吸える CO2 の粒の数（実際の数時間以上を数分に縮めた値）。
@@ -323,7 +339,9 @@ for k in range(7):
 # 従量式・定常流の波形：吸気の始めに抵抗分だけ跳ね上がり、吸気中は直線的に上がって吸気終末で最高。
 # 呼気に入ると急に下がり、PEEP/APL 弁で設定した PEEP（ここでは 2 cmH2O）まで下がる
 GX, GY = AX + 50, 180
-P_KEYS = [(0.0, 2.0), (0.12, 6.0), (TI, 16.0), (TI + 0.12, 3.0), (TI + 0.6, 2.0), (CYC, 2.0)]
+P_KEYS = ([(0.0, 2.0), (0.12, 6.0), (TI, 16.0), (TI + 0.12, 3.0), (max(TI + 0.4, T_FULL - 0.15), 1.5), (T_FULL + 0.15, 2.0), (CYC, 2.0)]
+          if MANUAL else   # 用手換気：バッグが満杯になって PEEP/APL 弁が開くと、設定圧が残る
+          [(0.0, 2.0), (0.12, 6.0), (TI, 16.0), (TI + 0.12, 3.0), (TI + 0.6, 2.0), (CYC, 2.0)])
 def _ang(pv):
     return 150 + 240 * pv / 30
 add(f'<g><animateTransform attributeName="transform" type="rotate" '
@@ -450,7 +468,8 @@ pipe(R_PTS, inner=EXP)
 text("ボリュームリフレクタ", RX0 + 4, RYS[0] - 11, 15, weight=700)
 # 奥の端 K からの分岐：上はリフレクタガス（O2）の入口、下は PEEP/APL 弁
 KX = 1100
-pipe([K, (KX, RYS[3])], inner=EXP)
+APX = 1150                                      # PEEP/APL 弁（右端。2026-11-03：用手換気の呼吸バッグを K の右に置くため右へ寄せ、出口を左向きにした）
+pipe([K, (APX, RYS[3])], inner=EXP)
 # リフレクタガスモジュール：O2 の配管から電磁弁（コイルで鉄心を引く弁。青＝動く部品）を通してリフレクタの奥へ流す。
 # 吸気中だけ弁が開く（SMIL で鉄心が上がる）。実機は電子制御で流量を決める
 GM_T = 548
@@ -462,7 +481,10 @@ add(f'<rect x="{KX+16}" y="{GM_T+10.5}" width="9.2" height="8" fill="#e6e6e6"/>'
 for _k in range(4):                                                                                   # コイル
     add(f'<rect x="{KX-14+7*_k}" y="{GM_T+3}" width="4" height="5" fill="none" stroke="{K}" stroke-width="1"/>')
 _gk = f"0;{TI/CYC-0.012:.4f};{TI/CYC+0.018:.4f};0.985;1"
-add(f'<g><animateTransform attributeName="transform" type="translate" values="0 -5;0 -5;0 0;0 0;0 -5" keyTimes="{_gk}" dur="{CYC}s" repeatCount="indefinite"/>')
+if MANUAL:
+    add('<g>')                                                                                        # 用手換気：電磁弁は閉じたまま（リフレクタガスを止める）
+else:
+    add(f'<g><animateTransform attributeName="transform" type="translate" values="0 -5;0 -5;0 0;0 0;0 -5" keyTimes="{_gk}" dur="{CYC}s" repeatCount="indefinite"/>')
 add(f'<rect x="{KX-4}" y="{GM_T+8}" width="8" height="11" rx="1" fill="{B}" stroke="{K}" stroke-width="1.2"/>')   # 鉄心（下がると出口をふさぐ）
 add('</g>')
 pipe([(KX + 24, GM_T + 14.5), (KX + 44, GM_T + 14.5)], inner=PIPE["O₂"], w=9)                        # O2 の配管（右から）
@@ -470,17 +492,21 @@ text("リフレクタガスモジュール（O₂）", KX, GM_T - 8, 13, "middle
 text("電磁弁", KX + 48, GM_T + 19, 11, color="#666")
 # PEEP/APL 弁：ばねで弁座に押しつけた弁板。呼気では開いて余ったガスを余剰ガス排出装置へ逃がし、呼気の終わりの圧（PEEP）を
 # 設定の値に保つ。用手換気では APL 弁として働く（1 つの弁が兼用）。実機は電子制御で、ばねとつまみは模式
-APX = KX
 APY = RYS[3] + 2
 pipe([(APX, RYS[3]), (APX, APY + 10)], inner=EXP, w=10)
-APL_DZ = 6                                   # 呼気中は弁板が 6 px 下がって開く（吸気は閉）
+APL_DZ = 6                                   # 呼気中は弁板が 6 px 下がって開く（吸気は閉）。用手換気ではバッグが満杯になってから
+add(f'<g transform="translate({2*APX},0) scale(-1,1)">')                                        # 左右を裏返し、出口を左向きに
 rect(APX - 20, APY + 8, 40, 48, fill=METAL, rx=5)
 add(f'<rect x="{APX-3.5}" y="{APY+6.8}" width="7" height="{7.8}" fill="{EXP}"/>')            # 入口
 add(f'<rect x="{APX-16}" y="{APY+14}" width="32" height="32" fill="{EXP}"/>')               # 弁の部屋
 add(f'<rect x="{APX+15}" y="{APY+26.5}" width="6.2" height="7" fill="{EXP}"/>')            # 出口（右へ）
 for _sx in (APX - 9, APX + 3.5):
     add(f'<rect x="{_sx}" y="{APY+14}" width="5.5" height="2.5" fill="{METAL}" stroke="{K}" stroke-width="1"/>')   # 弁座
-_akt = f"0;{TI/CYC-0.012:.4f};{TI/CYC+0.018:.4f};0.985;1"
+if MANUAL:
+    _fo = T_FULL / CYC
+    _akt = f"0;{_fo:.4f};{min(_fo + 0.01, 0.98):.4f};0.99;1"
+else:
+    _akt = f"0;{TI/CYC-0.012:.4f};{TI/CYC+0.018:.4f};0.985;1"
 add(f'<g><animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 {APL_DZ};0 {APL_DZ};0 0" keyTimes="{_akt}" dur="{CYC}s" repeatCount="indefinite"/>')
 add(f'<rect x="{APX-8.5}" y="{APY+16.5}" width="17" height="3.5" rx="1" fill="{B}" stroke="{K}" stroke-width="1.2"/>')
 add('</g>')
@@ -499,10 +525,27 @@ for _k in range(3):
 rect(APX - 12, APY + 58, 24, 12, fill=METAL, rx=2, sw=1.8)                                        # つまみ（ぎざぎざ）
 for _k in range(1, 6):
     add(f'<line x1="{APX-12+4*_k}" y1="{APY+59}" x2="{APX-12+4*_k}" y2="{APY+69}" stroke="{K}" stroke-width="1"/>')
-# 余剰ガス排出装置
-SC_T = 680
-SCX = APX + 40                                                                                      # 弁の出口 → 排出装置へ下りる管
-pipe([(APX + 20, APY + 30), (SCX, APY + 30), (SCX, SC_T)], inner=EXP)
+add('</g>')
+if MANUAL:
+    # 呼吸バッグ（2026-11-03）：奥の端 K のすぐ右の分岐から下向きにぶら下げる（差し込み口を上にして 90° 回す）。
+    # 吸気で手で押してしぼみ、呼気でふくらむ。粒の席（GEO の bag.slots）も同じ回転と倍率で動く
+    BT_X, BT_Y = 1072, RYS[3] + 16
+    pipe([(BT_X, RYS[3]), (BT_X, BT_Y + 2)], inner=EXP)
+    add(f'<g transform="rotate(-90 {BT_X} {BT_Y})">')
+    breathing_bag(BT_X, BT_Y, EXP, BAG_S, BAG_KT)
+    add('</g>')
+    text("呼吸バッグ", BT_X - 34, BT_Y + 32, 14, "end", 700)
+    add(gate_open("insp"))
+    text("手で押す", BT_X - 44, BT_Y + 51, 14, "end", 700)
+    add(f'<line x1="{BT_X-40}" y1="{BT_Y+46}" x2="{BT_X-34}" y2="{BT_Y+46}" stroke="{K}" stroke-width="2.5"/>')
+    arrow(BT_X - 35, BT_Y + 46, 0, K, 12)
+    add('</g>')
+    BAG_SLOTS = [(BT_X + dy, BT_Y + 44 - dx) for dy in (-18, -9, 0, 9, 18) for dx in (-18, -9, 0, 9, 18)
+                 if (dx / 26) ** 2 + (dy / 24) ** 2 <= 1]        # 横向きのバッグの席を -90° 回した座標
+# 余剰ガス排出装置（2026-11-03：呼吸バッグを置くため 20 px 下げた）
+SC_T = 700
+SCX = APX - 40                                                                                      # 弁の出口（左向き） → 排出装置へ下りる管
+pipe([(APX - 20, APY + 30), (SCX, APY + 30), (SCX, SC_T)], inner=EXP)
 # 余剰ガス排出装置（2026-11-02）：金属の箱の中に透明なため（リザーバー）。回路から来たガスはためを通って右端の
 # 吸引の口（黒：吸引の配管の色）から手術室の外へ吸い出される。ためは上の口で大気に開いていて、吸引が強すぎても
 # 弱すぎても回路に陰圧・陽圧がかからない（開放型）
@@ -517,7 +560,7 @@ for _vx in (930, 944):                                                          
 text("大気", 937.0, SC_T - 6, 12, "middle", color="#333")
 add(f'<rect x="{_rx1}" y="{SC_T+13}" width="18" height="18" rx="2" fill="{K}"/>')   # 吸引の口
 text("吸引", _rx1 + 9, SC_T + 26, 9, "middle", 700, "#fff", halo=False)
-text("→ 手術室外へ", 1030, SC_T - 7, 16, "middle", color="#333")
+text("→ 手術室外へ", _rx1 - 20, SC_T + 60, 16, "middle", color="#333")   # 吸引の口の下（2026-11-03：上は呼吸バッグの置き場所）
 
 
 # ================= 経路データ（JS シミュレーション用） =================
@@ -532,7 +575,7 @@ TUBES = {
     "D": [J, (AX, EXP_Y), (AX, CB), (AX, CT), J_FG],                                    # 合流点 → 吸収装置 → 回路の入口
     "R": R_PTS,                                                                         # 合流点 J → ボリュームリフレクタ → 奥の端 K
     # K → PEEP/APL 弁（弁座と弁板のすき間から弁板のふちを回る）→ 余剰ガス排出装置 → 外
-    "S": [K, (APX, RYS[3]), (APX, APY + 19.5), (APX + 12, APY + 19.5), (APX + 12, APY + 30), (SCX, APY + 30), (SCX, SC_T + 22), (1170, SC_T + 22)],
+    "S": [K, (APX, RYS[3]), (APX, APY + 19.5), (APX - 12, APY + 19.5), (APX - 12, APY + 30), (SCX, APY + 30), (SCX, SC_T + 22), (1170, SC_T + 22)],
 }
 
 
@@ -576,6 +619,10 @@ GEO = {
              "slots": [(lx + dx, LOBE_T + 10 + 11.5 * r) for lx in LOBES for r in range(8) for dx in (-6, 6)]},
     "exhale": {"tau": TAU, "tEnd": T_EXH},
 }
+if MANUAL:                                          # 用手換気：呼吸バッグの席と大きさ、満杯の時刻（sim_reflector.js が見る）
+    GEO["bag"] = {"pivot": (BT_X, BT_Y), "slots": BAG_SLOTS, "keyT": BAG_KT, "keyS": BAG_S}
+    GEO["nodes"]["BAGM"] = (BT_X, BT_Y + 14)
+    GEO.update({"NB_FULL": NB_FULL, "NB_MIN": NB_MIN, "VT_B": VT_B, "T_FULL": T_FULL, "supplyPhase": 0.5 if LOW_FLOW else 0.0})
 if len(sys.argv) > 3:
     json.dump(GEO, open(sys.argv[3], "w"), ensure_ascii=False)
 add('<g id="particles"></g>')
@@ -586,8 +633,11 @@ C_FRESH, C_EXPG, C_DRV = "#2b2b2b", C_CO2_DOT, "#7a7a7a"   # 粒の色（新鮮�
 add('<g class="svgcap">')
 CAP_Y = 830
 add(f'<rect x="12" y="{CAP_Y-28}" width="{W-24}" height="44" rx="8" fill="#f4f1fb" stroke="#cbbfe8"/>')
-_CAPS = (("insp", "吸気", "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置を通って新鮮ガスと合わさり患者へ"),
-         ("exp", "呼気", "呼気がリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ（新鮮ガスは止まる）"))
+_CAPS = ((("insp", "吸気", "呼吸バッグを手で押すと、ガスはリフレクタと吸収装置を通り、新鮮ガスと合わさって患者へ送られる"),
+          ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入り、奥の呼吸バッグをふくらませる。満杯になると PEEP/APL 弁から排出装置へ"))
+         if MANUAL else
+         (("insp", "吸気", "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置を通って新鮮ガスと合わさり患者へ"),
+          ("exp", "呼気", "呼気がリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ（新鮮ガスは止まる）")))
 for ph, label_, msg in _CAPS:
     add(gate_open(ph))
     add(f'<rect x="24" y="{CAP_Y-20}" width="64" height="28" rx="6" fill="{K if ph == "insp" else EXP_ARROW}"/>')
@@ -618,7 +668,7 @@ label("⑨", "吸気弁", IV_X, 62, "right")
 text("蛇管・", 1062, 165, 18); text("Yピース", 1062, 189, 18)
 text("二酸化炭素", 848, 335, 18); text("吸収装置", 848, 359, 18)
 label("⑪", "呼気弁", EV_X, EXP_Y - 58, "left")
-text("PEEP/APL弁", APX - 26, APY + 42, 15, "end", 700)   # 弁の左（右は図の端）
+text("PEEP/APL弁", APX, APY + 88, 15, "middle", 700)   # 弁の下（右は図の端、左は排出装置へ下りる管）
 text("余剰ガス排出装置", 770, SC_T - 7, 17)
 
 # ================= 凡例 =================
