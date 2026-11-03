@@ -47,6 +47,8 @@
 ./check.sh    # 12 の場面の粒の動きを点検する（Node.js）
 ```
 
+版を上げるときは `VERSION` を直して作り直し、「更新記録」に 1 行足して、git のタグ（`v1.2.0` の形）を打ちます。
+
 `check.sh` は場面ごとに、粒が管の外にはみ出していないこと、巻き戻しても同じ状態になること、1 回換気量（1 呼吸で肺胞へ入る粒の数）、吸収剤を使い切るまでの呼吸の数を表示します。
 
 | ファイル | 役割 |
@@ -67,6 +69,16 @@
 - 部品の形・位置・弁の構成は機種によって異なります。ピストン式は Dräger Fabius 型、ボリュームリフレクタ式は Getinge（Maquet）Flow-i 型の構成を参考にしていますが、特定のメーカーや機種とは関係ありません。
 - ガスの量（粒の数）や時間、吸収剤の容量は、見やすさのために縮めたり整えたりした値です。実際の機種どうしの性能の比較ではありません。
 - 配管とボンベの識別色は日本の規格に従っています（配管：O₂ 緑・空気 黄・N₂O 青、ボンベ：O₂ 黒・そのほか灰）。
+
+## 更新記録
+
+| 版 | 日付 | 内容 |
+|---|---|---|
+| 1.2.0 | 2026-11-03 | ボリュームリフレクタ式に用手換気の場面を追加（全 12 場面）。呼吸バッグと切替弁を図に加えた |
+| 1.1.0 | 2026-11-03 | ボリュームリフレクタ式（Getinge Flow-i 型）を追加（人工呼吸の 2 場面）。解説の文を読者向けに整理 |
+| 1.0.0 | 2026-11-02 | 公開。上昇式ベローズとピストン式の 8 場面、日本語版と英語版、部品の解説と使い方のツアー |
+
+版は `VERSION` の値で、ページの下にも出ます。git のタグ（`v1.2.0` の形）が同じ版を指します。
 
 ## ライセンス
 
@@ -130,6 +142,8 @@ Python scripts draw the figures (SVG) and the particle paths; JavaScript compute
 ./check.sh    # checks the particle motion in all 12 scenes (Node.js)
 ```
 
+To release a new version, update `VERSION`, rebuild, add a line to the Changelog, and tag the commit (`v1.2.0`).
+
 For each scene, `check.sh` reports that no particle leaves its tube, that rewinding reproduces the same state, the tidal volume (particles entering the alveoli per breath), and the breath at which the absorbent is used up.
 
 | File | Purpose |
@@ -150,6 +164,16 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 - The shape and position of parts and the valve arrangement vary between machines. The piston type is modeled on the Dräger Fabius layout and the volume reflector type on the Getinge (Maquet) Flow-i, but neither is affiliated with any manufacturer or model.
 - Gas volumes (number of particles), timing and absorbent capacity are scaled or adjusted for clarity; they do not compare the performance of real machines.
 - Gas color codes follow Japanese standards (pipelines: O₂ green, air yellow, N₂O blue; cylinders: O₂ black, others gray).
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 1.2.0 | 2026-11-03 | Manual ventilation scenes for the volume reflector type (12 scenes in all). Reservoir bag and bag/vent switch added to the figure |
+| 1.1.0 | 2026-11-03 | Volume reflector type (modeled on the Getinge Flow-i) with two ventilator scenes. Explanations rewritten for readers |
+| 1.0.0 | 2026-11-02 | First release: ascending bellows and piston types, 8 scenes, Japanese and English pages, part explanations and a guided tour |
+
+The version is the value in `VERSION` and is shown at the bottom of the page. Git tags (`v1.2.0`) mark the same versions.
 
 ## License
 

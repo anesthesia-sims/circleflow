@@ -14,6 +14,7 @@
   名前は bellows・bellowsLow・bellowsMan・bellowsLowMan・piston・pistonLow・pistonMan・pistonLowMan の 8 つ
 （bellows* は figure_bellows.py、piston* は figure_piston.py で作る。low を付けると低流量、manual を付けると用手換気、en で英語）
 ?type=（名前）&t=秒 を付けて開くと、その時刻で止めた 1 コマになる（動画のコマ撮り用）。"""
+import os
 import re
 import sys
 
@@ -102,4 +103,5 @@ html = """<!doctype html>
 """ + TERMS + L_JS + MAIN_JS + """
 </script>
 </body></html>"""
-open(OUT, "w", encoding="utf-8").write(html.replace("@@HTMLLANG@@", LANG, 1))
+VERSION = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "VERSION"), encoding="utf-8").read().strip()   # 版（ページの下に出す）
+open(OUT, "w", encoding="utf-8").write(html.replace("@@HTMLLANG@@", LANG, 1).replace("@@VERSION@@", VERSION))

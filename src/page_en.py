@@ -39,6 +39,7 @@ HTML_PAIRS = [
     ("ソースコード：<a href=\"https://github.com/anesthesia-sims/circleflow\">GitHub（anesthesia-sims/circleflow）</a>",
      "Source code: <a href=\"https://github.com/anesthesia-sims/circleflow\">GitHub (anesthesia-sims/circleflow)</a>"),
     ("rel=\"license\">CC BY 4.0</a>。", "rel=\"license\">CC BY 4.0</a>. "),
+    ("</a>。版 @@VERSION@@<br>", "</a>. Version @@VERSION@@<br>"),
     ("教育用の模式図で、臨床の判断や機器の操作に用いるものではありません。特定のメーカーとは関係ありません。",
      "An educational schematic, not for clinical decisions or for operating or checking equipment. Not affiliated with any manufacturer. Gas color codes follow Japanese standards."),
     ("謝辞：帝京大学医学部附属溝口病院 麻酔科の平林剛先生から、呼吸回路と人工呼吸器の方式について助言をいただきました。内容の誤りは著者の責任です。",
