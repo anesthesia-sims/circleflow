@@ -10,6 +10,7 @@ LANG = "en"
 TITLE = "CircleFlow: Gas Flow in the Anesthesia Machine and Breathing Circuit"
 
 HTML_PAIRS = [
+    ('<small>方式</small>', '<small>Type</small>'), ('<small>換気</small>', '<small>Ventilation</small>'), ('<small>新鮮ガス</small>', '<small>Fresh gas</small>'),
     ('aria-label="速さ" title="速さ"', 'aria-label="Speed" title="Speed"'),
     ("<span>麻酔器と呼吸回路のガスの流れ</span>", "<span>Gas flow in the anesthesia machine and breathing circuit</span>"),
     ('aria-label="使い方"><span class="q">?</span>使い方', 'aria-label="How to use"><span class="q">?</span>How to use'),

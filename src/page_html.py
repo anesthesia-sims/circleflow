@@ -11,6 +11,7 @@ BODY_TOP = r"""
   <button id="moreBtn">くわしく</button>
 </header>
 <div class="bar chrome">
+  <div class="cyc" id="cycRow"><button id="typeCycle"><small>方式</small><b></b></button><button id="ventCycle"><small>換気</small><b></b></button><button id="flowCycle"><small>新鮮ガス</small><b></b></button></div>
   <div class="seg big" role="tablist" id="typeSeg">
     <button class="on" data-type="bellows" role="tab">上昇式ベローズ</button><button data-type="piston" role="tab">ピストン式</button><button data-type="reflector" role="tab"><span class="full">ボリュームリフレクタ式</span><span class="short">リフレクタ式</span></button>
   </div>

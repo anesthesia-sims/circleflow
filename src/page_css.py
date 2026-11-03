@@ -123,6 +123,7 @@ CSS = r"""
   body.cap .stage { border:none; border-radius:0; }
   /* 狭い画面（スマートフォンの縦）：段を決めて組む。見出しは 1 行、方式は幅いっぱい、換気と新鮮ガスは左右に並べて
      名前を上に小さく、図の下は「再生＋バー」「速さ」「吸収剤」の 3 段。成り行きで折り返すと、並びが崩れて見えた（2026-11-02） */
+  .cyc { display:none; }          /* 狭い画面だけ：方式・換気・新鮮ガスを、押すたびに切り替わる 3 つのボタン 1 段に */
   #speedCycle { display:none; }   /* 狭い画面だけ：速さを 1 つのボタンで順送り（¼ → ½ → 1× → 4× → 16×） */
   @media (max-width:640px) {
     .wrap { max-width:none; padding:10px 12px 16px; }   /* 画面の高さから決めた幅（最小 620 px）をやめ、画面の幅いっぱいに */
@@ -133,7 +134,12 @@ CSS = r"""
     .top button { font-size:13px; padding:5px 8px; }
     .top button .q { display:none; }
     .bar { display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
-    #typeSeg { grid-column:1 / -1; }
+    #typeSeg, #ventGrp, #flowGrp { display:none; }
+    .cyc { grid-column:1 / -1; display:grid; grid-template-columns:1.35fr 1fr 1fr; gap:6px; }
+    .cyc button { display:flex; flex-direction:column; align-items:center; gap:1px; padding:4px 4px 5px; border:1.5px solid var(--fg); border-radius:8px; background:#fff; color:var(--fg); min-width:0; }
+    .cyc small { font-size:10px; line-height:1.1; color:#555; white-space:nowrap; }
+    .cyc small::after { content:' ⇄'; }
+    .cyc b { font-size:14px; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
     .bar .seg { display:flex; }
     .bar .seg button { flex:1; padding:6px 4px; font-size:13px; white-space:nowrap; }   /* 英語の Manual (bag) が 2 行に折れて段の高さがそろわないのを防ぐ */
     .bar .seg.big button { font-size:14px; padding:7px 4px; }

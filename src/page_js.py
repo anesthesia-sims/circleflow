@@ -182,6 +182,11 @@ MAIN_JS = r"""
     document.querySelectorAll('#typeSeg button').forEach(b => b.classList.toggle('on', b.dataset.type === family(tp)));
     document.querySelectorAll('[data-flow]').forEach(b => b.classList.toggle('on', (b.dataset.flow === 'low') === low));
     document.querySelectorAll('[data-vent]').forEach(b => b.classList.toggle('on', (b.dataset.vent === 'man') === man));
+    {   // 狭い画面の切り替えボタンに、いまの選択を出す
+      const tb = document.querySelector('#typeSeg button.on'); $('typeCycle').querySelector('b').textContent = (tb.querySelector('.short') || tb).textContent;
+      $('ventCycle').querySelector('b').textContent = document.querySelector('[data-vent].on').textContent.replace(/\s*\(.*\)$/, '');   // 英語の Manual (bag) は括弧を省く
+      $('flowCycle').querySelector('b').textContent = document.querySelector('[data-flow].on').textContent;
+    }
     buildTimeline(tp);
     underline(tp);
     document.documentElement.style.setProperty('--ar', (BASE[tp][2] / BASE[tp][3]).toFixed(4));
@@ -253,6 +258,9 @@ MAIN_JS = r"""
   document.querySelectorAll('[data-vent]').forEach(b => b.onclick = () => show(key(family(type), low, b.dataset.vent === 'man')));
   playBtn.onclick = () => setPlaying(!playing);
   $('absSwap').onclick = () => { sim.seek(t); sim.swapAbsorbent(); sim.render(layer); updateAbs(t); };
+  $('typeCycle').onclick = () => { const bs = [...document.querySelectorAll('#typeSeg button')], i = bs.findIndex(x => x.classList.contains('on')); bs[(i + 1) % bs.length].click(); };
+  $('ventCycle').onclick = () => document.querySelector('[data-vent]:not(.on)').click();
+  $('flowCycle').onclick = () => document.querySelector('[data-flow]:not(.on)').click();
   $('speedCycle').onclick = () => {                           // 狭い画面：速さを順送り
     const bs = [...document.querySelectorAll('[data-speed]')], i = bs.findIndex(x => x.classList.contains('on'));
     bs[(i + 1) % bs.length].click();
@@ -318,8 +326,8 @@ MAIN_JS = r"""
       { els: () => [...figs[type].querySelectorAll('text[data-term="particles"]')], padLeft: 22, hand: false,
         txt: L.steps[0] },
       { els: () => [playBtn], txt: L.steps[1] },
-      { els: () => [$('typeSeg')], txt: L.steps[2] },
-      { els: () => [$('ventGrp'), $('flowGrp')], at: r => [r[0] + 60, (r[1] + r[3]) / 2],
+      { els: () => [$('typeSeg').offsetParent ? $('typeSeg') : $('typeCycle')], txt: L.steps[2] },
+      { els: () => $('ventGrp').offsetParent ? [$('ventGrp'), $('flowGrp')] : [$('ventCycle'), $('flowCycle')], at: r => [r[0] + 60, (r[1] + r[3]) / 2],
         txt: L.steps[3] },
       { els: () => [tlBar], at: r => [r[0] + (r[2] - r[0]) * 0.55, (r[1] + r[3]) / 2],
         txt: L.steps[4],
