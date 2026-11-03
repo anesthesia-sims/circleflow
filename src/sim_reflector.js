@@ -7,7 +7,7 @@
  *  - ためる場所は「部屋」ではなく、長い管 R（ボリュームリフレクタ、合流点 J → 奥の端 K）。押し出し流れなので
  *    J から入ったガスは J から出る（後入れ先出し）。両端のガスは混ざらない
  *  - 新鮮ガスは吸気中だけ回路へ入る（Flow-i では新鮮ガスがおもに吸気中に流れる。2026-11-03）。供給（流量計からの粒）は一定で、
- *    呼気中は新鮮ガスの入口の手前で並んで待ち、吸気中に管 A へ入る（2026-11-04。以前は供給そのものを吸気中に寄せていた）
+ *    呼気のあいだに届いたガスは気化器の出口から入口までの管で縮んでたまり、吸気中に管 A へ入る（2026-11-04。stepSupplyVent）
  *  - 吸気：奥の端 K からリフレクタガス（O2 の粒。灰）が VR 粒/秒で入り、R の中のガスを J 側へ押し出す。
  *    押し出されたガスは吸収装置（D）を通り、新鮮ガスと合わさって吸気弁から患者へ。患者に入る量は VT_P（新鮮ガスの量によらない。
  *    多めでは新鮮ガスが 12 粒で、リフレクタが押し出すのは 1 粒だけ）
@@ -24,7 +24,6 @@
   const { mulberry32, Poly, along, pathLen, interp, hexRGB, DT, WARM_CYCLES, LEAD, MIN_TRIP, RELAX_MIN, RELAX_V, C_FRESH, C_CO2, simText, SimBase } = window.CircleFlowSim;
   const TUBES = ["A", "B", "C", "D", "R"];
   const C_REFL = "#7a7a7a";                               // リフレクタガス（O2）の粒：駆動ガスと同じ灰（押すためのガス）
-  const Q_GAP = 0.4;                                      // 人工呼吸で新鮮ガスの入口の手前に並んで待つ粒の間隔（×SP）。多めで最大 12 粒並んでも入口から 176 px で、共通ガス出口より回路側に収まる
 
   class ReflectorSim extends SimBase {
     constructor(geo, seed) {
@@ -34,6 +33,12 @@
       this.tubes = {};
       for (const k of Object.keys(geo.tubes)) this.tubes[k] = new Poly(geo.tubes[k]);
       this.supply = geo.supply.map(p => new Poly(p));
+      {                                                       // 2 つの供給路が重なる部分（気化器の出口から新鮮ガスの入口まで）の長さ
+        const [a, b] = geo.supply;
+        let i = a.length - 1, j = b.length - 1;
+        while (i > 0 && j > 0 && a[i - 1][0] === b[j - 1][0] && a[i - 1][1] === b[j - 1][1]) { i--; j--; }
+        this.LC = pathLen(a.slice(i));
+      }
       this.CYC = geo.CYC; this.TI = geo.TI; this.TE = geo.CYC - geo.TI;
       this.SP = geo.SP;
       this.spc = {};
@@ -154,31 +159,26 @@
       const path = this.supply[k & 1];
       return (k + (this.g.supplyPhase || 0)) / this.FG - path.L / this.g.SUP_V;   // 供給は一定の流量（2026-11-04）
     }
-    /** 新鮮ガスの入口（管 A の手前の端）に、次の粒を入れる余地があるか */
-    inletFree() {
-      const lim = this.spc.A;                                  // 管 A の粒の間隔で入る（2026-11-04：0.9 倍では待ち行列が続けて入るときに管 A が詰まり、1 回換気量が 14.3 に増えた。
-                                                               // 1.0 倍で多めの 12 粒は吸気の 1.9 秒までに入りきる）
-      for (const q of this.particles) if (q.st === "tube" && q.tube === "A" && q.s < lim) return false;
-      return true;
+    /** 人工呼吸で、回路へ入れずにたまっている新鮮ガスの長さ（px。待たずに進んだときの長さで数える）。呼気中は SUP_V で増え、
+     *  吸気のあいだに一定の割合で減って吸気の終わりに 0 になる。そのぶん吸気中は新鮮ガスが FG_INSP の流量で回路へ入る */
+    supplyBacklog(tc) {
+      const v = this.g.SUP_V;
+      return tc < this.TI ? v * this.TE * (1 - tc / this.TI) : v * (tc - this.TI);
     }
-    /** 人工呼吸の供給路：粒は配管端末器から一定の速さ SUP_V で進み、新鮮ガスの入口に着いたら待ち行列に加わる（p.q）。
-     *  回路の影響を受けるのは待ち行列の粒だけ：呼気中は入口から間隔 Q_GAP で詰めて並んで止まり、吸気中は管 A の流れに
-     *  合わせて進んで、入口に余地があれば先頭から入る。待ち行列は共通ガス出口より回路側（新鮮ガスの管）に収まる
-     *  （2026-11-04：以前は吸気中に供給路の粒すべてを管 A の流れの 1.5 倍で進め、待ち行列の位置も O2・N2O を通した
-     *  順番で決めていたため、配管端末器を出た直後の粒まで吸気で速く・呼気で遅くなっていた） */
-    stepSupplyQueue(ph, F) {
-      const g = this.g, gap = Q_GAP * g.SP;
-      const sup = this.particles.filter(q => q.st === "sup").sort((a, b) => a.k - b.k);   // 入口に着く順
-      let prevD = null, prevQ = true;                          // 1 つ前の粒の入口までの距離と、待ち行列にいるか（先頭の前は入口）
-      for (const p of sup) {
-        const L = this.supply[p.sup].L;
-        const v = p.q && ph === "i" ? Math.max(g.SUP_V, 1.5 * F.A) : g.SUP_V;
-        let d = L - p.s - v * DT;
-        const lim = prevD === null ? 0 : prevD + gap;
-        if (prevQ && d <= lim) { d = lim; p.q = true; }        // 入口、または待ち行列の最後尾に着いた
-        p.s = L - d;
-        if (prevD === null && p.q && ph === "i" && this.inletFree()) { delete p.q; this.enterTube(p, "A", 0); continue; }
-        prevD = d; prevQ = !!p.q;
+    /** 人工呼吸の供給路：粒は配管端末器から一定の速さ SUP_V で進む（待たなければ入口まで x）。回路へ入るのは吸気中だけなので、
+     *  たまったガス（長さ B）は、2 つの供給路が重なる部分（気化器の出口 → 共通ガス出口 → 新鮮ガスの入口、長さ LC）で一様に縮めて見せる：
+     *  入口までの距離 d = LC·(x+B)/(LC+B)。粒は止まらず、入口に近いほどゆっくり進み、間隔は一様に狭まる。吸気中は x+B が 0 に
+     *  なった粒から管 A へ入る。位置は k と時刻だけで決まる（2026-11-04 版 1.2.8：1.2.6〜1.2.7 は入口の手前に詰めて並べて
+     *  止めていたため、入口で粒が詰まって動かなくなって見えた。さらに前は吸気中に供給路の粒すべてを速めていた） */
+    stepSupplyVent() {
+      const g = this.g, t = this.t + DT, B = this.supplyBacklog(this.tc(t)), LC = this.LC;
+      for (const p of this.particles) {
+        if (p.st !== "sup") continue;
+        const L = this.supply[p.sup].L, x = L - (t - this.spawnTime(p.k)) * g.SUP_V;
+        if (x >= LC) { p.s = L - x; continue; }               // 重なる部分より手前：一定の速さ
+        const d = LC * (x + B) / (LC + B);
+        if (d <= 0) this.enterTube(p, "A", -d);
+        else p.s = L - d;
       }
     }
     /** 供給路の粒を出す。O2（偶数 k）と N2O（奇数 k）は経路の長さが違い、同じ到着時刻でも出発時刻が違うので、
@@ -378,7 +378,7 @@
           if (p.s > L) this.exitFar(p, p.s - L, F);
           else if (p.s < 0) this.exitNear(p, -p.s);
         } else if (p.st === "sup") {
-          if (!this.manual) continue;                           // 人工呼吸は stepSupplyQueue() で動かす
+          if (!this.manual) continue;                           // 人工呼吸は stepSupplyVent() で動かす
           const L = this.supply[p.sup].L;                       // 用手換気：新鮮ガスは一定に回路へ（呼気中は吸収装置を逆向きに）
           p.s += g.SUP_V * DT;
           if (p.s > L) { const over = p.s - L; if (ph === "i") this.enterTube(p, "A", over); else this.enterTube(p, "D", this.tubes.D.L - over); }
@@ -394,7 +394,7 @@
           if (p.s > this.tubes.S.L) this.remove(p);
         }
       }
-      if (!this.manual) this.stepSupplyQueue(ph, F);
+      if (!this.manual) this.stepSupplyVent();
       if (ph === "i" && !this.manual) this.spawnReflGas();
       for (const nm of TUBES) {
         const arr = this.particles.filter(p => p.st === "tube" && p.tube === nm).sort((a, b) => a.s - b.s);
