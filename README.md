@@ -47,7 +47,7 @@
 ./check.sh    # 12 の場面の粒の動きを点検する（Node.js）
 ```
 
-版を上げるときは `VERSION` を直して作り直し、「更新記録」に 1 行足して、git のタグ（`v1.2.0` の形）を打ちます。
+版を上げるときは `VERSION` を直して作り直し、git のタグ（`v1.2.6` の形）を打ちます。2 桁目が上がるときは「更新記録」に 1 行足します。
 
 `check.sh` は場面ごとに、粒が管の外にはみ出していないこと、巻き戻しても同じ状態になること、1 回換気量（1 呼吸で肺胞へ入る粒の数）、吸収剤を使い切るまでの呼吸の数を表示します。
 
@@ -74,16 +74,11 @@
 
 | 版 | 日付 | 内容 |
 |---|---|---|
-| 1.2.5 | 2026-11-04 | ピストン式の人工呼吸で、呼気②に呼吸バッグから出る粒が速すぎたのを直した（出発を早め、管の流れに近い速さで進む） |
-| 1.2.4 | 2026-11-03 | 上昇式ベローズの余剰ガス排出装置で、大気への口が余剰ガス弁からの管と重なっていたのを右へ移した |
-| 1.2.3 | 2026-11-03 | 上昇式ベローズの用手換気で余剰ガスの粒が排出装置の途中で消えていたのを直した。ベローズの台座から余剰ガス弁への通路が遮られて見えていたのを直した |
-| 1.2.2 | 2026-11-03 | 幅をそろえたぶん、上昇式ベローズとボリュームリフレクタ式の麻酔器側（弁・ベローズ・リフレクタ）を右へ広げて配置を整えた。スマートフォンでは上部の操作（方式・換気・新鮮ガス）を押すたびに切り替わる 3 つのボタン 1 段にした |
-| 1.2.1 | 2026-11-03 | 3 つの方式の図の幅をそろえた（上昇式ベローズとボリュームリフレクタ式の蛇管を長く）。スマートフォンでは速さを 1 つのボタンで順送りにして操作部を 1 段減らした |
-| 1.2.0 | 2026-11-03 | ボリュームリフレクタ式に用手換気の場面を追加（全 12 場面）。呼吸バッグと切替弁を図に加えた |
-| 1.1.0 | 2026-11-03 | ボリュームリフレクタ式（Getinge Flow-i 型）を追加（人工呼吸の 2 場面）。解説の文を読者向けに整理 |
-| 1.0.0 | 2026-11-02 | 公開。上昇式ベローズとピストン式の 8 場面、日本語版と英語版、部品の解説と使い方のツアー |
+| 1.2 | 2026-11-03〜04 | ボリュームリフレクタ式に用手換気の場面を追加（全 12 場面）。3 つの方式の図の幅と配置をそろえ、スマートフォンでは操作部を切り替えボタンにまとめた。余剰ガスの経路、呼吸バッグから出る粒の速さ、笑気の供給の表示などを修正 |
+| 1.1 | 2026-11-03 | ボリュームリフレクタ式（Getinge Flow-i 型）を追加（人工呼吸の 2 場面）。解説の文を読者向けに整理 |
+| 1.0 | 2026-11-02 | 公開。上昇式ベローズとピストン式の 8 場面、日本語版と英語版、部品の解説と使い方のツアー |
 
-版は `VERSION` の値で、ページの下にも出ます。git のタグ（`v1.2.0` の形）が同じ版を指します。
+表は 2 桁目の版ごとにまとめています。細かな修正（3 桁目）は git のタグと履歴に残します。いまの版は `VERSION` の値で、ページの下にも出ます。
 
 ## ライセンス
 
@@ -147,7 +142,7 @@ Python scripts draw the figures (SVG) and the particle paths; JavaScript compute
 ./check.sh    # checks the particle motion in all 12 scenes (Node.js)
 ```
 
-To release a new version, update `VERSION`, rebuild, add a line to the Changelog, and tag the commit (`v1.2.0`).
+To release a new version, update `VERSION`, rebuild, and tag the commit (`v1.2.6`). Add a line to the Changelog when the minor version changes.
 
 For each scene, `check.sh` reports that no particle leaves its tube, that rewinding reproduces the same state, the tidal volume (particles entering the alveoli per breath), and the breath at which the absorbent is used up.
 
@@ -174,16 +169,11 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 
 | Version | Date | Changes |
 |---|---|---|
-| 1.2.5 | 2026-11-04 | Particles leaving the reservoir bag during the piston's second expiratory phase no longer rush: they leave earlier and move at a speed close to the flow in the tube |
-| 1.2.4 | 2026-11-03 | Moved the room-air openings of the scavenging system in the bellows figure, which overlapped the pipe from the relief valve |
-| 1.2.3 | 2026-11-03 | Fixed excess-gas particles vanishing partway along the scavenging system in the bellows manual scenes, and the channel from the bellows base to the relief valve that looked blocked |
-| 1.2.2 | 2026-11-03 | Rebalanced the machine side of the bellows and volume reflector figures (valves, bellows, reflector spread to the right). On phones, the top controls (type, ventilation, fresh gas) are one row of three buttons that cycle when tapped |
-| 1.2.1 | 2026-11-03 | All three figures now have the same width (longer breathing tubes in the bellows and volume reflector figures). On phones, speed is a single button that cycles through the settings, saving one row of controls |
-| 1.2.0 | 2026-11-03 | Manual ventilation scenes for the volume reflector type (12 scenes in all). Reservoir bag and bag/vent switch added to the figure |
-| 1.1.0 | 2026-11-03 | Volume reflector type (modeled on the Getinge Flow-i) with two ventilator scenes. Explanations rewritten for readers |
-| 1.0.0 | 2026-11-02 | First release: ascending bellows and piston types, 8 scenes, Japanese and English pages, part explanations and a guided tour |
+| 1.2 | 2026-11-03 to 04 | Manual ventilation scenes for the volume reflector type (12 scenes in all). The three figures now share the same width and layout, and on phones the controls fold into cycling buttons. Fixes to the scavenging path, the speed of particles leaving the reservoir bag, the display of the N₂O supply, and more |
+| 1.1 | 2026-11-03 | Volume reflector type (modeled on the Getinge Flow-i) with two ventilator scenes. Explanations rewritten for readers |
+| 1.0 | 2026-11-02 | First release: ascending bellows and piston types, 8 scenes, Japanese and English pages, part explanations and a guided tour |
 
-The version is the value in `VERSION` and is shown at the bottom of the page. Git tags (`v1.2.0`) mark the same versions.
+The table lists minor versions; patch releases are recorded as git tags. The current version is the value in `VERSION`, shown at the bottom of the page.
 
 ## License
 

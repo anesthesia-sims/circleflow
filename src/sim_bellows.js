@@ -170,7 +170,7 @@
       }
       // 供給路：到着時刻 k/FG の粒。開始時点で供給路の中にいる粒も含めて出す
       const Lmax = Math.max(...this.supply.map(p => p.L));
-      this.nextK = Math.ceil((t0 - Lmax / g.SUP_V) * this.FG);
+      this.setNextKs((t0 - Lmax / g.SUP_V) * this.FG);
       this.spawnSupply();
       // 開始時刻 0 まで回す
       while (this.n < 0) this.step();
@@ -182,15 +182,22 @@
       const path = this.supply[k & 1];
       return (k + (this.g.supplyPhase || 0)) / this.FG - path.L / this.g.SUP_V;   // supplyPhase：到着時刻を流れの切り替わりからずらす
     }
+    /** 供給路の粒を出す。O2（偶数 k）と N2O（奇数 k）は経路の長さが違い、同じ到着時刻でも出発時刻が違うので、
+     *  別々のカウンターで出す（2026-11-04：1 つのカウンターで交互に出していたため、N2O が O2 より 3 秒遅れて出発し、
+     *  配管端末器から 230 px 上に現れていた） */
     spawnSupply() {
       const t = this.t;
-      while (this.spawnTime(this.nextK) <= t + 1e-9) {
-        const k = this.nextK++;
-        const path = this.supply[k & 1];
-        const s = (t - this.spawnTime(k)) * this.g.SUP_V;
-        if (s < path.L) this.add({ st: "sup", sup: k & 1, s, kind: (k & 1) ? "N2O" : "O2", co2: false });
+      for (const par of [0, 1]) {
+        while (this.spawnTime(this.nextKs[par]) <= t + 1e-9) {
+          const k = this.nextKs[par]; this.nextKs[par] += 2;
+          const path = this.supply[par];
+          const s = (t - this.spawnTime(k)) * this.g.SUP_V;
+          if (s < path.L) this.add({ st: "sup", sup: par, s, k, kind: par ? "N2O" : "O2", co2: false });
+        }
       }
     }
+    /** 最初に出す k：t0 までに出発している最初の偶数と奇数 */
+    setNextKs(k0) { k0 = Math.ceil(k0); this.nextKs = [k0 + (k0 & 1), k0 + 1 - (k0 & 1)]; }
 
     // ---------- 席の選び方（決定的な擬似乱数） ----------
     pickBellowsEntry() {
@@ -471,7 +478,7 @@
     // ---------- 保存と巻き戻し ----------
     snapshot() {
       return JSON.stringify({
-        n: this.n, rng: this.rng.state, nextId: this.nextId, nextK: this.nextK,
+        n: this.n, rng: this.rng.state, nextId: this.nextId, nextKs: this.nextKs,
         relB: this.relB, relL: this.relL, lastPhase: this.lastPhase, planned: this.planned, vtAct: this.vtAct,
         absUse: this.absUse, absorbed: this.absorbed,
         bSlots: this.bSlots, lSlots: this.lSlots, particles: this.particles,
@@ -479,7 +486,7 @@
     }
     restore(snap) {
       const o = JSON.parse(snap);
-      this.n = o.n; this.rng.state = o.rng; this.nextId = o.nextId; this.nextK = o.nextK;
+      this.n = o.n; this.rng.state = o.rng; this.nextId = o.nextId; this.nextKs = o.nextKs;
       this.relB = o.relB; this.relL = o.relL; this.lastPhase = o.lastPhase; this.planned = o.planned; this.vtAct = o.vtAct;
       this.absUse = o.absUse; this.absorbed = o.absorbed;
       this.bSlots = o.bSlots; this.lSlots = o.lSlots;
