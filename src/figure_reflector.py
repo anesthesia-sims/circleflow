@@ -29,14 +29,12 @@ LOW_FLOW = "low" in _FLAGS
 MANUAL = "manual" in _FLAGS                 # 用手換気の場面：呼吸バッグをリフレクタの奥の端につなぎ、リフレクタガスを止める（2026-11-03）
 LANG = "en" if "en" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
 svg.configure(LANG, "r")
-# 新鮮ガス。1 呼吸あたりの粒の数はほかの方式と同じ（多め 12 粒、低流量 3 粒）。Flow-i では新鮮ガスがおもに吸気中に
-# 流れるので、本図では吸気中だけ入れる（2026-11-03 著者の判断。一定にすると、多めの場面で呼気の最後に入る新鮮ガスだけが
-# 次の吸気で押し出され、吸収装置に CO2 が届かなかった）。FG_RATE は 1 周期の平均（粒/秒）、FG_INSP は吸気中の流量
+# 新鮮ガス。1 呼吸あたりの粒の数はほかの方式と同じ（多め 12 粒、低流量 3 粒）。流量計から一定に流れ、呼気中は吸収装置を
+# 逆向きに通ってリフレクタへ入る（2026-11-04 版 1.2.9 著者の判断：新鮮ガスの管にはためる場所がなく、回路内圧からはこの向きに
+# 流れる。11-03〜1.2.8 は Flow-i にならって吸気中だけ入れていた）。FG_RATE は粒/秒
 FG_RATE = 0.5 if LOW_FLOW else 2.0
-FG_PER_BREATH = FG_RATE * CYC
-FG_INSP = FG_PER_BREATH / TI
 # 患者に入る量 VT_P は新鮮ガスの量によらず 13 粒（ピストン式と同じ）。リフレクタガス（O2）が押し出す量 VR は、
-# 吸気中に加わる新鮮ガスのぶんを引いた残り（多め：0.5 粒/秒、低流量：5.0 粒/秒）
+# 吸気中に加わる新鮮ガスのぶんを引いた残り（多め：4.5 粒/秒、低流量：6.0 粒/秒）
 VT_P = 13.0
 if MANUAL:
     # 用手換気（2026-11-03）：上昇式ベローズの用手換気と同じ決まり。新鮮ガスは一定で、呼吸バッグが押し出す量 VT_B は
@@ -45,7 +43,7 @@ if MANUAL:
     VT_B = NB_FULL - NB_MIN
     VR = VT_B / TI
 else:
-    VR = VT_P / TI - FG_INSP
+    VR = VT_P / TI - FG_RATE
 # 呼気は受動的：流量は呼気の始めに最大で、時定数 TAU で指数関数的に減る。T_EXH で吐き終える（残りは無視）
 TAU = 1.2                  # 呼気の時定数（秒）。模式として I:E と図の大きさに合わせた値（実機の肺は 0.5〜1 秒程度）
 T_EXH = (CYC - TI) - 0.3   # 吐き終わるまでの時間（秒）
@@ -612,8 +610,9 @@ TUBE_SPACING["R"] = round(plen(TUBES["R"]) / (40.0 * R_CAP), 4)
 GEO = {
     "kind": "reflector",
     "CYC": CYC, "TI": TI, "FG_RATE": FG_RATE, "VT_P": VT_P, "VR": VR,
-    # 新鮮ガスは吸気中だけ：1 呼吸 FG_PER_BREATH 粒を、吸気のあいだに FG_INSP 粒/秒で入れる（sim_reflector.js の spawnTime）
-    "FG_INSP": FG_INSP, "FG_PER_BREATH": FG_PER_BREATH,
+    # 新鮮ガスの到着を流れの切り替わりからずらす（粒の間隔に対する割合）。人工呼吸の多めは 0 だと吸気の終わりに着く粒が毎回 1 つ余分に患者へ入り、
+    # 1 回換気量が 14 粒になる（0.5 で 13 粒。2026-11-04）
+    "supplyPhase": (0.5 if LOW_FLOW else 0.0) if MANUAL else (0.0 if LOW_FLOW else 0.5),
     "SP": 40.0, "SUP_V": 88.0, "SCAV_V": 120.0, "LUNG_MIN": LUNG_MIN,
     "tubeSpacing": TUBE_SPACING,
     "tubes": TUBES,
@@ -634,7 +633,7 @@ GEO = {
 if MANUAL:                                          # 用手換気：呼吸バッグの席と大きさ、満杯の時刻（sim_reflector.js が見る）
     GEO["bag"] = {"pivot": (BT_X, BT_Y), "slots": BAG_SLOTS, "keyT": BAG_KT, "keyS": BAG_S}
     GEO["nodes"]["BAGM"] = (BT_X, BT_Y + 14)
-    GEO.update({"NB_FULL": NB_FULL, "NB_MIN": NB_MIN, "VT_B": VT_B, "T_FULL": T_FULL, "supplyPhase": 0.5 if LOW_FLOW else 0.0})
+    GEO.update({"NB_FULL": NB_FULL, "NB_MIN": NB_MIN, "VT_B": VT_B, "T_FULL": T_FULL})
 if len(sys.argv) > 3:
     json.dump(GEO, open(sys.argv[3], "w"), ensure_ascii=False)
 add('<g id="particles"></g>')
@@ -649,7 +648,7 @@ _CAPS = ((("insp", "吸気", "呼吸バッグを手で押すと、ガスはリ�
           ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入り、奥の呼吸バッグをふくらませる。満杯になると PEEP/APL 弁から排出装置へ"))
          if MANUAL else
          (("insp", "吸気", "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置を通って新鮮ガスと合わさり患者へ"),
-          ("exp", "呼気", "呼気がリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ（新鮮ガスは止まる）")))
+          ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ")))
 for ph, label_, msg in _CAPS:
     add(gate_open(ph))
     add(f'<rect x="24" y="{CAP_Y-20}" width="64" height="28" rx="6" fill="{K if ph == "insp" else EXP_ARROW}"/>')

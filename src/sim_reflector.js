@@ -6,12 +6,13 @@
  * 上昇式ベローズ（sim_bellows.js）と同じ決まりで動く。違いは人工呼吸器の部分：
  *  - ためる場所は「部屋」ではなく、長い管 R（ボリュームリフレクタ、合流点 J → 奥の端 K）。押し出し流れなので
  *    J から入ったガスは J から出る（後入れ先出し）。両端のガスは混ざらない
- *  - 新鮮ガスは吸気中だけ回路へ入る（Flow-i では新鮮ガスがおもに吸気中に流れる。2026-11-03）。供給（流量計からの粒）は一定で、
- *    呼気のあいだに届いたガスは気化器の出口から入口までの管で縮んでたまり、吸気中に管 A へ入る（2026-11-04。stepSupplyVent）
+ *  - 新鮮ガスは流量計から一定に流れる。吸気中は管 A へ、呼気中は吸収装置（D）を逆向きに通ってリフレクタへ入る（2026-11-04 版 1.2.9：
+ *    新鮮ガスの管にはガスをためる場所がなく、呼気中の回路内圧は PEEP 程度なので、圧の低い PEEP/APL 弁の側へ流れる。
+ *    11-03〜1.2.8 は Flow-i にならって吸気中だけ入れ、呼気中に届いたガスを入口の手前に並べたり管の中で縮めたりしていた）
  *  - 吸気：奥の端 K からリフレクタガス（O2 の粒。灰）が VR 粒/秒で入り、R の中のガスを J 側へ押し出す。
  *    押し出されたガスは吸収装置（D）を通り、新鮮ガスと合わさって吸気弁から患者へ。患者に入る量は VT_P（新鮮ガスの量によらない。
- *    多めでは新鮮ガスが 12 粒で、リフレクタが押し出すのは 1 粒だけ）
- *  - 呼気：呼気（C）が J から R へ入る（吸収装置 D は止まる）。そのぶん K から出たガス（O2 と最も古いガス）が
+ *    リフレクタが押し出すのは、吸気中に加わる新鮮ガスを引いた残り）
+ *  - 呼気：呼気（C）と、吸収装置を逆向きに通ってきた新鮮ガスが J から R へ入る。そのぶん K から出たガス（O2 と最も古いガス）が
  *    PEEP/APL 弁を通って余剰ガス排出装置へ（S）
  *  - 定常状態では、呼吸ごとに新鮮ガスの量だけ境目が K 側へ戻るので、O2 は J まで届かない（届いた回数は reflLeak に数える）
  *  - 用手換気（geo.bag があるとき。2026-11-03）：呼吸バッグが奥の端 K につながり、リフレクタガスは止まる。新鮮ガスは一定。
@@ -33,19 +34,11 @@
       this.tubes = {};
       for (const k of Object.keys(geo.tubes)) this.tubes[k] = new Poly(geo.tubes[k]);
       this.supply = geo.supply.map(p => new Poly(p));
-      {                                                       // 2 つの供給路が重なる部分（気化器の出口から新鮮ガスの入口まで）の長さ
-        const [a, b] = geo.supply;
-        let i = a.length - 1, j = b.length - 1;
-        while (i > 0 && j > 0 && a[i - 1][0] === b[j - 1][0] && a[i - 1][1] === b[j - 1][1]) { i--; j--; }
-        this.LC = pathLen(a.slice(i));
-      }
       this.CYC = geo.CYC; this.TI = geo.TI; this.TE = geo.CYC - geo.TI;
       this.SP = geo.SP;
       this.spc = {};
       for (const k of TUBES) this.spc[k] = geo.SP * ((geo.tubeSpacing || {})[k] || 1);
-      this.FG = geo.FG_RATE;                                  // 1 周期の平均（粒/秒）
-      this.FGI = geo.FG_INSP;                                 // 吸気中の新鮮ガスの流量（粒/秒）
-      this.nFG = Math.round(geo.FG_PER_BREATH);               // 1 呼吸あたりの新鮮ガスの粒の数
+      this.FG = geo.FG_RATE;                                  // 新鮮ガスの流量（粒/秒。一定）
       this.vr = geo.VR;                                       // リフレクタガス（用手換気では呼吸バッグ）が押し出す流量（粒/秒）
       this.manual = !!geo.bag;                                // 用手換気：呼吸バッグが奥の端 K につながり、リフレクタガスは止まる
       this.bSlotDef = this.manual ? geo.bag.slots : [];
@@ -83,18 +76,11 @@
     }
 
     /** 時刻 tc（周期内）の各管の流れの速さ（px/s、＋は管の向き）。R は J → K の向きが＋ */
-    flows(tc) {
+    flows(tc) {                                                // 新鮮ガスは一定。吸気はリフレクタガス（用手換気では手で押したバッグ）が押し出す
       const s = this.spc;
-      if (this.manual) {                                       // 用手換気：新鮮ガスは一定。吸気は手で押したバッグから、呼気はバッグへ
-        if (tc < this.TI) return { A: (this.vr + this.FG) * s.A, B: (this.vr + this.FG) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
-        const ex = this.exRate(tc - this.TI);
-        return { A: 0, B: -ex * s.B, C: ex * s.C, D: -this.FG * s.D, R: (ex + this.FG) * s.R };
-      }
-      if (tc < this.TI) {
-        return { A: (this.vr + this.FGI) * s.A, B: (this.vr + this.FGI) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
-      }
+      if (tc < this.TI) return { A: (this.vr + this.FG) * s.A, B: (this.vr + this.FG) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
       const ex = this.exRate(tc - this.TI);
-      return { A: 0, B: -ex * s.B, C: ex * s.C, D: 0, R: ex * s.R };          // 呼気中は新鮮ガスが止まり、D は動かない
+      return { A: 0, B: -ex * s.B, C: ex * s.C, D: -this.FG * s.D, R: (ex + this.FG) * s.R };   // 呼気中は新鮮ガスが D を逆向きに R へ
     }
 
     bSlotXY(idx, tc) {                                        // 呼吸バッグの席：差し込み口を中心に、バッグの大きさに合わせて動く
@@ -154,32 +140,10 @@
     }
 
     // ---------- 供給路 ----------
-    /** k 番目の新鮮ガスの粒を供給路の入口に出す時刻。一定の流量で、待たなければ合流点 JFG に k/FG 秒に着く */
+    /** k 番目の新鮮ガスの粒を供給路の入口に出す時刻。一定の流量で、合流点 JFG に k/FG 秒に着く */
     spawnTime(k) {
       const path = this.supply[k & 1];
       return (k + (this.g.supplyPhase || 0)) / this.FG - path.L / this.g.SUP_V;   // 供給は一定の流量（2026-11-04）
-    }
-    /** 人工呼吸で、回路へ入れずにたまっている新鮮ガスの長さ（px。待たずに進んだときの長さで数える）。呼気中は SUP_V で増え、
-     *  吸気のあいだに一定の割合で減って吸気の終わりに 0 になる。そのぶん吸気中は新鮮ガスが FG_INSP の流量で回路へ入る */
-    supplyBacklog(tc) {
-      const v = this.g.SUP_V;
-      return tc < this.TI ? v * this.TE * (1 - tc / this.TI) : v * (tc - this.TI);
-    }
-    /** 人工呼吸の供給路：粒は配管端末器から一定の速さ SUP_V で進む（待たなければ入口まで x）。回路へ入るのは吸気中だけなので、
-     *  たまったガス（長さ B）は、2 つの供給路が重なる部分（気化器の出口 → 共通ガス出口 → 新鮮ガスの入口、長さ LC）で一様に縮めて見せる：
-     *  入口までの距離 d = LC·(x+B)/(LC+B)。粒は止まらず、入口に近いほどゆっくり進み、間隔は一様に狭まる。吸気中は x+B が 0 に
-     *  なった粒から管 A へ入る。位置は k と時刻だけで決まる（2026-11-04 版 1.2.8：1.2.6〜1.2.7 は入口の手前に詰めて並べて
-     *  止めていたため、入口で粒が詰まって動かなくなって見えた。さらに前は吸気中に供給路の粒すべてを速めていた） */
-    stepSupplyVent() {
-      const g = this.g, t = this.t + DT, B = this.supplyBacklog(this.tc(t)), LC = this.LC;
-      for (const p of this.particles) {
-        if (p.st !== "sup") continue;
-        const L = this.supply[p.sup].L, x = L - (t - this.spawnTime(p.k)) * g.SUP_V;
-        if (x >= LC) { p.s = L - x; continue; }               // 重なる部分より手前：一定の速さ
-        const d = LC * (x + B) / (LC + B);
-        if (d <= 0) this.enterTube(p, "A", -d);
-        else p.s = L - d;
-      }
     }
     /** 供給路の粒を出す。O2（偶数 k）と N2O（奇数 k）は経路の長さが違い、同じ到着時刻でも出発時刻が違うので、
      *  別々のカウンターで出す（2026-11-04：1 つのカウンターで交互に出していたため、N2O が O2 より 3 秒遅れて出発し、
@@ -378,8 +342,7 @@
           if (p.s > L) this.exitFar(p, p.s - L, F);
           else if (p.s < 0) this.exitNear(p, -p.s);
         } else if (p.st === "sup") {
-          if (!this.manual) continue;                           // 人工呼吸は stepSupplyVent() で動かす
-          const L = this.supply[p.sup].L;                       // 用手換気：新鮮ガスは一定に回路へ（呼気中は吸収装置を逆向きに）
+          const L = this.supply[p.sup].L;                       // 新鮮ガスは一定に回路へ（呼気中は吸収装置を逆向きに）
           p.s += g.SUP_V * DT;
           if (p.s > L) { const over = p.s - L; if (ph === "i") this.enterTube(p, "A", over); else this.enterTube(p, "D", this.tubes.D.L - over); }
         } else if (p.st === "trans") {
@@ -394,7 +357,6 @@
           if (p.s > this.tubes.S.L) this.remove(p);
         }
       }
-      if (!this.manual) this.stepSupplyVent();
       if (ph === "i" && !this.manual) this.spawnReflGas();
       for (const nm of TUBES) {
         const arr = this.particles.filter(p => p.st === "tube" && p.tube === nm).sort((a, b) => a.s - b.s);
