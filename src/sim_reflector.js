@@ -6,7 +6,8 @@
  * 上昇式ベローズ（sim_bellows.js）と同じ決まりで動く。違いは人工呼吸器の部分：
  *  - ためる場所は「部屋」ではなく、長い管 R（ボリュームリフレクタ、合流点 J → 奥の端 K）。押し出し流れなので
  *    J から入ったガスは J から出る（後入れ先出し）。両端のガスは混ざらない
- *  - 新鮮ガスは流量計から一定に流れる。吸気中は管 A へ、呼気中は吸収装置（D）を逆向きに通ってリフレクタへ入る（2026-11-04 版 1.2.9：
+ *  - 新鮮ガスは用手換気では一定、人工呼吸ではガスモジュールが主に吸気中に流す（1.3：吸気 fgI・呼気 fgE 粒/秒。arriveTime）。
+ *    吸気中は管 A へ、呼気中は吸収装置（D）を逆向きに通ってリフレクタへ入る（2026-11-04 版 1.2.9：
  *    新鮮ガスの管にはガスをためる場所がなく、呼気中の回路内圧は PEEP 程度なので、圧の低い PEEP/APL 弁の側へ流れる。
  *    11-03〜1.2.8 は Flow-i にならって吸気中だけ入れ、呼気中に届いたガスを入口の手前に並べたり管の中で縮めたりしていた）
  *  - 吸気：奥の端 K からリフレクタガス（O2 の粒。灰）が VR 粒/秒で入り、R の中のガスを J 側へ押し出す。
@@ -38,7 +39,11 @@
       this.SP = geo.SP;
       this.spc = {};
       for (const k of TUBES) this.spc[k] = geo.SP * ((geo.tubeSpacing || {})[k] || 1);
-      this.FG = geo.FG_RATE;                                  // 新鮮ガスの流量（粒/秒。一定）
+      this.FG = geo.FG_RATE;                                  // 新鮮ガスの平均の流量（粒/秒）
+      this.phased = geo.FG_I !== undefined;                   // 人工呼吸（1.3）：主に吸気中に流す（吸気 FG_I、呼気 FG_E 粒/秒）。用手換気は一定
+      this.fgI = this.phased ? geo.FG_I : this.FG; this.fgE = this.phased ? geo.FG_E : this.FG;
+      this.nCyc = Math.round(this.FG * geo.CYC); this.nI = Math.round(this.fgI * geo.TI);   // 1 呼吸の新鮮ガスの粒の数と、そのうち吸気中に届く数
+      this.uptake = geo.uptake || 0;                          // 患者の取り込み：1 呼吸に肺胞で血液へ消える粒（「不足」の場面。ほかは 0）
       this.vr = geo.VR;                                       // リフレクタガス（用手換気では呼吸バッグ）が押し出す流量（粒/秒）
       this.manual = !!geo.bag;                                // 用手換気：呼吸バッグが奥の端 K につながり、リフレクタガスは止まる
       this.bSlotDef = this.manual ? geo.bag.slots : [];
@@ -78,9 +83,9 @@
     /** 時刻 tc（周期内）の各管の流れの速さ（px/s、＋は管の向き）。R は J → K の向きが＋ */
     flows(tc) {                                                // 新鮮ガスは一定。吸気はリフレクタガス（用手換気では手で押したバッグ）が押し出す
       const s = this.spc;
-      if (tc < this.TI) return { A: (this.vr + this.FG) * s.A, B: (this.vr + this.FG) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
+      if (tc < this.TI) return { A: (this.vr + this.fgI) * s.A, B: (this.vr + this.fgI) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
       const ex = this.exRate(tc - this.TI);
-      return { A: 0, B: -ex * s.B, C: ex * s.C, D: -this.FG * s.D, R: (ex + this.FG) * s.R };   // 呼気中は新鮮ガスが D を逆向きに R へ
+      return { A: 0, B: -ex * s.B, C: ex * s.C, D: -this.fgE * s.D, R: (ex + this.fgE) * s.R };   // 呼気中は新鮮ガスが D を逆向きに R へ
     }
 
     bSlotXY(idx, tc) {                                        // 呼吸バッグの席：差し込み口を中心に、バッグの大きさに合わせて動く
@@ -109,6 +114,7 @@
       this.absUse = new Array(this.absRows.length).fill(0);
       this.absorbed = 0;
       this.reflLeak = 0;                                            // リフレクタガスが J まで届いて回路に入った回数
+      this.uptaken = 0;                                             // 患者に取り込まれて消えた粒の数（時刻 0 から）
       this.lastPhase = null;
       this.checkpoints = new Map();
       this.trail = [];
@@ -133,17 +139,25 @@
         this.bSlots[i] = p.id;
       }
       const Lmax = Math.max(...this.supply.map(p => p.L));
-      this.setNextKs((t0 - Lmax / g.SUP_V) * this.FG - (g.supplyPhase || 0));   // 供給は一定（到着 k/FG）
+      this.setNextKs((t0 - Lmax / g.SUP_V) * this.FG - (g.supplyPhase || 0) - this.nCyc - 2);   // 到着は平均 k/FG。早めに始めても、着いているはずの粒は出さないだけ
       this.spawnSupply();
       while (this.n < 0) this.step();
       this.saveCheckpoint();
     }
 
     // ---------- 供給路 ----------
-    /** k 番目の新鮮ガスの粒を供給路の入口に出す時刻。一定の流量で、合流点 JFG に k/FG 秒に着く */
+    /** k 番目の新鮮ガスの粒が合流点 JFG に着く時刻。一定なら (k+phase)/FG。人工呼吸（1.3）では 1 呼吸 nCyc 粒のうち nI 粒が吸気中に
+     *  等間隔（流量 fgI）で、残りが呼気中に等間隔（fgE）で届く。ガスモジュールが流量を作るので、上流の粒もこの間隔で進む */
+    arriveTime(k) {
+      const kk = k + (this.g.supplyPhase || 0);
+      if (!this.phased) return kk / this.FG;
+      const c = Math.floor(kk / this.nCyc), r = kk - c * this.nCyc;
+      return c * this.CYC + (r < this.nI ? (r + 0.5) / this.fgI : this.TI + (r - this.nI + 0.5) / this.fgE);
+    }
+    /** k 番目の新鮮ガスの粒を供給路の入口に出す時刻（着く時刻から経路の長さぶん前） */
     spawnTime(k) {
       const path = this.supply[this.supIdx(k)];
-      return (k + (this.g.supplyPhase || 0)) / this.FG - path.L / this.g.SUP_V;   // 供給は一定の流量（2026-11-04）
+      return this.arriveTime(k) - path.L / this.g.SUP_V;
     }
     /** 供給路の粒を出す。O2（偶数 k）と N2O（奇数 k）は経路の長さが違い、同じ到着時刻でも出発時刻が違うので、
      *  別々のカウンターで出す（2026-11-04：1 つのカウンターで交互に出していたため、N2O が O2 より 3 秒遅れて出発し、
@@ -237,7 +251,7 @@
           const idx = this.pickLungEntry();
           if (idx < 0) { p.s = this.tubes.B.L; break; }
           this.lSlots[idx] = p.id;
-          p.co2 = true;
+          p.co2 = true; p.refl = false;                 // リフレクタガス（O₂）も肺胞に入れば患者のガス（灰 → CO₂ の色）。「不足」の場面
           this.startTransit(p, [g.nodes.LG, this.lSlotXY(idx)], Math.max(Math.abs(F.B), 60), { type: "slot", store: "l", slot: idx });
           break;
         }
@@ -290,6 +304,7 @@
     planAhead(ph, tc) {
       const g = this.g;
       if (ph === "i" && !this.planned.e && tc >= this.TI - LEAD) {
+        this.takeUp();                                               // 取り込みを引いてから、呼気で出る粒を予定する
         const dt = this.TI - tc, tPhase = this.t + dt;
         const { gap, leaving } = this.farGapAt("B", dt);
         const n = Math.max(0, this.lungCount() + leaving - g.LUNG_MIN);
@@ -310,6 +325,17 @@
       } else {
         if (!this.planned.e) this.relL = this.planLung(tPhase, this.farGapAt("B", 0).gap, Math.max(0, this.lungCount() - g.LUNG_MIN));
         this.planned.e = false;
+      }
+    }
+    /** 患者の取り込み（「不足」の場面）：吸気の終わりに、肺胞の粒 uptake 個が血液へ取り込まれて消える。呼気はそのぶん少ない */
+    takeUp() {
+      for (let i = 0; i < this.uptake; i++) {
+        const idx = this.pickLungExit();
+        if (idx < 0) break;
+        const p = this.byId.get(this.lSlots[idx]);
+        this.lSlots[idx] = null;
+        this.remove(p);
+        if (this.n >= 0) this.uptaken++;
       }
     }
     releaseLung(tArr) {
@@ -430,7 +456,7 @@
       return JSON.stringify({
         n: this.n, rng: this.rng.state, nextId: this.nextId, nextKs: this.nextKs,
         relL: this.relL, relB: this.relB, lastPhase: this.lastPhase, planned: this.planned, vtAct: this.vtAct,
-        absUse: this.absUse, absorbed: this.absorbed, reflLeak: this.reflLeak,
+        absUse: this.absUse, absorbed: this.absorbed, reflLeak: this.reflLeak, uptaken: this.uptaken,
         lSlots: this.lSlots, bSlots: this.bSlots, particles: this.particles,
       });
     }
@@ -438,7 +464,7 @@
       const o = JSON.parse(snap);
       this.n = o.n; this.rng.state = o.rng; this.nextId = o.nextId; this.nextKs = o.nextKs;
       this.relL = o.relL; this.relB = o.relB; this.lastPhase = o.lastPhase; this.planned = o.planned; this.vtAct = o.vtAct;
-      this.absUse = o.absUse; this.absorbed = o.absorbed; this.reflLeak = o.reflLeak;
+      this.absUse = o.absUse; this.absorbed = o.absorbed; this.reflLeak = o.reflLeak; this.uptaken = o.uptaken || 0;
       this.lSlots = o.lSlots; this.bSlots = o.bSlots;
       this.particles = o.particles;
       this.byId = new Map(this.particles.map(p => [p.id, p]));

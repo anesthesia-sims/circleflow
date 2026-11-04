@@ -8,7 +8,7 @@ MAIN_JS = r"""
   const CYC = 6.0, NS = 'http://www.w3.org/2000/svg';
   const PHASES = L.phases;
 
-  const TYPES = ['bellows', 'bellowsLow', 'bellowsMan', 'bellowsLowMan', 'piston', 'pistonLow', 'pistonMan', 'pistonLowMan', 'reflector', 'reflectorLow', 'reflectorMan', 'reflectorLowMan'];
+  const TYPES = ['bellows', 'bellowsLow', 'bellowsMan', 'bellowsLowMan', 'piston', 'pistonLow', 'pistonMan', 'pistonLowMan', 'reflector', 'reflectorLow', 'reflectorShort', 'reflectorMan', 'reflectorLowMan'];
   const $ = id => document.getElementById(id);
   const figs = {};
   for (const k of TYPES) figs[k] = document.querySelector('#fig-' + k + ' svg');
@@ -16,8 +16,9 @@ MAIN_JS = r"""
   PHASES.bellowsLowMan = PHASES.bellowsMan; PHASES.pistonLowMan = PHASES.pistonMan;
   PHASES.reflectorLow = PHASES.reflector; PHASES.reflectorLowMan = PHASES.reflectorMan;
   const family = tp => tp.startsWith('piston') ? 'piston' : tp.startsWith('reflector') ? 'reflector' : 'bellows';
-  const key = (fam, lo, mn) => fam + (lo ? 'Low' : '') + (mn ? 'Man' : '');
-  let low = false, man = false;                                  // 新鮮ガス：低流量、換気：用手換気
+  const key = (fam, fl, mn) => fam + (fl === 'low' ? 'Low' : fl === 'short' ? 'Short' : '') + (mn ? 'Man' : '');
+  const avail = (fam, fl, mn) => fl === 'short' && !(fam === 'reflector' && !mn) ? 'low' : fl;   // 「不足」はリフレクタ式の人工呼吸だけ。ほかへ移るときは低流量に
+  let flow = 'high', man = false;                                // 新鮮ガス：high（多め）・low（低流量）・short（不足）、換気：用手換気
   Object.values(figs).forEach(s => s.pauseAnimations());
   // 拡大縮小で動かす部品（呼吸バッグ・ばね・ベローズ）は線の太さを画面の画素で固定している（vector-effect）。そのままだと図を縮めても
   // 線が細くならず、狭い画面で太く黒い塊に見えるので、図の縮尺を掛ける（2026-11-04）
@@ -185,10 +186,11 @@ MAIN_JS = r"""
   const show = tp => {
     if (focus) closeCardNow(type);
     type = tp;
-    sim = getSim(tp); layer = layers[tp]; low = tp.includes('Low'); man = tp.endsWith('Man');
+    sim = getSim(tp); layer = layers[tp]; flow = tp.includes('Short') ? 'short' : tp.includes('Low') ? 'low' : 'high'; man = tp.endsWith('Man');
     for (const k of Object.keys(figs)) $('fig-' + k).hidden = k !== tp;
     document.querySelectorAll('#typeSeg button').forEach(b => b.classList.toggle('on', b.dataset.type === family(tp)));
-    document.querySelectorAll('[data-flow]').forEach(b => b.classList.toggle('on', (b.dataset.flow === 'low') === low));
+    document.querySelectorAll('[data-flow]').forEach(b => b.classList.toggle('on', b.dataset.flow === flow));
+    document.querySelector('[data-flow="short"]').hidden = !(family(tp) === 'reflector' && !man);
     document.querySelectorAll('[data-vent]').forEach(b => b.classList.toggle('on', (b.dataset.vent === 'man') === man));
     {   // 狭い画面の切り替えボタンに、いまの選択を出す
       const tb = document.querySelector('#typeSeg button.on'); $('typeCycle').querySelector('b').textContent = (tb.querySelector('.short') || tb).textContent;
@@ -260,15 +262,15 @@ MAIN_JS = r"""
   tlBar.addEventListener('pointerup', () => { if (!dragging) return; dragging = false; openPhase(phaseAt(((t % CYC) + CYC) % CYC)); });
 
   // 方式の切り替え：新鮮ガスと換気の選択はそのまま、時刻は 0 から
-  document.querySelectorAll('#typeSeg button').forEach(b => b.onclick = () => { show(key(b.dataset.type, low, man)); t = 0; });
+  document.querySelectorAll('#typeSeg button').forEach(b => b.onclick = () => { show(key(b.dataset.type, avail(b.dataset.type, flow, man), man)); t = 0; });
   // 新鮮ガス・換気の切り替え：経過時間はそのまま（同じ時間での吸収剤の減り方を比べられる）
-  document.querySelectorAll('[data-flow]').forEach(b => b.onclick = () => show(key(family(type), b.dataset.flow === 'low', man)));
-  document.querySelectorAll('[data-vent]').forEach(b => b.onclick = () => show(key(family(type), low, b.dataset.vent === 'man')));
+  document.querySelectorAll('[data-flow]').forEach(b => b.onclick = () => show(key(family(type), b.dataset.flow, man)));
+  document.querySelectorAll('[data-vent]').forEach(b => b.onclick = () => { const mn = b.dataset.vent === 'man'; show(key(family(type), avail(family(type), flow, mn), mn)); });
   playBtn.onclick = () => setPlaying(!playing);
   $('absSwap').onclick = () => { sim.seek(t); sim.swapAbsorbent(); sim.render(layer); updateAbs(t); };
   $('typeCycle').onclick = () => { const bs = [...document.querySelectorAll('#typeSeg button')], i = bs.findIndex(x => x.classList.contains('on')); bs[(i + 1) % bs.length].click(); };
   $('ventCycle').onclick = () => document.querySelector('[data-vent]:not(.on)').click();
-  $('flowCycle').onclick = () => document.querySelector('[data-flow]:not(.on)').click();
+  $('flowCycle').onclick = () => { const bs = [...document.querySelectorAll('[data-flow]')].filter(b => !b.hidden), i = bs.findIndex(x => x.classList.contains('on')); bs[(i + 1) % bs.length].click(); };
   $('speedCycle').onclick = () => {                           // 狭い画面：速さを順送り
     const bs = [...document.querySelectorAll('[data-speed]')], i = bs.findIndex(x => x.classList.contains('on'));
     bs[(i + 1) % bs.length].click();

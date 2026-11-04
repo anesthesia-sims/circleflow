@@ -28,6 +28,9 @@ EN = {
     "使用中": {"t": "In use", "size": 14},
     "停止中": {"t": "Off", "size": 14},
     "インターロック": {"t": "Interlock", "size": 16},
+    "ガスモジュール": {"t": "Gas modules", "size": 15},            # リフレクタ式（1.3）
+    "制御部": {"t": "Control unit", "size": 12},
+    "注入式": {"t": "injection type", "size": 12},
     "気化器": "Vaporizers",
     "酸素フラッシュ": "O₂ flush",
     "共通ガス出口": {"t": "Common gas outlet", "size": 17, "dx": -8},
@@ -89,6 +92,10 @@ EN = {
         {"t": "Squeezing the bag pushes gas through the reflector and absorber; it joins the fresh gas and goes to the patient", "size": 14},
     "呼気と新鮮ガスがリフレクタへ入り、奥の呼吸バッグをふくらませる。いっぱいになって圧が上がると PEEP/APL 弁から排出装置へ":
         {"t": "Exhaled and fresh gas enter the reflector and refill the bag; once full and pressure rises, excess leaves via the PEEP/APL valve", "size": 14},
+    "リフレクタガス（O₂）がリフレクタのガスを押し出す。新鮮ガスが取り込みより少なく、O₂ の境目が呼吸ごとに患者側へ進む":
+        {"t": "Reflector gas (O₂) pushes gas out of the reflector; fresh gas is less than uptake, so the O₂ boundary moves toward the patient each breath", "size": 14},
+    "呼気と新鮮ガスがリフレクタへ入る。取り込みのぶん呼気が少なく、奥の O₂ は出た量より多く残る":
+        {"t": "Exhaled and fresh gas enter the reflector; exhalation is smaller by the uptake, so more O₂ stays at the far end than leaves", "size": 14},
     "呼気と新鮮ガスがリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ":
         {"t": "Exhaled and fresh gas enter the reflector; O₂ and the oldest gas at the far end leave through the PEEP/APL valve", "size": 14},
     # 図の中の説明文（コマ撮りだけに出る）

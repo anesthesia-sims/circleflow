@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: MIT
-# CircleFlow の 10 の場面（上昇式ベローズ・ピストン式：新鮮ガス 多め・低流量 × 人工呼吸・用手換気、ボリュームリフレクタ式：多め・低流量）の図と経路データを作り、
+# CircleFlow の 13 の場面（上昇式ベローズ・ピストン式・ボリュームリフレクタ式：新鮮ガス 多め・低流量 × 人工呼吸・用手換気、リフレクタ式の人工呼吸だけ新鮮ガス「不足」）の図と経路データを作り、
 # 日本語のページ index.html と英語のページ en/index.html にまとめる。必要なもの：Python 3（標準ライブラリだけ）
 set -e
 cd "$(dirname "$0")"
@@ -21,12 +21,13 @@ for lang in ja en; do
   scene $lang pistonLowMan  figure_piston.py low manual
   scene $lang reflector     figure_reflector.py
   scene $lang reflectorLow  figure_reflector.py low
+  scene $lang reflectorShort figure_reflector.py short
   scene $lang reflectorMan    figure_reflector.py manual
   scene $lang reflectorLowMan figure_reflector.py low manual
 done
 
 args() {    # args 言語：12 の場面の「名前 svg 経路データ」
-  for name in bellows bellowsLow bellowsMan bellowsLowMan piston pistonLow pistonMan pistonLowMan reflector reflectorLow reflectorMan reflectorLowMan; do
+  for name in bellows bellowsLow bellowsMan bellowsLowMan piston pistonLow pistonMan pistonLowMan reflector reflectorLow reflectorShort reflectorMan reflectorLowMan; do
     printf '%s build/%s/%s.svg build/%s/%s.json ' "$name" "$1" "$name" "$1" "$name"
   done
 }

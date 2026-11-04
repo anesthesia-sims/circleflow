@@ -2,11 +2,15 @@
 # CircleFlow © 2026 Masaaki Asamoto（朝元雅明）。プログラムは MIT ライセンス、図と文章は CC BY 4.0
 """麻酔器・呼吸回路の模式図（ボリュームリフレクタ式。Getinge（Maquet）Flow-i の構成を参考）実行時シミュレーション用の土台 SVG。
 弁・肺・電磁弁の動きは SMIL、ガスの粒（リフレクタガスの O2 を含む）はブラウザ側の JS（sim_reflector.js）が描く。
-左半分（ガス供給・気化器）は上昇式ベローズの図と同じ（実機は電子制御のガスモジュールと注入式気化器。模式として流用）。
+左半分（ガス供給・気化器）は 1.3（2026-11-04）で Flow-i の構成に合わせ、流量計・ニードル弁・可変バイパス式の気化器・インターロックの代わりに、
+ガスごとの電子制御のガスモジュール（比例弁と流量センサ）、注入式の気化器（加圧した液の容器・注入器・加熱気化室）、制御部を描く
+（Miller 第10版 第20章、Flow-i 4.7 取扱説明書・サービスマニュアル、FDA K102182、PMDA 添付文書。vault の調査・監査ノート 2026-11-04）。
 管の経路や部屋の位置は JSON（argv[3]）に書き出す。
 
-使い方: python3 figure_reflector.py out.svg color out_geo.json [low] [en]
+使い方: python3 figure_reflector.py out.svg color out_geo.json [low|short] [manual] [en]
   low を付けると低流量の場面（新鮮ガスを 1/4 に減らし、リフレクタガスで押し出す量を増やして患者に入る量はそろえる）
+  short を付けると「不足」の場面（1.3、2026-11-04）：新鮮ガスは低流量と同じで、患者の取り込み（肺胞で血液へ消える粒）がそれより多く、
+  リフレクタガス（O₂）の境目が呼吸ごとに患者側へ進んで、やがて O₂ が回路に加わる（Getinge の VR balance が負の状態）
 B5判の本文幅（約150 mm）に縮小して、本文の文字が約7.5 pt になる大きさで描く。
 """
 import json
@@ -25,13 +29,14 @@ MODE = sys.argv[2] if len(sys.argv) > 2 else "2c"
 LUNG_TISSUE, EXP_C, EXP_ARROW, PIPE, CYL, WICK = (palette.by_mode(MODE)[k] for k in ("LUNG_TISSUE", "EXP_C", "EXP_ARROW", "PIPE", "CYL", "WICK"))
 W, H = 1340, 860           # 2026-11-03：ピストン式と同じ幅にそろえた（患者の側を右へ 140 px、蛇管を長く）
 _FLAGS = set(sys.argv[4:])
-LOW_FLOW = "low" in _FLAGS
+SHORT = "short" in _FLAGS                   # 「不足」の場面：新鮮ガスは低流量と同じ、患者の取り込みがそれより多い（1.3）
+LOW_FLOW = "low" in _FLAGS or SHORT
 MANUAL = "manual" in _FLAGS                 # 用手換気の場面：呼吸バッグをリフレクタの奥の端につなぎ、リフレクタガスを止める（2026-11-03）
 LANG = "en" if "en" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
 svg.configure(LANG, "r")
-# 新鮮ガス。1 呼吸あたりの粒の数はほかの方式と同じ（多め 12 粒、低流量 3 粒）。流量計から一定に流れ、呼気中は吸収装置を
-# 逆向きに通ってリフレクタへ入る（2026-11-04 版 1.2.9 著者の判断：新鮮ガスの管にはためる場所がなく、回路内圧からはこの向きに
-# 流れる。11-03〜1.2.8 は Flow-i にならって吸気中だけ入れていた）。FG_RATE は粒/秒
+# 新鮮ガス。1 呼吸あたりの粒の数はほかの方式と同じ（多め 12 粒、低流量 3 粒）。FG_RATE は平均の流量（粒/秒）。人工呼吸ではガスモジュールが
+# 主に吸気中に流し（下の FG_I・FG_E。1.3）、呼気中に届いた分は吸収装置を逆向きに通ってリフレクタへ入る（1.2.9 の著者の判断：新鮮ガスの管には
+# ためる場所がなく、回路内圧からはこの向き。1.2.9〜1.2.11 は流量計の図だったので一定に流していた）。用手換気は一定
 FG_RATE = 0.5 if LOW_FLOW else 2.0
 # 患者に入る量 VT_P は新鮮ガスの量によらず 13 粒（ピストン式と同じ）。リフレクタガス（O2）が押し出す量 VR は、
 # 吸気中に加わる新鮮ガスのぶんを引いた残り（多め：4.5 粒/秒、低流量：6.0 粒/秒）
@@ -43,7 +48,15 @@ if MANUAL:
     VT_B = NB_FULL - NB_MIN
     VR = VT_B / TI
 else:
-    VR = VT_P / TI - FG_RATE
+    # 人工呼吸（1.3、2026-11-04 著者の判断）：ガスモジュールは新鮮ガスを主に吸気中に流す（Miller 第10版 第20章、Flow-i 4.7 取扱説明書、
+    # FDA K102182「AUTO では動的な流量」）。配分の比率は資料から確定できないので、教材上の近似として 1 呼吸の新鮮ガスの 2/3 を吸気中（2 秒）、
+    # 1/3 を呼気中（4 秒）に入れる。瞬時流量は吸気 2×FG_RATE、呼気 0.5×FG_RATE（多め 4.0/1.0、低流量 1.0/0.25 粒/秒。多め 8+4 粒、低流量 2+1 粒）。
+    # リフレクタガスが押し出す量は、吸気中に加わる新鮮ガスを引いた残り（多め 2.5、低流量 5.5 粒/秒）
+    FG_I, FG_E = 2.0 * FG_RATE, 0.5 * FG_RATE
+    VR = VT_P / TI - FG_I
+# 患者の取り込み（「不足」の場面）：吸気の終わりに肺胞の粒がこの数だけ血液へ取り込まれて消える。新鮮ガス 3 粒/呼吸より多い 4 粒/呼吸なので、
+# 回路のガスは呼吸ごとに 1 粒減り、そのぶんリフレクタガス（O₂）が残って境目が患者側へ進む
+UPTAKE = 4 if SHORT else 0
 # 呼気は受動的：流量は呼気の始めに最大で、時定数 TAU で指数関数的に減る。T_EXH で吐き終える（残りは無視）
 TAU = 1.2                  # 呼気の時定数（秒）。模式として I:E と図の大きさに合わせた値（実機の肺は 0.5〜1 秒程度）
 T_EXH = (CYC - TI) - 0.3   # 吐き終わるまでの時間（秒）
@@ -173,47 +186,38 @@ for name, x in GASES:
     add(f'<rect x="{xc-5}" y="{REG_Y+1}" width="10" height="3" rx="0.8" fill="{B}" stroke="{K}" stroke-width="0.8"/>')  # 弁体
     check_valve(xc, CHK_Y)                                       # ボンベ側：使っていない（閉じた姿）
     check_valve(xp, CHK_Y, PIPE[name] if MODE == "color" else "#fff", is_open=(name != "Air"))   # 中央配管側：流れている系統は開いた姿
-    # 流量計：フロート管と、下端（入口）のニードル弁・つまみ
-    # ガラス管は上ほど太いテーパー管（太さが変わるので、フロートの高さが流量を表す）。
-    # 素材がわかるよう薄い青で塗り、円筒に見えるよう左に白い照り、右に濃いめの青の影を平らな線で入れる。
-    # 上端は金属の口金（灰）。目盛りは右側に付ける（2026-11-02）
-    gt = FM_T + 8                                  # ガラスの上端（口金の下）
-    def gx(yy, f):                                 # 高さ yy での管の中心からの距離 × f
-        return f * (FM_W_BOT + (FM_W_TOP - FM_W_BOT) * (FM_B - yy) / (FM_B - gt))
-    add(f'<path d="M {x-gx(FM_B,1):.1f},{FM_B} L {x-gx(gt,1):.1f},{gt} L {x+gx(gt,1):.1f},{gt} L {x+gx(FM_B,1):.1f},{FM_B} Z" '
-        f'fill="{GLASS}" stroke="{K}" stroke-width="2.2" stroke-linejoin="round"/>')
-    add(f'<line x1="{x-gx(gt+5,0.55):.1f}" y1="{gt+5}" x2="{x-gx(FM_B-5,0.55):.1f}" y2="{FM_B-5}" stroke="#fff" stroke-width="3" stroke-linecap="round"/>')
-    add(f'<line x1="{x+gx(gt+3,0.72):.1f}" y1="{gt+3}" x2="{x+gx(FM_B-3,0.72):.1f}" y2="{FM_B-3}" stroke="{GLASS_SHADE}" stroke-width="3" stroke-linecap="round"/>')
-    for k in range(1, 5):
-        yy = gt + k * (FM_B - gt) / 5
-        add(f'<line x1="{x+gx(yy,1)-6:.1f}" y1="{yy:.0f}" x2="{x+gx(yy,1):.1f}" y2="{yy:.0f}" stroke="{K}" stroke-width="1.5"/>')
-    rect(x - 16, FM_T, 32, 9, fill=METAL, rx=2)
-    fy = FM_B - 14 if name == "Air" else (FM_B - 24 if LOW_FLOW else FM_B - 46)     # Air は流していない（フロートが底）。低流量ではフロートが低い
-    if name != "Air":
-        add('<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 1;0 0" dur="0.9s" repeatCount="indefinite"/>')
-    # フロートはボビン形：上に溝を刻んだ縁（ガスが当たって回る）、下は細くなる円錐。目盛りは縁の上面で読む
-    add(f'<path d="M {x-5.5},{fy+5} L {x+5.5},{fy+5} L {x+1.8},{fy+13} L {x-1.8},{fy+13} Z" fill="{FLOAT_C}" stroke="{K}" stroke-width="1.6" stroke-linejoin="round"/>')
-    add(f'<rect x="{x-8}" y="{fy}" width="16" height="5.5" rx="1" fill="{FLOAT_C}" stroke="{K}" stroke-width="1.6"/>')
-    for dx in (-4.5, 0, 4.5):
-        add(f'<line x1="{x+dx-1.3}" y1="{fy+1}" x2="{x+dx+1.3}" y2="{fy+4.5}" stroke="{K}" stroke-width="1.2"/>')
-    if name != "Air":
-        add('</g>')
-    # ニードル弁の断面（2026-11-02）：金属の本体を下から上へ通る道に、つまみの軸の先の先細りの針が横から入り、
-    # 道の細いところ（のど）のすき間を変えて流量を決める。流している O2・N2O は針を少し引いた姿、Air は奥まで入れて閉じた姿
-    _my = FM_B + 10
-    rect(x - 12, FM_B, 24, 20, fill=METAL, rx=3)
-    add(f'<rect x="{x-3.5}" y="{FM_B-1.2}" width="7" height="22.4" fill="#fff"/>')
-    add(f'<path d="M {x-3.5},{_my-4} L {x-1.8},{_my} L {x-3.5},{_my+4} Z" fill="{METAL}" stroke="{K}" stroke-width="1"/>')   # のど（弁座）
-    _tip = x - 1.8 if name == "Air" else x + 1.5
-    add(f'<path d="M {x+20},{_my-2} L {x+5},{_my-2} L {_tip},{_my} L {x+5},{_my+2} L {x+20},{_my+2} Z" fill="{METAL}" stroke="{K}" stroke-width="1" stroke-linejoin="round"/>')
-    add(f'<circle cx="{x+27}" cy="{_my}" r="8" fill="{METAL}" stroke="{K}" stroke-width="2.2"/>')                  # つまみ
-    for _a in range(0, 360, 45):
-        _r = math.radians(_a)
-        add(f'<line x1="{x+27+5*math.cos(_r):.1f}" y1="{_my+5*math.sin(_r):.1f}" x2="{x+27+7.8*math.cos(_r):.1f}" y2="{_my+7.8*math.sin(_r):.1f}" stroke="{K}" stroke-width="1"/>')
-    text(name, x - 22, FM_T + 24, 18, "end", 700)
+    # ガスモジュール（1.3、2026-11-04）：Flow-i では流量計・ニードル弁の代わりに、ガスごとの電子制御のモジュールが流量を作る
+    # （Flow-i サービスマニュアル §3.8、FDA K102182）。金属の箱の中に、下から：比例弁（コイルが鉄心＝弁体（青）を引き上げ、ノズルとの
+    # すき間で流量を決める。人工呼吸では吸気中に大きく開き、用手換気では一定）、流量センサ（通路を絞るオリフィスの前後の圧の差を膜（青）で
+    # 測る）。温度・供給圧のセンサは省く。Air は使っていないので弁は閉じた姿。粒の通り道（管の中心）は変えていない
+    rect(x - 28, FM_T, 56, FM_B - FM_T, fill=METAL, rx=4)
+    add(f'<rect x="{x-3.5}" y="{FM_T-1.2}" width="7" height="{FM_B-FM_T+2.4}" fill="#fff"/>')              # 通路
+    vy = FM_B - 24                                                                                     # 比例弁のノズル（弁座）の高さ
+    add(f'<rect x="{x-9}" y="{vy-28}" width="18" height="26" fill="#fff"/>')                             # 弁の部屋
+    add(f'<path d="M {x-3.5},{vy+4} L {x-1.6},{vy} L {x-3.5},{vy-4} Z" fill="{METAL}" stroke="{K}" stroke-width="1"/>')   # ノズル
+    add(f'<path d="M {x+3.5},{vy+4} L {x+1.6},{vy} L {x+3.5},{vy-4} Z" fill="{METAL}" stroke="{K}" stroke-width="1"/>')
+    for _sx in (x - 22, x + 13):                                                                       # コイル（左右）
+        for _k in range(4):
+            add(f'<rect x="{_sx}" y="{vy-27+5.6*_k:.1f}" width="9" height="4" fill="none" stroke="{K}" stroke-width="1"/>')
+    _gk = f"0;{TI/CYC-0.012:.4f};{TI/CYC+0.018:.4f};0.985;1"
     if name == "Air":
-        text("停止", x - 22, FM_T + 48, 15, "end", 700, color="#666")
-    # 2026-11-02：流量計の下の流れの矢印はやめた
+        add('<g>')                                                                                     # 閉：弁体の先がノズルに入っている
+    elif MANUAL:
+        add('<g transform="translate(0 -5)">')                                                         # 用手換気：一定の開き
+    else:                                                                                              # 人工呼吸：吸気中に大きく開く（新鮮ガスを主に吸気中に）
+        add(f'<g><animateTransform attributeName="transform" type="translate" values="0 -8;0 -8;0 -3;0 -3;0 -8" keyTimes="{_gk}" dur="{CYC}s" repeatCount="indefinite"/>')
+    add(f'<path d="M {x-4},{vy-24} L {x+4},{vy-24} L {x+4},{vy-7} L {x},{vy+0.5} L {x-4},{vy-7} Z" fill="{B}" stroke="{K}" stroke-width="1.2" stroke-linejoin="round"/>')   # 弁体（先細り）
+    add('</g>')
+    oy = FM_T + 30                                                                                     # 流量センサ：オリフィスと圧の差を測る膜
+    for _sx in (x - 3.5, x + 1.5):
+        add(f'<rect x="{_sx}" y="{oy-1.5}" width="2" height="3" fill="{METAL}" stroke="{K}" stroke-width="0.8"/>')   # オリフィス板
+    add(f'<rect x="{x+3.5}" y="{oy-10}" width="10" height="2.2" fill="#fff"/>')                        # 絞りの前後から圧を取り出す細い道
+    add(f'<rect x="{x+3.5}" y="{oy+7.8}" width="10" height="2.2" fill="#fff"/>')
+    add(f'<rect x="{x+13}" y="{oy-13}" width="12" height="26" fill="#fff" stroke="{K}" stroke-width="1"/>')   # センサの部屋
+    add(f'<rect x="{x+13}" y="{oy-1.2}" width="12" height="2.4" fill="{B}"/>')                         # 膜（圧の差でたわむ）
+    text(name, x - 36, FM_T + 24, 18, "end", 700)
+    if name == "Air":
+        text("停止", x - 36, FM_T + 48, 15, "end", 700, color="#666")
 
 
 # 2026-11-02：ガスの流れの向きを示す三角形の矢印はやめた（粒の動きで分かるため。著者の指摘）。弁の開閉は弁板の動きで示す
@@ -246,59 +250,69 @@ add(f'<circle cx="{FB_X}" cy="{FLUSH_Y}" r="19" fill="{METAL}" stroke="{K}" stro
 add(f'<circle cx="{FB_X}" cy="{FLUSH_Y}" r="14" fill="{FB_GREEN}" stroke="{K}" stroke-width="2.2"/>')
 add(f'<text x="{FB_X}" y="{FLUSH_Y + 4.5}" font-family="{FONT}" font-size="13" font-weight="700" fill="{FB_TEXT}" text-anchor="middle">O₂</text>')
 
-# 気化器とインターロック
-# 気化器は合流管に並べて取り付けるが、ガスが入るのはダイヤルを開けた 1 台だけ。
-# 使用中（左）：合流管のガスは入口ポートから気化器に入り、出口ポートから合流管へ戻る。
-# 停止中（右）：ポートは閉じていて、ガスは合流管をそのまま通り過ぎる。
+# 制御部（1.3、2026-11-04）：麻酔器の電子制御。設定した流量・酸素濃度・麻酔薬濃度になるよう、ガスモジュールの弁と気化器の注入量を決める。
+# 点線は制御の信号（亜酸化窒素遮断弁の「O₂ の圧」の線と同じ描き方。実機の電気配線の形ではない）
+CTRL = (84, 78)
+rect(CTRL[0] - 40, CTRL[1] - 15, 80, 30, fill=METAL, rx=4)
+text("制御部", CTRL[0], CTRL[1] + 6, 15, "middle", 700)
+BUS_Y = 108
+dashed([(CTRL[0], CTRL[1] + 15), (CTRL[0], BUS_Y), (VAPS[0], BUS_Y)])
+for _, _x in GASES:
+    dashed([(_x + 20, BUS_Y), (_x + 20, FM_T)])
+
+# 気化器（1.3、2026-11-04）：Flow-i は注入式（Miller 第10版 図 20.28、Flow-i サービスマニュアル §3.10、PMDA 添付文書）。合流管の新鮮ガスは
+# 入口ポートから加熱した気化室に入り、注入器が液体の麻酔薬を短いパルスで室内へ噴いて蒸発させ、蒸気と混ざって出口ポートから合流管へ戻る。
+# 液は下の容器にあり、新鮮ガスの圧で加圧されて注入器へ送られる。濃度は電子的に設定し（ダイヤルはない）、2 台のうち選んだ 1 台だけが働く
+# （機械式のインターロックはない）。灯心・バイパス路・濃度ダイヤルの従来型（上昇式ベローズ・ピストン式の図）とは中身が違う
 VW, VT, VB = 70, MAN_Y + 26, MAN_Y + 96
 ON = VAPS[0]
 PIN, POUT = ON - VW / 2 + 14, ON + VW / 2 - 14
+CH_T, CH_B = VT + 18, VT + 40                   # 加熱気化室の上下
 pipe([(100, MAN_Y), (PIN, MAN_Y), (PIN, VT + 2)])
 pipe([(POUT, VT + 2), (POUT, MAN_Y), (CGO_X, MAN_Y)])
+dashed([(ON, BUS_Y), (ON, VT - 2)])             # 制御部 → 注入器
 
 
 for vx in VAPS:
     on = vx == ON
     x0, x1 = vx - VW / 2, vx + VW / 2
     pin, pout = x0 + 14, x1 - 14
-    cy0, by, hw = VT + 26, VT + 13, (GAS_W - 5) / 2
+    hw = (GAS_W - 5) / 2
     if not on:
         # 閉じたポート：合流管と気化器の間をふさいだ継ぎ手
         for px in (pin, pout):
             add(f'<rect x="{px-7}" y="{MAN_Y+6}" width="14" height="{VT-MAN_Y-4}" fill="{METAL}" stroke="{K}" stroke-width="1.6"/>')
             add(f'<line x1="{px-7}" y1="{(MAN_Y + 6 + VT + 2) / 2:.1f}" x2="{px+7}" y2="{(MAN_Y + 6 + VT + 2) / 2:.1f}" stroke="{K}" stroke-width="1.2"/>')
     add(f'<rect x="{x0}" y="{VT}" width="{VW}" height="{VB-VT}" rx="7" fill="{METAL}" stroke="{K}" stroke-width="2.2"/>')
-    # 気化室（中はガス）と液体の麻酔薬
-    add(f'<rect x="{x0+8}" y="{cy0}" width="{VW-16}" height="{VB-cy0-8}" rx="3" fill="#fff" stroke="{K}" stroke-width="1.2"/>')
-    add(f'<path d="M {x0+8},{VB-26} q 6,-5 12,0 t 12,0 t 12,0 t 12,0 t 6,0 L {x1-8},{VB-8} L {x0+8},{VB-8} Z" fill="{B_TINT}" stroke="none"/>')
-    # 灯心：気化室の壁ぞいに天井から液の中まで垂れる布（斜めの細線で布目）
-    for wx in (x0 + 9, x1 - 12):
-        add(f'<rect x="{wx}" y="{cy0+1}" width="3" height="{VB-cy0-10}" fill="{WICK}"/>')
-        for k in range(int((VB - cy0 - 10) // 4)):
-            add(f'<line x1="{wx}" y1="{cy0+4+4*k}" x2="{wx+3}" y2="{cy0+1+4*k}" stroke="#8a7a50" stroke-width="0.7"/>')
-    add(f'<path d="M {x0+8},{VB-26} q 6,-5 12,0 t 12,0 t 12,0 t 12,0 t 6,0" fill="none" stroke="{B}" stroke-width="1.8"/>')
+    # 加熱気化室：中はガス（白）。床はヒーター（金属の板に斜線）
+    add(f'<rect x="{pin-hw}" y="{CH_T}" width="{pout-pin+2*hw}" height="{CH_B-CH_T}" fill="#fff" stroke="{K}" stroke-width="1.2"/>')
+    add(f'<rect x="{pin-hw}" y="{CH_B}" width="{pout-pin+2*hw}" height="6" fill="{METAL}" stroke="{K}" stroke-width="1.2"/>')
+    for _k in range(int((pout - pin + 2 * hw) // 6)):
+        add(f'<line x1="{pin-hw+2+6*_k:.1f}" y1="{CH_B+5}" x2="{pin-hw+5+6*_k:.1f}" y2="{CH_B+1}" stroke="{K}" stroke-width="1"/>')
+    # 液の容器（加圧）：液面は高い。上の通路から細い道で新鮮ガスの圧がかかる
+    RT, RB = CH_B + 16, VB - 8
+    add(f'<rect x="{x0+8}" y="{RT}" width="{VW-16}" height="{RB-RT}" rx="3" fill="#fff" stroke="{K}" stroke-width="1.2"/>')
+    add(f'<path d="M {x0+8},{RT+7} q 6,-4 12,0 t 12,0 t 12,0 t 12,0 t 6,0 L {x1-8},{RB} L {x0+8},{RB} Z" fill="{B_TINT}" stroke="none"/>')
+    add(f'<path d="M {x0+8},{RT+7} q 6,-4 12,0 t 12,0 t 12,0 t 12,0 t 6,0" fill="none" stroke="{B}" stroke-width="1.8"/>')
     if on:
-        # 通路：本体の上面から入って、バイパス路（横の道）と気化室へ下りる道に分かれ、また合流して上面から出る
+        add(f'<rect x="{x0+9}" y="{VT+7}" width="{pin-hw-x0-9}" height="2.4" fill="#fff"/>')           # 加圧の道：入口の通路 → 容器の上
+        add(f'<rect x="{x0+9}" y="{VT+7}" width="2.4" height="{RT-VT-6}" fill="#fff"/>')
+    # 注入器：容器の液を細い道で気化室の床へ。コイルに引かれる鉄心（青）が道を開閉し、短いパルスで液を噴く（使用中だけ動く）
+    add(f'<rect x="{vx-1.5}" y="{CH_B+1}" width="3" height="{RT+8-CH_B-1}" fill="#fff"/>')               # 液の道（容器の液の中から気化室の床まで）
+    for _sx in (vx - 11, vx + 5):
+        add(f'<rect x="{_sx}" y="{CH_B+8}" width="6" height="6" fill="none" stroke="{K}" stroke-width="1"/>')   # コイル
+    if on:
+        add('<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 -3;0 0;0 0" keyTimes="0;0.08;0.2;0.3;1" dur="0.5s" repeatCount="indefinite"/>')
+    add(f'<rect x="{vx-2.5}" y="{CH_B+7}" width="5" height="8" rx="1" fill="{B}" stroke="{K}" stroke-width="1"/>')   # 鉄心（弁体）
+    if on:
+        add('</g>')
+    if on:
+        # 通路：入口ポートから気化室へ下り、気化室を通って出口ポートへ上がる（すべての新鮮ガスが気化室を通る）
         for px in (pin, pout):
-            add(f'<rect x="{px-hw}" y="{VT-1.2}" width="{2*hw}" height="{cy0-VT+1.8}" fill="#fff"/>')
-        add(f'<rect x="{pin-hw}" y="{by-hw}" width="{pout-pin+2*hw}" height="{2*hw}" fill="#fff"/>')
-    # 濃度ダイヤル（使用中は開、停止中は 0）
-    add(f'<circle cx="{vx}" cy="{VB}" r="15" fill="{METAL}" stroke="{K}" stroke-width="2.2"/>')
-    add(f'<circle cx="{vx}" cy="{VB}" r="10.5" fill="#fff" stroke="{K}" stroke-width="1.2"/>')
-    for a in (0, 30, 60, 90, 120):
-        r = math.radians(a)
-        add(f'<line x1="{vx + 7.5*math.sin(r):.1f}" y1="{VB - 7.5*math.cos(r):.1f}" x2="{vx + 10.5*math.sin(r):.1f}" y2="{VB - 10.5*math.cos(r):.1f}" stroke="{K}" stroke-width="1.1"/>')
-    pa = math.radians(60 if on else 0)
-    add(f'<line x1="{vx}" y1="{VB}" x2="{vx + 9*math.sin(pa):.1f}" y2="{VB - 9*math.cos(pa):.1f}" stroke="{K}" stroke-width="2.4" stroke-linecap="round"/>')
-    add(f'<circle cx="{vx}" cy="{VB}" r="2" fill="{K}"/>')
-    if on:
-        text("使用中", vx, MAN_Y - 16, 15, "middle", 700)
+            add(f'<rect x="{px-hw}" y="{VT-1.2}" width="{2*hw}" height="{CH_T-VT+1.8}" fill="#fff"/>')
+        text("使用中", vx, MAN_Y - 24, 15, "middle", 700)
     else:
-        text("停止中", vx, MAN_Y - 16, 15, "middle", 700, color="#555")
-# インターロック：2 台のダイヤルの間の棒（青＝動く部品）。使用中のダイヤルを回すと棒が押し出され、
-# 停止中のダイヤルの縁の切り欠きに入って回らないようにする
-add(f'<rect x="{VAPS[0]+15}" y="{VB-3}" width="{VAPS[1]-VAPS[0]-26}" height="6" rx="1" fill="{B}" stroke="{K}" stroke-width="1.2"/>')
-text("インターロック", sum(VAPS) / 2, VB + 34, 16, "middle", 700, B)
+        text("停止中", vx, MAN_Y - 24, 15, "middle", 700, color="#555")
 
 # 共通ガス出口
 # 2026-11-02：金属の継ぎ手の断面。中を合流管のガスが通り、右の先細りの口に呼吸回路側の管をつなぐ
@@ -594,11 +608,11 @@ TUBES = {
 
 _cD = cum(TUBES["D"])
 PIN0, POUT0 = VAPS[0] - VW / 2 + 14, VAPS[0] + VW / 2 - 14
-by_, cy_ = VT + 13, VT + 26 + 9
+cy_ = (CH_T + CH_B) / 2
 
 def supply_path(gx, chamber):
-    seg = [(gx - 30, OUT_Y), (gx - 30, JOIN_Y), (gx, JOIN_Y), (gx, MAN_Y), (PIN0, MAN_Y), (PIN0, by_)]
-    seg += ([(PIN0, cy_), (POUT0, cy_), (POUT0, by_)] if chamber else [(POUT0, by_)])
+    """注入式の気化器では新鮮ガスはすべて加熱気化室を通る（chamber は上昇式ベローズ・ピストン式の図との互換のため受けるだけ）"""
+    seg = [(gx - 30, OUT_Y), (gx - 30, JOIN_Y), (gx, JOIN_Y), (gx, MAN_Y), (PIN0, MAN_Y), (PIN0, cy_), (POUT0, cy_)]
     seg += [(POUT0, MAN_Y), (CGO_X + 10, MAN_Y), (720, MAN_Y), (720, 230), J_FG]
     return seg
 
@@ -612,10 +626,12 @@ R_CAP = 30                                                 # リフレクタの�
 TUBE_SPACING["R"] = round(plen(TUBES["R"]) / (40.0 * R_CAP), 4)
 GEO = {
     "kind": "reflector",
-    "CYC": CYC, "TI": TI, "FG_RATE": FG_RATE, "VT_P": VT_P, "VR": VR,
+    "CYC": CYC, "TI": TI, "FG_RATE": FG_RATE, "VT_P": VT_P, "VR": VR, "uptake": UPTAKE,
+    **({} if MANUAL else {"FG_I": FG_I, "FG_E": FG_E}),               # 人工呼吸：吸気中・呼気中の新鮮ガスの瞬時流量（粒/秒）
     # 新鮮ガスの到着を流れの切り替わりからずらす（粒の間隔に対する割合）。人工呼吸の多めは 0 だと吸気の終わりに着く粒が毎回 1 つ余分に患者へ入り、
     # 1 回換気量が 14 粒になる（0.5 で 13 粒。2026-11-04）
-    "supplyPhase": (0.5 if LOW_FLOW else 0.0) if MANUAL else (0.0 if LOW_FLOW else 0.5),
+    # 1.3（2026-11-04）：人工呼吸は吸気 2/3・呼気 1/3 の配分にしたうえで走査し、1 回換気量が 13 に最も近い値を選んだ（多め 13.00 で一定、低流量 13.03、不足 13.00）
+    "supplyPhase": (0.5 if LOW_FLOW else 0.0) if MANUAL else (0.875 if SHORT else 0.625 if LOW_FLOW else 0.375),
     "SP": 40.0, "SUP_V": 88.0, "SCAV_V": 120.0, "LUNG_MIN": LUNG_MIN,
     "tubeSpacing": TUBE_SPACING,
     "tubes": TUBES,
@@ -652,6 +668,9 @@ add(f'<rect x="12" y="{CAP_Y-28}" width="{W-24}" height="44" rx="8" fill="#f4f1f
 _CAPS = ((("insp", "吸気", "呼吸バッグを手で押すと、ガスはリフレクタと吸収装置を通り、新鮮ガスと合わさって患者へ送られる"),
           ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入り、奥の呼吸バッグをふくらませる。いっぱいになって圧が上がると PEEP/APL 弁から排出装置へ"))
          if MANUAL else
+         (("insp", "吸気", "リフレクタガス（O₂）がリフレクタのガスを押し出す。新鮮ガスが取り込みより少なく、O₂ の境目が呼吸ごとに患者側へ進む"),
+          ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入る。取り込みのぶん呼気が少なく、奥の O₂ は出た量より多く残る"))
+         if SHORT else
          (("insp", "吸気", "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置を通って新鮮ガスと合わさり患者へ"),
           ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ")))
 for ph, label_, msg in _CAPS:
@@ -675,9 +694,10 @@ label("②", "減圧弁", LX, REG_Y); leader(467, REG_Y, LX - 16, REG_Y)
 label("①", "ボンベ", LX, 603); leader(476, 603, LX - 16, 603)
 label("①", "中央配管", LX, OUT_Y + 14); leader(412, OUT_Y + 14, LX - 16, OUT_Y + 14)
 text("亜酸化窒素", 130, CUT_Y - 18, 17); text("遮断弁", 130, CUT_Y + 3, 17)
-label("⑤", "流量計", 48, 205, "below")   # 2026-11-04：図の枠の点線にかからないよう右へ
+label("⑤", "ガスモジュール", 180, 264, "below")   # 1.3：N₂O と Air のモジュールの間の下
 label("⑥", "酸素フラッシュ", 512, FLUSH_Y + 45, "right")
 label("⑦", "気化器", 500, VB + 66, "right")
+text("注入式", 488, VB + 94, 14, color="#333")
 label("⑧", "共通ガス出口", CGO_X + 10, 56, "left")
 # 呼吸回路
 label("⑨", "吸気弁", IV_X, 62, "right")

@@ -7,7 +7,7 @@
 //  - 1 回換気量：1 呼吸ごとに肺胞へ入った粒の数（30 呼吸の平均・最小・最大）
 //  - 吸収剤：全層を使い切った呼吸（300 呼吸まで）
 //  - ボリュームリフレクタ式だけ：吸気の終わりにリフレクタにある O2 の粒の数と、O2 の境目が患者側の端から何粒目か（30 呼吸の最小）、
-//    O2 が患者側の端まで届いて回路に入った回数（0 であること）
+//    O2 が患者側の端まで届いて回路に入った回数（0 であること。「不足」の場面（geo.uptake > 0）では逆に 0 より多いこと）と、取り込まれた粒の数
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -69,9 +69,9 @@ if (geo.kind === "reflector") {
   let o2min = Infinity, o2max = 0, depthMin = Infinity;
   for (let c = 1; c <= 30; c++) { sim.seek((c - 1) * CYC + geo.TI - 0.01); const r = sim.reflStat(); o2min = Math.min(o2min, r.o2); o2max = Math.max(o2max, r.o2); depthMin = Math.min(depthMin, r.depth); }
   sim.seek(30 * CYC);
-  refl = `  リフレクタの O₂ ${o2min}〜${o2max} 粒（境目は患者側から ${depthMin} 粒目以上）  O₂ が回路に入った回数 ${sim.reflLeak}`;
+  refl = `  リフレクタの O₂ ${o2min}〜${o2max} 粒（境目は患者側から ${depthMin} 粒目以上）  O₂ が回路に入った回数 ${sim.reflLeak}` + (geo.uptake ? `  取り込み ${sim.uptaken}` : "");
 }
-const ok = outside === 0 && rewind && (geo.kind !== "reflector" || sim.reflLeak === 0);
+const ok = outside === 0 && rewind && (geo.kind !== "reflector" || (geo.uptake ? sim.reflLeak > 0 : sim.reflLeak === 0));
 console.log(`${path.basename(file, ".json").padEnd(14)} 回路の外 ${outside}  巻き戻し ${rewind}  ` +
             `1回換気量 平均 ${mean.toFixed(2)}（${Math.min(...vts)}〜${Math.max(...vts)}）  ` +
             `吸収剤を使い切る呼吸 ${full === null ? "300 呼吸までに使い切らない" : full}${refl}  ${ok ? "OK" : "NG"}`);
