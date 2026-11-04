@@ -490,9 +490,12 @@ pipe([RK, (APX, RYS[3])], inner=EXP)
 GM_T = 548
 pipe([(KX, RYS[3]), (KX, GM_T + 30)], inner="#e6e6e6")          # 内腔は駆動ガスの色（灰）
 rect(KX - 24, GM_T, 48, 32, fill=METAL, rx=4)
-add(f'<rect x="{KX-3.5}" y="{GM_T+18}" width="7" height="{16.5}" fill="#e6e6e6"/>')                   # 出口の通路（箱の下の縁を越えて下りの管につなぐ。2026-11-05）
-add(f'<rect x="{KX-18}" y="{GM_T+10}" width="36" height="9" fill="#e6e6e6"/>')                        # 弁の部屋
+# 2026-11-05：内部を L 字に（入口 → 鉄心の下の弁座 → 出口）。以前は部屋が鉄心の左へも伸び、行き止まりの通路に見えた
+add(f'<rect x="{KX-3.5}" y="{GM_T+19}" width="7" height="{15.5}" fill="#e6e6e6"/>')                   # 出口の通路（弁座の穴から箱の下の縁を越えて下りの管へ）
+add(f'<rect x="{KX-6}" y="{GM_T+10}" width="24" height="9" fill="#e6e6e6"/>')                         # 弁の部屋（鉄心のすぐ左まで）
 add(f'<rect x="{KX+16}" y="{GM_T+10.5}" width="9.2" height="8" fill="#e6e6e6"/>')                     # 右から O2 が入る
+for _sx in (KX - 7, KX + 3.5):                                                                       # 弁座（出口の穴のふち）。閉じると鉄心の先がここに座る
+    add(f'<rect x="{_sx}" y="{GM_T+19}" width="3.5" height="2.5" fill="{METAL}" stroke="{K}" stroke-width="1"/>')
 for _k in range(4):                                                                                   # コイル
     add(f'<rect x="{KX-14+7*_k}" y="{GM_T+3}" width="4" height="5" fill="none" stroke="{K}" stroke-width="1"/>')
 _gk = f"0;{TI/CYC-0.012:.4f};{TI/CYC+0.018:.4f};0.985;1"
