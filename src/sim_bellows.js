@@ -179,8 +179,9 @@
 
     // ---------- 供給路 ----------
     spawnTime(k) {
-      const path = this.supply[this.supIdx(k)];
-      return (k + (this.g.supplyPhase || 0)) / this.FG - path.L / this.g.SUP_V;   // supplyPhase：到着時刻を流れの切り替わりからずらす
+      // 出発時刻は、そのガスのバイパスの経路の長さで決める（1.3.1：気化室を通る粒の経路は 44 px 長いが、その長さで出発を早めると、
+      // 合流より手前の共有の管で粒の間隔が 44・88・132 px と乱れる（本人の指摘）。気化室を通る粒は合流点に 0.5 秒遅れて着く）
+      return (k + (this.g.supplyPhase || 0)) / this.FG - this.supply[(k & 1) ? 1 : 2].L / this.g.SUP_V;   // supplyPhase：到着時刻を流れの切り替わりからずらす
     }
     /** 供給路の粒を出す。O2（偶数 k）と N2O（奇数 k）は経路の長さが違い、同じ到着時刻でも出発時刻が違うので、
      *  別々のカウンターで出す（2026-11-04：1 つのカウンターで交互に出していたため、N2O が O2 より 3 秒遅れて出発し、

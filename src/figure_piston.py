@@ -642,7 +642,8 @@ GEO = {
     # 新鮮ガスの粒が回路に届く時刻のずれ（到着の間隔に対する割合）。用手換気では、吸気中に届く新鮮ガスが
     # デカップリング弁の手前で吸気の流れに合流するため、ずれによって 1 回換気量の粒の数が呼吸ごとにゆらぐ。
     # 平均が VT_P になり、到着が吸気・呼気の切り替わりの瞬間に重ならない値を選んだ（2026-11-02）
-    "supplyPhase": (0.25 if LOW_FLOW else 0.1) if MANUAL else 0.5,
+    # 1.3.1：供給路の出発時刻の基準を変えたので走査し直し、1 回換気量が 13 に最も近い値
+    "supplyPhase": (0.125 if LOW_FLOW else 0.875) if MANUAL else (0.125 if LOW_FLOW else 0.25),
     "tubeSpacing": TUBE_SPACING,
     "tubes": TUBES,
     "absD": [_cF[2], _cF[3]],

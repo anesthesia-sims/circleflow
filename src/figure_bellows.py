@@ -643,7 +643,8 @@ GEO = {
     "SP": 40.0, "SUP_V": 88.0, "SCAV_V": 120.0, "LUNG_MIN": LUNG_MIN,
     # 新鮮ガスの粒が回路に届く時刻のずれ（到着の間隔に対する割合）。低流量では到着の間隔（2 秒）が吸気時間と
     # 同じで、ずらさないと毎回ちょうど流れの切り替わりの瞬間に届き、合流点で粒が重なって回路を回り続ける
-    "supplyPhase": 0.5 if LOW_FLOW else 0.0,
+    # 1.3.1：供給路の出発時刻の基準を変えたので走査し直し、1 回換気量が 13 に最も近い値（多め 13.00 で一定。以前は 14 だった）
+    "supplyPhase": (0.0 if LOW_FLOW else 0.375) if MANUAL else (0.0 if LOW_FLOW else 0.25),
     "tubeSpacing": TUBE_SPACING,
     "tubes": TUBES,
     "absD": [_cD[2], _cD[3]],                                  # D の弧長のうち吸収装置の範囲

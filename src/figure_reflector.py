@@ -631,7 +631,8 @@ GEO = {
     # 新鮮ガスの到着を流れの切り替わりからずらす（粒の間隔に対する割合）。人工呼吸の多めは 0 だと吸気の終わりに着く粒が毎回 1 つ余分に患者へ入り、
     # 1 回換気量が 14 粒になる（0.5 で 13 粒。2026-11-04）
     # 1.3（2026-11-04）：人工呼吸は吸気 2/3・呼気 1/3 の配分にしたうえで走査し、1 回換気量が 13 に最も近い値を選んだ（多め 13.00 で一定、低流量 13.03、不足 13.00）
-    "supplyPhase": (0.5 if LOW_FLOW else 0.0) if MANUAL else (0.875 if SHORT else 0.625 if LOW_FLOW else 0.375),
+    # 1.3.1：供給路の出発時刻の基準を変えたので用手換気も走査し直した（多め 13.00 で一定。以前は 14）
+    "supplyPhase": (0.0 if LOW_FLOW else 0.5) if MANUAL else (0.875 if SHORT else 0.625 if LOW_FLOW else 0.375),
     "SP": 40.0, "SUP_V": 88.0, "SCAV_V": 120.0, "LUNG_MIN": LUNG_MIN,
     "tubeSpacing": TUBE_SPACING,
     "tubes": TUBES,

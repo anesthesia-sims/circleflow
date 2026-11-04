@@ -156,8 +156,7 @@
     }
     /** k 番目の新鮮ガスの粒を供給路の入口に出す時刻（着く時刻から経路の長さぶん前） */
     spawnTime(k) {
-      const path = this.supply[this.supIdx(k)];
-      return this.arriveTime(k) - path.L / this.g.SUP_V;
+      return this.arriveTime(k) - this.supply[(k & 1) ? 1 : 2].L / this.g.SUP_V;   // 出発はそのガスの基準の経路（1.3.1。注入式では 4 本とも同じ長さ）
     }
     /** 供給路の粒を出す。O2（偶数 k）と N2O（奇数 k）は経路の長さが違い、同じ到着時刻でも出発時刻が違うので、
      *  別々のカウンターで出す（2026-11-04：1 つのカウンターで交互に出していたため、N2O が O2 より 3 秒遅れて出発し、
