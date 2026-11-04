@@ -19,6 +19,14 @@ MAIN_JS = r"""
   const key = (fam, lo, mn) => fam + (lo ? 'Low' : '') + (mn ? 'Man' : '');
   let low = false, man = false;                                  // 新鮮ガス：低流量、換気：用手換気
   Object.values(figs).forEach(s => s.pauseAnimations());
+  // 拡大縮小で動かす部品（呼吸バッグ・ばね・ベローズ）は線の太さを画面の画素で固定している（vector-effect）。そのままだと図を縮めても
+  // 線が細くならず、狭い画面で太く黒い塊に見えるので、図の縮尺を掛ける（2026-11-04）
+  const fitStroke = s => { const m = s.getScreenCTM(); if (m && m.a > 0) s.style.setProperty('--vs', m.a.toFixed(4)); };
+  const strokeRO = new ResizeObserver(es => es.forEach(e => fitStroke(e.target)));
+  for (const s of Object.values(figs)) {
+    s.querySelectorAll('[vector-effect="non-scaling-stroke"]').forEach(el => { el.style.strokeWidth = `calc(${el.getAttribute('stroke-width')}px * var(--vs, 1))`; });
+    strokeRO.observe(s);
+  }
   const q = new URLSearchParams(location.search);
   const BASE = {}, vbCur = {};                                   // 図ごとのもとの表示範囲と、いまの表示範囲（拡大用）
   for (const k of TYPES) {
@@ -81,7 +89,7 @@ MAIN_JS = r"""
     return `${outer} M${x0 + R},${y0} H${x1 - R} A${R},${R} 0 0 1 ${x1},${y0 + R} V${y1 - R} A${R},${R} 0 0 1 ${x1 - R},${y1} ` +
            `H${x0 + R} A${R},${R} 0 0 1 ${x0},${y1 - R} V${y0 + R} A${R},${R} 0 0 1 ${x0 + R},${y0} Z`;
   };
-  const setVB = (k, vb) => { vbCur[k] = vb; figs[k].setAttribute('viewBox', vb.map(v => v.toFixed(2)).join(' ')); };
+  const setVB = (k, vb) => { vbCur[k] = vb; figs[k].setAttribute('viewBox', vb.map(v => v.toFixed(2)).join(' ')); fitStroke(figs[k]); };
   const setHole = (k, r) => { holeCur[k] = r; dims[k].setAttribute('d', r ? holePath(r, 'M-6000,-6000 H8000 V8000 H-6000 Z') : 'M-6000,-6000 H8000 V8000 H-6000 Z'); };
   const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
   const lerp = (a, b, e) => a.map((v, i) => v + (b[i] - v) * e);

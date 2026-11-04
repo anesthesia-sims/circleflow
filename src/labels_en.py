@@ -23,7 +23,7 @@ EN = {
     "亜酸化窒素": {"t": "N₂O shut-off", "size": 16},           # 1 行目だけで「N₂O」にすると流量計の「N₂O」と区別できない（押せる文字のため）
     "遮断弁": {"t": "valve", "size": 16},
     "O₂の圧で開閉": {"t": "O₂ pressure signal", "size": 14},
-    "流量計": {"t": "Flowmeters", "size": 13, "anchor": "start", "dx": -30},
+    "流量計": {"t": "Flowmeters", "size": 11, "anchor": "start", "dx": -31},
     "停止": {"t": "Off", "size": 14},
     "使用中": {"t": "In use", "size": 14},
     "停止中": {"t": "Off", "size": 14},
@@ -39,10 +39,10 @@ EN = {
     "Yピース": {"t": "tubes, Y-piece", "size": 16},
     "回路内圧計": {"t": "Pressure gauge", "size": 15},
     "患者": "Patient",
-    "気管": {"t": "Trachea", "size": 9, "anchor": "end", "dx": -16},
-    ("p", "気管"): {"t": "Trachea", "size": 11},
-    "（死腔）": {"t": "dead space", "size": 9, "anchor": "end", "dx": -10},
-    ("p", "（死腔）"): {"t": "(dead space)", "size": 9},
+    "気管": {"t": "Trachea", "size": 9, "anchor": "end"},
+    ("p", "気管"): {"t": "Trachea", "size": 10},
+    "(死腔)": {"t": "(dead", "size": 9, "anchor": "end", "dy": -5},
+    ("p", "（死腔）"): {"t": "(dead", "size": 9, "dx": 6, "dy": -4},
     "肺胞": {"t": "Alveoli", "size": 12, "dy": -3},
     ("p", "肺胞"): {"t": "Alveoli", "size": 12},
     "二酸化炭素": {"t": "CO₂", "size": 17},
@@ -52,7 +52,7 @@ EN = {
     ("p", "呼吸バッグ"): {"t": "Reservoir bag", "size": 13, "dx": 3},
     "手で押す": {"t": "Squeeze", "size": 14},
     ("r", "呼吸バッグ"): {"t": "Reservoir bag", "size": 13},
-    "切替弁": {"t": "Bag/vent switch", "size": 15},
+    "切替弁": {"t": "Bag/vent switch", "size": 15, "dx": 10},
     ("r", "切替弁"): {"t": "Bag/vent switch", "size": 10},
     "用手": {"t": "Bag", "size": 14},
     "人工呼吸": {"t": "Vent", "size": 13},
@@ -60,6 +60,7 @@ EN = {
     "駆動ガス（O₂）": {"t": "Drive gas (O₂)", "size": 13},
     "余剰ガス弁": {"t": "Relief valve", "size": 13},
     "余剰ガス排出装置": {"t": "Scavenging system", "size": 15},
+    ("r", "余剰ガス排出装置"): {"t": "Scavenging system", "size": 14},
     "大気": {"t": "To room", "size": 11},
     "吸引": {"t": "Vac", "size": 9},
     "→ 手術室外へ": {"t": "→ Out of OR", "size": 14, "dx": 6},
@@ -78,9 +79,10 @@ EN = {
     # ボリュームリフレクタ式（figure_reflector.py）
     "ボリュームリフレクタ": {"t": "Volume reflector", "size": 15},
     "リフレクタガス（O₂）": {"t": "Reflector gas (O₂)", "size": 13},                    # 凡例
-    "リフレクタガスモジュール（O₂）": {"t": "Reflector gas module (O₂)", "size": 12},
+    "リフレクタガス": {"t": "Reflector gas", "size": 12},
+    "モジュール（O₂）": {"t": "module (O₂)", "size": 12},
     "電磁弁": {"t": "solenoid", "size": 10},
-    "PEEP/APL弁": {"t": "PEEP/APL valve", "size": 14},
+    "PEEP/APL弁": {"t": "PEEP/APL valve", "size": 10, "dx": -3},
     "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置を通って新鮮ガスと合わさり患者へ":
         {"t": "Reflector gas (O₂) pushes gas out of the reflector; it flows through the absorber, joins the fresh gas and goes to the patient", "size": 14},
     "呼吸バッグを手で押すと、ガスはリフレクタと吸収装置を通り、新鮮ガスと合わさって患者へ送られる":

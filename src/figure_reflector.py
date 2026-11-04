@@ -403,8 +403,10 @@ for lx in LOBES:
     x0, y0, x1, y1 = bronchus(lx, 0.62, 1.22, HIL, LOBE_T)
     add(f'<path d="M {x0:.1f},{y0:.1f} L {x1:.1f},{y1:.1f}" stroke="{B_TINT2}" stroke-width="6" stroke-linecap="butt"/>')
 text("患者", TR_X, 250, 15, "middle", 700)
-text("気管", TR_X + 10, 322, 12, color="#333")
-text("（死腔）", TR_X + 4, 338, 11, color="#333")
+text("気管", TR_X - 10, 322, 12, "end", color="#333")     # 2026-11-04：図の枠の点線にかからないよう気管の左へ
+text("(死腔)", TR_X - 10, 338, 11, "end", color="#333")
+if LANG == "en":                                  # 英語は 1 行では蛇管にかかるので、(dead と space) の 2 行に分ける
+    text("space)", TR_X - 10, 344, 9, "end", color="#333")
 text("肺胞", TR_X, 508, 13, "middle", color="#333")   # 2026-11-02：輪郭の袋のふくらみと重ならないよう 8 px 下げた
 # Y ピース本体：3 本の管を、外形→内腔の順に描いて継ぎ目なく合流させる
 _legs = [(YI, (YX, YY)), (YE, (YX, YY)), ((YX, YY), YP)]
@@ -463,7 +465,7 @@ R_PTS += [(RX1, RYS[3])]
 K = (RX1, RYS[3])                                                 # 奥の端
 R_PTS = [(round(x, 1), round(y, 1)) for x, y in R_PTS]
 pipe(R_PTS, inner=EXP)
-text("ボリュームリフレクタ", RX0 + 4, RYS[0] - 11, 15, weight=700)
+text("ボリュームリフレクタ", J[0] + 14, RYS[0] - 3, 15, weight=700)   # 2026-11-04：合流点から下りる管に重ならないよう、管の右へ
 # 奥の端 K からの分岐：上はリフレクタガス（O2）の入口、下は PEEP/APL 弁
 KX = 1215
 APX = 1280                                      # PEEP/APL 弁（右端。2026-11-03：用手換気の呼吸バッグを K の右に置くため右へ寄せ、出口を左向きにした）
@@ -486,8 +488,9 @@ else:
 add(f'<rect x="{KX-4}" y="{GM_T+8}" width="8" height="11" rx="1" fill="{B}" stroke="{K}" stroke-width="1.2"/>')   # 鉄心（下がると出口をふさぐ）
 add('</g>')
 pipe([(KX + 24, GM_T + 14.5), (KX + 44, GM_T + 14.5)], inner=PIPE["O₂"], w=9)                        # O2 の配管（右から）
-text("リフレクタガスモジュール（O₂）", KX, GM_T - 8, 13, "middle", color="#333")
-text("電磁弁", KX + 48, GM_T + 19, 11, color="#666")
+text("リフレクタガス", KX - 35, GM_T - 25, 13, color="#333")   # 2026-11-04：1 行ではとぐろの管の壁に重なるので 2 行に
+text("モジュール（O₂）", KX - 35, GM_T - 8, 13, color="#333")
+text("電磁弁", KX + 52, GM_T + 19, 11, color="#666")
 # PEEP/APL 弁：ばねで弁座に押しつけた弁板。呼気では開いて余ったガスを余剰ガス排出装置へ逃がし、呼気の終わりの圧（PEEP）を
 # 設定の値に保つ。用手換気では APL 弁として働く（1 つの弁が兼用）。実機は電子制御で、ばねとつまみは模式
 APY = RYS[3] + 2
@@ -543,7 +546,7 @@ if MANUAL:
 else:
     breathing_bag(BT_X, BT_Y, EXP, [0.84, 0.84], [0.0, CYC])                                            # 人工呼吸：満杯の大きさで止まっている
 add('</g>')
-text("呼吸バッグ", BT_X - 34, BT_Y + 32, 14, "end", 700)
+text("呼吸バッグ", BT_X - 34, BT_Y + 24, 14, "end", 700)   # 2026-11-04：用手換気の「手で押す」に重ならないよう 8 px 上へ
 if MANUAL:
     add(gate_open("insp"))
     text("手で押す", BT_X - 44, BT_Y + 51, 14, "end", 700)
@@ -552,25 +555,25 @@ if MANUAL:
     add('</g>')
     BAG_SLOTS = [(BT_X + dy, BT_Y + 44 - dx) for dy in (-18, -9, 0, 9, 18) for dx in (-18, -9, 0, 9, 18)
                  if (dx / 26) ** 2 + (dy / 24) ** 2 <= 1]        # 横向きのバッグの席を -90° 回した座標
-# 余剰ガス排出装置（2026-11-03：呼吸バッグを置くため 20 px 下げた）
+# 余剰ガス排出装置（2026-11-03：呼吸バッグを置くため 20 px 下げた。2026-11-04：図の枠に収まるよう箱の高さを 44 → 34 px に）
 SC_T = 700
 SCX = APX - 60                                                                                      # 弁の出口（左向き） → 排出装置へ下りる管（弁の名前と重ならないよう 60 px 左）
 pipe([(APX - 20, APY + 30), (SCX, APY + 30), (SCX, SC_T)], inner=EXP)
 # 余剰ガス排出装置（2026-11-02）：金属の箱の中に透明なため（リザーバー）。回路から来たガスはためを通って右端の
 # 吸引の口（黒：吸引の配管の色）から手術室の外へ吸い出される。ためは上の口で大気に開いていて、吸引が強すぎても
 # 弱すぎても回路に陰圧・陽圧がかからない（開放型）
-rect(760, SC_T, 556, 44, fill=METAL, rx=8)
+rect(760, SC_T, 556, 34, fill=METAL, rx=8)
 _rx0, _rx1 = 800, 1292
-add(f'<rect x="{_rx0}" y="{SC_T+11}" width="{_rx1-_rx0}" height="22" rx="5" fill="{GLASS}" stroke="{K}" stroke-width="1.4"/>')
-add(f'<line x1="{_rx0+6}" y1="{SC_T+14.5}" x2="{_rx1-6}" y2="{SC_T+14.5}" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>')
-add(f'<line x1="{_rx0+6}" y1="{SC_T+29.5}" x2="{_rx1-6}" y2="{SC_T+29.5}" stroke="{GLASS_SHADE}" stroke-width="2.5" stroke-linecap="round"/>')
-add(f'<rect x="{SCX-3.5}" y="{SC_T-1.2}" width="7" height="13" fill="{GLASS}"/>')                   # 上から来る管の入口
+add(f'<rect x="{_rx0}" y="{SC_T+6}" width="{_rx1-_rx0}" height="22" rx="5" fill="{GLASS}" stroke="{K}" stroke-width="1.4"/>')
+add(f'<line x1="{_rx0+6}" y1="{SC_T+9.5}" x2="{_rx1-6}" y2="{SC_T+9.5}" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>')
+add(f'<line x1="{_rx0+6}" y1="{SC_T+24.5}" x2="{_rx1-6}" y2="{SC_T+24.5}" stroke="{GLASS_SHADE}" stroke-width="2.5" stroke-linecap="round"/>')
+add(f'<rect x="{SCX-3.5}" y="{SC_T-1.2}" width="7" height="8" fill="{GLASS}"/>')                   # 上から来る管の入口
 for _vx in (930, 944):                                                                               # 大気への口
-    add(f'<rect x="{_vx-3}" y="{SC_T-1.2}" width="6" height="13" fill="{GLASS}"/>')
+    add(f'<rect x="{_vx-3}" y="{SC_T-1.2}" width="6" height="8" fill="{GLASS}"/>')
 text("大気", 937.0, SC_T - 6, 12, "middle", color="#333")
-add(f'<rect x="{_rx1}" y="{SC_T+13}" width="18" height="18" rx="2" fill="{K}"/>')   # 吸引の口
-text("吸引", _rx1 + 9, SC_T + 26, 9, "middle", 700, "#fff", halo=False)
-text("→ 手術室外へ", _rx1 - 20, SC_T + 60, 16, "middle", color="#333")   # 吸引の口の下（2026-11-03：上は呼吸バッグの置き場所）
+add(f'<rect x="{_rx1}" y="{SC_T+8}" width="18" height="18" rx="2" fill="{K}"/>')   # 吸引の口
+text("吸引", _rx1 + 9, SC_T + 21, 9, "middle", 700, "#fff", halo=False)
+text("→ 手術室外へ", 1020, SC_T - 7, 16, "middle", color="#333")   # 箱の上、呼吸バッグの左（2026-11-04：吸引の口の下では図の枠の外に出ていた）
 
 
 # ================= 経路データ（JS シミュレーション用） =================
@@ -585,7 +588,7 @@ TUBES = {
     "D": [J, (AX, EXP_Y), (AX, CB), (AX, CT), J_FG],                                    # 合流点 → 吸収装置 → 回路の入口
     "R": R_PTS,                                                                         # 合流点 J → ボリュームリフレクタ → 奥の端 K
     # K → PEEP/APL 弁（弁座と弁板のすき間から弁板のふちを回る）→ 余剰ガス排出装置 → 外
-    "S": [K, (APX, RYS[3]), (APX, APY + 19.5), (APX - 12, APY + 19.5), (APX - 12, APY + 30), (SCX, APY + 30), (SCX, SC_T + 22), (1300, SC_T + 22)],
+    "S": [K, (APX, RYS[3]), (APX, APY + 19.5), (APX - 12, APY + 19.5), (APX - 12, APY + 30), (SCX, APY + 30), (SCX, SC_T + 17), (1300, SC_T + 17)],
 }
 
 
@@ -670,7 +673,7 @@ label("②", "減圧弁", LX, REG_Y); leader(467, REG_Y, LX - 16, REG_Y)
 label("①", "ボンベ", LX, 603); leader(476, 603, LX - 16, 603)
 label("①", "中央配管", LX, OUT_Y + 14); leader(412, OUT_Y + 14, LX - 16, OUT_Y + 14)
 text("亜酸化窒素", 130, CUT_Y - 18, 17); text("遮断弁", 130, CUT_Y + 3, 17)
-label("⑤", "流量計", 40, 205, "below")
+label("⑤", "流量計", 48, 205, "below")   # 2026-11-04：図の枠の点線にかからないよう右へ
 label("⑥", "酸素フラッシュ", 512, FLUSH_Y + 45, "right")
 label("⑦", "気化器", 500, VB + 66, "right")
 label("⑧", "共通ガス出口", CGO_X + 10, 56, "left")

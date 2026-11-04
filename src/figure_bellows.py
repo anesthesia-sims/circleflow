@@ -400,8 +400,10 @@ for lx in LOBES:
     x0, y0, x1, y1 = bronchus(lx, 0.62, 1.22, HIL, LOBE_T)
     add(f'<path d="M {x0:.1f},{y0:.1f} L {x1:.1f},{y1:.1f}" stroke="{B_TINT2}" stroke-width="6" stroke-linecap="butt"/>')
 text("患者", TR_X, 250, 15, "middle", 700)
-text("気管", TR_X + 10, 322, 12, color="#333")
-text("（死腔）", TR_X + 4, 338, 11, color="#333")
+text("気管", TR_X - 10, 322, 12, "end", color="#333")     # 2026-11-04：図の枠の点線にかからないよう気管の左へ
+text("(死腔)", TR_X - 10, 338, 11, "end", color="#333")
+if LANG == "en":                                  # 英語は 1 行では蛇管にかかるので、(dead と space) の 2 行に分ける
+    text("space)", TR_X - 10, 344, 9, "end", color="#333")
 text("肺胞", TR_X, 508, 13, "middle", color="#333")   # 2026-11-02：輪郭の袋のふくらみと重ならないよう 8 px 下げた
 # Y ピース本体：3 本の管を、外形→内腔の順に描いて継ぎ目なく合流させる
 _legs = [(YI, (YX, YY)), (YE, (YX, YY)), ((YX, YY), YP)]
@@ -750,7 +752,7 @@ label("②", "減圧弁", LX, REG_Y); leader(467, REG_Y, LX - 16, REG_Y)
 label("①", "ボンベ", LX, 603); leader(476, 603, LX - 16, 603)
 label("①", "中央配管", LX, OUT_Y + 14); leader(412, OUT_Y + 14, LX - 16, OUT_Y + 14)
 text("亜酸化窒素", 130, CUT_Y - 18, 17); text("遮断弁", 130, CUT_Y + 3, 17)
-label("⑤", "流量計", 40, 205, "below")
+label("⑤", "流量計", 48, 205, "below")   # 2026-11-04：図の枠の点線にかからないよう右へ
 label("⑥", "酸素フラッシュ", 512, FLUSH_Y + 45, "right")
 label("⑦", "気化器", 500, VB + 66, "right")
 label("⑧", "共通ガス出口", CGO_X + 10, 56, "left")

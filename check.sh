@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: MIT
-# build.sh で作った 10 の場面を点検する。必要なもの：Node.js
+# build.sh で作った 12 の場面を点検する。必要なもの：Node.js
 set -e
 cd "$(dirname "$0")"
 status=0

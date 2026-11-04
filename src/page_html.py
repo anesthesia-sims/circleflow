@@ -47,7 +47,8 @@ BODY_MID = r"""
 <footer class="foot chrome">
   CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。プログラムは <a href="https://opensource.org/license/mit" rel="license">MIT</a>、図と文章は <a href="https://creativecommons.org/licenses/by/4.0/deed.ja" rel="license">CC BY 4.0</a>。ソースコード：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版 @@VERSION@@<br>
   教育用の模式図で、臨床の判断や機器の操作に用いるものではありません。特定のメーカーとは関係ありません。<br>
-  謝辞：帝京大学医学部附属溝口病院 麻酔科の平林剛先生から、呼吸回路と人工呼吸器の方式について助言をいただきました。内容の誤りは著者の責任です。
+  謝辞：帝京大学医学部附属溝口病院 麻酔科の平林剛先生から、呼吸回路と人工呼吸器の方式について助言をいただきました。内容の誤りは著者の責任です。<br>
+  もし間違いに気づかれましたら、<a href="https://github.com/anesthesia-sims/circleflow/issues/new">GitHub の Issue</a> へ投稿していただくか、メール（<a href="mailto:masaaki.asamoto@gmail.com?subject=CircleFlow">masaaki.asamoto@gmail.com</a>）でご連絡をお願いします。
 </footer>
 </div>
 <div class="modal chrome" id="more" role="dialog" aria-label="くわしい解説"><div class="sheet">

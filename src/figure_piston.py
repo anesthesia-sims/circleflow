@@ -423,6 +423,8 @@ for lx in LOBES:
 text("患者", TR_X, YY - 20, 15, "middle", 700)
 text("気管", TR_X + 10, YY + 52, 12, color="#333")
 text("（死腔）", TR_X + 4, YY + 68, 11, color="#333")
+if LANG == "en":                                  # 英語は 1 行では図の枠の点線にかかるので、(dead と space) の 2 行に分ける
+    text("space)", TR_X + 10, YY + 75, 9, color="#333")
 text("肺胞", TR_X, LOBE_B + 22, 13, "middle", color="#333")   # 2026-11-02：輪郭の袋のふくらみの分 4 px 下げた
 # Y ピース本体：3 本の管を、外形→内腔の順に描いて継ぎ目なく合流させる
 _legs = [(YI, (YX, YY)), (YE, (YX, YY)), ((YX, YY), YP)]
@@ -695,7 +697,7 @@ label("②", "減圧弁", LX, REG_Y); leader(467, REG_Y, LX - 16, REG_Y)
 label("①", "ボンベ", LX, 603); leader(476, 603, LX - 16, 603)
 label("①", "中央配管", LX, OUT_Y + 14); leader(412, OUT_Y + 14, LX - 16, OUT_Y + 14)
 text("亜酸化窒素", 130, CUT_Y - 18, 17); text("遮断弁", 130, CUT_Y + 3, 17)
-label("⑤", "流量計", 40, 205, "below")
+label("⑤", "流量計", 48, 205, "below")   # 2026-11-04：図の枠の点線にかからないよう右へ
 label("⑥", "酸素フラッシュ", 512, FLUSH_Y + 45, "right")
 label("⑦", "気化器", 500, VB + 66, "right")
 label("⑧", "共通ガス出口", CGO_X + 10, 56, "left")
