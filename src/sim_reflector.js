@@ -24,7 +24,7 @@
   "use strict";
 
   const { mulberry32, Poly, along, pathLen, interp, hexRGB, DT, WARM_CYCLES, LEAD, MIN_TRIP, RELAX_MIN, RELAX_V, C_FRESH, C_CO2, simText, SimBase } = window.CircleFlowSim;
-  const TUBES = ["A", "B", "C", "D", "R"];
+  const TUBES = ["A", "B", "C", "D", "R", "M"];   // M：リフレクタガス（O2）がガスモジュールから奥の端の手前まで下りる管（2026-11-05）
   const C_REFL = "#7a7a7a";                               // リフレクタガス（O2）の粒：駆動ガスと同じ灰（押すためのガス）
 
   class ReflectorSim extends SimBase {
@@ -89,9 +89,9 @@
     /** 時刻 tc（周期内）の各管の流れの速さ（px/s、＋は管の向き）。R は J → K の向きが＋ */
     flows(tc) {                                                // 新鮮ガスは一定。吸気はリフレクタガス（用手換気では手で押したバッグ）が押し出す
       const s = this.spc;
-      if (tc < this.TI) return { A: (this.vr + this.fgI) * s.A, B: (this.vr + this.fgI) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R };
+      if (tc < this.TI) return { A: (this.vr + this.fgI) * s.A, B: (this.vr + this.fgI) * s.B, C: 0, D: this.vr * s.D, R: -this.vr * s.R, M: 0 };   // M は流れでは動かさない（送り出したぶんだけ詰める。stepM）
       const ex = this.exRate(tc - this.TI);
-      return { A: 0, B: -ex * s.B, C: ex * s.C, D: -this.fgE * s.D, R: (ex + this.fgE) * s.R };   // 呼気中は新鮮ガスが D を逆向きに R へ
+      return { A: 0, B: -ex * s.B, C: ex * s.C, D: -this.fgE * s.D, R: (ex + this.fgE) * s.R, M: 0 };   // 呼気中は新鮮ガスが D を逆向きに R へ
     }
 
     bSlotXY(idx, tc) {                                        // 呼吸バッグの席：差し込み口を中心に、バッグの大きさに合わせて動く
@@ -127,12 +127,12 @@
       const t0 = -WARM_CYCLES * this.CYC;
       this.n = Math.round(t0 / DT);
       // 管に粒を敷く。R は呼気の終わりの状態（患者側のガスで満たされ、O2 はない）から始める
-      const co2Init = { A: () => false, B: () => true, C: () => true, R: () => true, D: s => s < g.absD[1] };
+      const co2Init = { A: () => false, B: () => true, C: () => true, R: () => true, D: s => s < g.absD[1], M: () => false };
       for (const nm of TUBES) {
         const L = this.tubes[nm].L, sp = this.spc[nm], n = Math.floor(L / sp);
         for (let i = 0; i < n; i++) {
           const s = (i + 0.5) * sp;
-          this.add({ st: "tube", tube: nm, s, co2: co2Init[nm](s) });
+          this.add(nm === "M" ? { st: "tube", tube: nm, s, kind: "O2", refl: true, co2: false } : { st: "tube", tube: nm, s, co2: co2Init[nm](s) });
         }
       }
       for (let i = 0; i < g.LUNG_MIN; i++) {
@@ -202,13 +202,49 @@
     /** 最初に出す k：t0 までに出発している最初の偶数と奇数 */
     setNextKs(k0) { k0 = Math.ceil(k0); this.nextKs = [k0 + (k0 & 1), k0 + 1 - (k0 & 1)]; }
     /** リフレクタガス：吸気中、奥の端 K から O2 の粒を間隔 SP ごとに入れる（速さ VR×SP なので VR 粒/秒） */
+    /** リフレクタガス（2026-11-05）：R の奥の端に空きができたら（移動中の O2 のぶんも数える）、モジュールの管 M のいちばん先の粒を
+     *  奥の端 K へ送る。O2 は送った量だけ入るので、患者の取り込みで回路のガスが減ると、そのぶん多く入る（以前と同じ決まり）。
+     *  管 M には O2 の配管の口から粒を足して、いつも満たしておく */
     spawnReflGas() {
-      const L = this.tubes.R.L, sp = this.spc.R;
-      let smax = -Infinity;
-      for (const p of this.particles) if (p.st === "tube" && p.tube === "R" && p.s > smax) smax = p.s;
-      if (smax === -Infinity || smax + sp <= L) {
-        this.add({ st: "tube", tube: "R", s: smax === -Infinity ? L - 1e-6 : smax + sp, kind: "O2", refl: true, co2: false });
+      const L = this.tubes.R.L, sp = this.spc.R, F = this.flows(this.tc(this.t));
+      let smax = -Infinity, pending = 0, front = null;
+      for (const p of this.particles) {
+        if (p.st === "tube" && p.tube === "R" && p.s > smax) smax = p.s;
+        else if (p.st === "trans" && p.refl && p.dest && p.dest.tube === "R") pending++;
+        else if (p.st === "tube" && p.tube === "M" && (!front || p.s > front.s)) front = p;
       }
+      let path = null, speed = 0, tt = 0;
+      if (front) {                                            // 管 M の残りの道と、分岐から K までの道（吸気の終わりまでに着く速さ）
+        const pts = this.g.tubes.M;
+        path = [this.tubes.M.xy(front.s)];
+        let acc = 0;
+        for (let i = 1; i < pts.length; i++) { acc += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); if (acc > front.s + 1e-6) path.push(pts[i]); }
+        path.push(this.g.nodes.MJ, this.g.nodes.K);            // 分岐 → 奥の端 K
+        const len = pathLen(path);
+        speed = Math.max(Math.abs(F.R), 60, len / Math.max(this.TI - this.tc(this.t), 0.05));
+        tt = len / speed;
+      }
+      // 着くときの空き（いまの空き＋移動中に R が進むぶん）が、移動中の粒のぶんも含めて 1 間隔あれば送り出す
+      if (smax === -Infinity || (L - smax) + Math.abs(F.R) * tt >= sp * (1 + pending) - 1e-9) {
+        if (front) {
+          this.startTransit(front, path, speed, { type: "tube", tube: "R", far: true });
+        } else {
+          this.add({ st: "tube", tube: "R", s: smax === -Infinity ? L - 1e-6 : smax + sp, kind: "O2", refl: true, co2: false });
+        }
+      }
+      let smin = Infinity;                                    // 管 M の始め（O2 の配管の口）に足す
+      for (const p of this.particles) if (p.st === "tube" && p.tube === "M" && p.s < smin) smin = p.s;
+      if (smin === Infinity) this.add({ st: "tube", tube: "M", s: 0, kind: "O2", refl: true, co2: false });
+      else if (smin >= this.spc.M) this.add({ st: "tube", tube: "M", s: Math.max(0, smin - this.spc.M), kind: "O2", refl: true, co2: false });
+    }
+
+    /** 管 M の粒を、先頭から 1 間隔ずつの位置へ詰めて進める（電磁弁が開いている吸気中だけ） */
+    stepM() {
+      const arr = this.particles.filter(p => p.st === "tube" && p.tube === "M").sort((a, b) => b.s - a.s);
+      const L = this.tubes.M.L, sp = this.spc.M, v = Math.max(80, 1.5 * Math.abs(this.flows(this.tc(this.t)).R)) * DT;
+      // 止まる位置は電磁弁の鉄心（管 M の始めから 22 px の角）にかからないように、そこに当たる粒は配管の口の側へ寄せる
+      let pos = L - 1e-6;
+      arr.forEach((p, i) => { if (i > 0) pos -= sp; if (pos > 13 && pos < 31) pos = 12; const target = Math.max(0, pos); if (p.s < target) p.s = Math.min(target, p.s + v); });
     }
 
     // ---------- 席の選び方 ----------
@@ -280,6 +316,7 @@
         }
         case "C": this.enterTube(p, "R", over); break;          // 呼気はリフレクタへ
         case "D": this.enterTube(p, "A", over); break;          // 回路の入口へ
+        case "M": p.s = this.tubes.M.L - 1e-6; break;     // （M は流れでは動かないので通常は来ない）
         case "R": {                                       // 奥の端 K：用手換気ではバッグへ（満杯なら PEEP/APL 弁から排出へ）。人工呼吸では PEEP/APL 弁から排出へ
           if (this.manual && this.bagCount() < g.NB_FULL) {
             const idx = this.pickBagEntry();
@@ -409,7 +446,7 @@
           if (p.s > this.tubes.S.L) this.remove(p);
         }
       }
-      if (ph === "i" && !this.manual) this.spawnReflGas();
+      if (ph === "i" && !this.manual) { this.spawnReflGas(); this.stepM(); }
       for (const nm of TUBES) {
         const arr = this.particles.filter(p => p.st === "tube" && p.tube === nm).sort((a, b) => a.s - b.s);
         const dmin = RELAX_MIN * this.spc[nm], L = this.tubes[nm].L, mv = RELAX_V * DT;
@@ -571,7 +608,7 @@
       if (!p) return "";
       const inAbs = p.st === "tube" && p.tube === "D" && p.s >= this.g.absD[0] && p.s <= this.g.absD[1];
       const T = simText();
-      const where = { tube: inAbs ? T.inAbs : { A: T.A, B: T.B, C: T.C, D: T.D, R: T.R }[p.tube],
+      const where = { tube: inAbs ? T.inAbs : { A: T.A, B: T.B, C: T.C, D: T.D, R: T.R, M: T.M }[p.tube],
         sup: T.sup, scav: T.scav, slot: p.store === "b" ? T.bag : T.lung, trans: T.trans }[p.st];
       return T.fmt(p.refl ? T.reflGas : (p.kind === "O2" ? "O₂" : "N₂O"), p.id, p.co2, where);
     }

@@ -235,7 +235,7 @@ UI = {
 SIM_TEXT = {
     "inAbs": "inside the CO₂ absorber", "A": "inspiratory limb", "B": "trachea (dead space)", "C": "expiratory limb",
     "D": "absorber line", "Ebag": "bag line", "Event": "ventilator line", "F": "absorber line", "G": "decoupling valve line",
-    "P": "piston port", "H": "bag line", "R": "volume reflector", "reflGas": "reflector gas (O₂)", "sup": "supply line", "scav": "excess gas", "bag": "in the reservoir bag",
+    "P": "piston port", "H": "bag line", "R": "volume reflector", "M": "gas module line", "reflGas": "reflector gas (O₂)", "sup": "supply line", "scav": "excess gas", "bag": "in the reservoir bag",
     "bellows": "in the bellows", "lung": "in the alveoli", "cyl": "in the piston cylinder", "trans": "moving",
 }
 

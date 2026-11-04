@@ -624,6 +624,11 @@ TUBE_REF_LEN = {"A": 463.721, "C": 371.995, "D": 360.0}   # 上昇式ベロー�
 TUBE_SPACING = {k: round(plen(TUBES[k]) / v, 4) for k, v in TUBE_REF_LEN.items()}
 R_CAP = 30                                                 # リフレクタの容量（粒）：1.2 L ≒ 1 回換気量 13 粒（約 500 mL）の 2.3 倍
 TUBE_SPACING["R"] = round(plen(TUBES["R"]) / (40.0 * R_CAP), 4)
+# リフレクタガス（O2）の経路（2026-11-05）：O2 の配管の口 → 電磁弁の部屋 → 下りの管 → 奥の端の手前の分岐。ここから奥の端 K までは
+# 吸気中だけ短く移動して R に入る（その区間は呼気に余ったガスが PEEP/APL 弁へ流れる道と共通なので、管にはしない）。以前は O2 の粒が
+# R の奥の端に直接生まれ、モジュールから流れ込む様子が見えなかった。粒の間隔は 20 px（O2 の流れが少ない場面でも動きが見えるように）
+TUBES["M"] = [(KX + 22, GM_T + 14.5), (KX, GM_T + 14.5), (KX, RYS[3] - 9)]   # 終わりは分岐の少し上（呼気中に止まる粒が、余ったガスの通り道に重ならないように）
+TUBE_SPACING["M"] = 0.5
 GEO = {
     "kind": "reflector",
     "CYC": CYC, "TI": TI, "FG_RATE": FG_RATE, "VT_P": VT_P, "VR": VR, "uptake": UPTAKE,
@@ -649,7 +654,7 @@ GEO = {
     # 供給路は 4 本：流量計（O2 は x=420、N2O は x=100）から合流管で混ざった新鮮ガスを、気化室とバイパスに分ける。
     # 粒の番号 k で選ぶ（偶数 O2・奇数 N2O、6 粒のうち 2 粒が気化室）。2026-11-04：O2 だけが気化室・N2O だけがバイパスに固定されていたのを直した
     "supply": [supply_path(420, True), supply_path(100, False), supply_path(420, False), supply_path(100, True)],
-    "nodes": {"J": J, "K": K, "JFG": J_FG, "Y": (YX, YY), "LG": LG},
+    "nodes": {"J": J, "K": K, "MJ": (KX, RYS[3]), "JFG": J_FG, "Y": (YX, YY), "LG": LG},
     "lung": {"hilum": HIL, "s0": LUNG_S0, "s1": LUNG_S1,
              "slots": [(lx + dx, LOBE_T + 10 + 11.5 * r) for lx in LOBES for r in range(8) for dx in (-6, 6)]},
     "exhale": {"tau": TAU, "tEnd": T_EXH},
