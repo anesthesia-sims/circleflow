@@ -651,7 +651,9 @@ GEO = {
                  for r in reversed(range(ABS_ROWS))],
         "cap": ABS_CAP, "spread": [0.6, 0.3, 0.1], "fresh": "#ffffff", "used": ABS_USED_C,
     },
-    "supply": [supply_path(420, True), supply_path(100, False)],
+    # 供給路は 4 本：流量計（O2 は x=420、N2O は x=100）から合流管で混ざった新鮮ガスを、気化室とバイパスに分ける。
+    # 粒の番号 k で選ぶ（偶数 O2・奇数 N2O、6 粒のうち 2 粒が気化室）。2026-11-04：O2 だけが気化室・N2O だけがバイパスに固定されていたのを直した
+    "supply": [supply_path(420, True), supply_path(100, False), supply_path(420, False), supply_path(100, True)],
     "nodes": {"NP": NP, "JFG": J_FG, "NX": NX, "Y": (YX, YY), "LG": HIL, "APL": APL,
               "CYLM": (PS_X, CY0), "BAGM": (BG_P - 14, SY)},
     "cylinder": {"x": PS_X, "top": CY0 + 4, "keyT": HEAD_KT, "keyY": HEAD_Y},
@@ -669,7 +671,7 @@ add('<g class="svgcap">')
 CAP_Y = 830
 add(f'<rect x="12" y="{CAP_Y-28}" width="{W-24}" height="44" rx="8" fill="#f4f1fb" stroke="#cbbfe8"/>')
 _CAPS = ((((0, TI), "吸気", "呼吸バッグを手で押すと、ガスは吸収装置を通り、新鮮ガスと合わさってデカップリング弁と吸気弁から患者へ", K),
-          ((TI, CYC), "呼気", "呼気と新鮮ガスが呼吸バッグへ戻ってふくらませる。満杯になると APL 弁から余剰ガス排出装置へ", EXP_ARROW))
+          ((TI, CYC), "呼気", "呼気と新鮮ガスが呼吸バッグへ戻ってふくらませる。いっぱいになって圧が上がると APL 弁から余剰ガス排出装置へ", EXP_ARROW))
          if MANUAL else
          (((0, TI), "吸気", "ピストンが押し上がり、ガスを吸気弁から患者へ送る。デカップリング弁は閉じ、新鮮ガスは呼吸バッグへ", K),
           ((TI, T2), "呼気①", "呼気は呼気弁と PEEP/Pmax 弁を通って呼吸バッグへ。人工呼吸中もバッグがふくらむ", EXP_ARROW),

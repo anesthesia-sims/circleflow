@@ -627,7 +627,9 @@ GEO = {
         "cap": ABS_CAP, "spread": [0.6, 0.3, 0.1],
         "fresh": "#ffffff", "used": ABS_USED_C,
     },
-    "supply": [supply_path(420, True), supply_path(100, False)],   # O2（気化室を通る）, N2O（バイパス）
+    # 供給路は 4 本：流量計（O2 は x=420、N2O は x=100）から合流管で混ざった新鮮ガスを、気化室とバイパスに分ける。
+    # 粒の番号 k で選ぶ（偶数 O2・奇数 N2O、6 粒のうち 2 粒が気化室）。2026-11-04：O2 だけが気化室・N2O だけがバイパスに固定されていたのを直した
+    "supply": [supply_path(420, True), supply_path(100, False), supply_path(420, False), supply_path(100, True)],
     "nodes": {"J": J, "K": K, "JFG": J_FG, "Y": (YX, YY), "LG": LG},
     "lung": {"hilum": HIL, "s0": LUNG_S0, "s1": LUNG_S1,
              "slots": [(lx + dx, LOBE_T + 10 + 11.5 * r) for lx in LOBES for r in range(8) for dx in (-6, 6)]},
@@ -648,7 +650,7 @@ add('<g class="svgcap">')
 CAP_Y = 830
 add(f'<rect x="12" y="{CAP_Y-28}" width="{W-24}" height="44" rx="8" fill="#f4f1fb" stroke="#cbbfe8"/>')
 _CAPS = ((("insp", "吸気", "呼吸バッグを手で押すと、ガスはリフレクタと吸収装置を通り、新鮮ガスと合わさって患者へ送られる"),
-          ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入り、奥の呼吸バッグをふくらませる。満杯になると PEEP/APL 弁から排出装置へ"))
+          ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入り、奥の呼吸バッグをふくらませる。いっぱいになって圧が上がると PEEP/APL 弁から排出装置へ"))
          if MANUAL else
          (("insp", "吸気", "リフレクタガス（O₂）が奥からリフレクタのガスを押し出し、吸収装置を通って新鮮ガスと合わさり患者へ"),
           ("exp", "呼気", "呼気と新鮮ガスがリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ")))

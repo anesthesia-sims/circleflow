@@ -87,8 +87,8 @@ EN = {
         {"t": "Reflector gas (O₂) pushes gas out of the reflector; it flows through the absorber, joins the fresh gas and goes to the patient", "size": 14},
     "呼吸バッグを手で押すと、ガスはリフレクタと吸収装置を通り、新鮮ガスと合わさって患者へ送られる":
         {"t": "Squeezing the bag pushes gas through the reflector and absorber; it joins the fresh gas and goes to the patient", "size": 14},
-    "呼気と新鮮ガスがリフレクタへ入り、奥の呼吸バッグをふくらませる。満杯になると PEEP/APL 弁から排出装置へ":
-        {"t": "Exhaled and fresh gas enter the reflector and refill the bag at the far end; once full, excess leaves through the PEEP/APL valve", "size": 14},
+    "呼気と新鮮ガスがリフレクタへ入り、奥の呼吸バッグをふくらませる。いっぱいになって圧が上がると PEEP/APL 弁から排出装置へ":
+        {"t": "Exhaled and fresh gas enter the reflector and refill the bag; once full and pressure rises, excess leaves via the PEEP/APL valve", "size": 14},
     "呼気と新鮮ガスがリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ":
         {"t": "Exhaled and fresh gas enter the reflector; O₂ and the oldest gas at the far end leave through the PEEP/APL valve", "size": 14},
     # 図の中の説明文（コマ撮りだけに出る）
@@ -109,8 +109,8 @@ EN = {
         {"t": "Exhaled and fresh gas push the bellows up; once it is full, excess gas goes to the scavenging system", "size": 15},
     "呼吸バッグを手で押すと、ガスは切替弁から吸収装置と吸気弁を通って患者へ送られる":
         {"t": "Squeezing the bag sends gas through the switch, absorber and inspiratory valve to the patient", "size": 15},
-    "呼気と新鮮ガスが呼吸バッグへ戻ってふくらませる。満杯になると APL 弁から余剰ガス排出装置へ":
-        {"t": "Exhaled and fresh gas refill the bag; once it is full, excess gas leaves via the APL valve", "size": 15},
+    "呼気と新鮮ガスが呼吸バッグへ戻ってふくらませる。いっぱいになって圧が上がると APL 弁から余剰ガス排出装置へ":
+        {"t": "Exhaled and fresh gas refill the bag; once it is full and the pressure rises, excess gas leaves via the APL valve", "size": 15},
     "ピストンが押し上がり、ガスを吸気弁から患者へ送る。デカップリング弁は閉じ、新鮮ガスは呼吸バッグへ":
         {"t": "The piston rises and sends gas to the patient; the decoupling valve closes and fresh gas goes to the bag", "size": 15},
     "呼気は呼気弁と PEEP/Pmax 弁を通って呼吸バッグへ。人工呼吸中もバッグがふくらむ":

@@ -179,7 +179,7 @@
 
     // ---------- 供給路 ----------
     spawnTime(k) {
-      const path = this.supply[k & 1];
+      const path = this.supply[this.supIdx(k)];
       return (k + (this.g.supplyPhase || 0)) / this.FG - path.L / this.g.SUP_V;   // supplyPhase：到着時刻を流れの切り替わりからずらす
     }
     /** 供給路の粒を出す。O2（偶数 k）と N2O（奇数 k）は経路の長さが違い、同じ到着時刻でも出発時刻が違うので、
@@ -190,12 +190,15 @@
       for (const par of [0, 1]) {
         while (this.spawnTime(this.nextKs[par]) <= t + 1e-9) {
           const k = this.nextKs[par]; this.nextKs[par] += 2;
-          const path = this.supply[par];
+          const path = this.supply[this.supIdx(k)];
           const s = (t - this.spawnTime(k)) * this.g.SUP_V;
-          if (s < path.L) this.add({ st: "sup", sup: par, s, k, kind: par ? "N2O" : "O2", co2: false });
+          if (s < path.L) this.add({ st: "sup", sup: this.supIdx(k), s, k, kind: par ? "N2O" : "O2", co2: false });
         }
       }
     }
+    /** k 番目の粒が通る供給路：偶数は O2・奇数は N2O の流量計から出て、合流管で混ざったあと 6 粒のうち 2 粒（O2 と N2O が 1 粒ずつ）が
+     *  気化室を通り、残りはバイパスを通る（供給路 0：O2 → 気化室、1：N2O → バイパス、2：O2 → バイパス、3：N2O → 気化室。2026-11-04） */
+    supIdx(k) { return [0, 1, 2, 3, 2, 1][((k % 6) + 6) % 6]; }
     /** 最初に出す k：t0 までに出発している最初の偶数と奇数 */
     setNextKs(k0) { k0 = Math.ceil(k0); this.nextKs = [k0 + (k0 & 1), k0 + 1 - (k0 & 1)]; }
 
