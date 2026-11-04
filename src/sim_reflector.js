@@ -44,6 +44,12 @@
       this.fgI = this.phased ? geo.FG_I : this.FG; this.fgE = this.phased ? geo.FG_E : this.FG;
       this.nCyc = Math.round(this.FG * geo.CYC); this.nI = Math.round(this.fgI * geo.TI);   // 1 呼吸の新鮮ガスの粒の数と、そのうち吸気中に届く数
       this.uptake = geo.uptake || 0;                          // 患者の取り込み：1 呼吸に肺胞で血液へ消える粒（「不足」の場面。ほかは 0）
+      this.supValve = geo.supValve;                           // 供給路でガスモジュールの弁までの長さ（1.3.1）
+      // 1.3.1（本人の指摘：供給側の粒は一定に）：弁より上流は一定の流量・一定の速さで流し、吸気中に多く通す流量の変化は弁で作る。
+      // 弁からの解放が上流からの到着より早くならないよう、上流の到着を supLead 秒だけ前へずらす（ガスごと。N2O は弁から合流点までが長いので別の値。
+      // 共通の値にすると O2 の弁で常に 4〜5 粒が待ってしまう）
+      this.supLead = [0, 0];
+      if (this.phased) for (let k = 0; k < 4 * this.nCyc; k++) this.supLead[k & 1] = Math.max(this.supLead[k & 1], this.uArr0(k) - this.relTime(k));
       this.vr = geo.VR;                                       // リフレクタガス（用手換気では呼吸バッグ）が押し出す流量（粒/秒）
       this.manual = !!geo.bag;                                // 用手換気：呼吸バッグが奥の端 K につながり、リフレクタガスは止まる
       this.bSlotDef = this.manual ? geo.bag.slots : [];
@@ -154,9 +160,27 @@
       const c = Math.floor(kk / this.nCyc), r = kk - c * this.nCyc;
       return c * this.CYC + (r < this.nI ? (r + 0.5) / this.fgI : this.TI + (r - this.nI + 0.5) / this.fgE);
     }
-    /** k 番目の新鮮ガスの粒を供給路の入口に出す時刻（着く時刻から経路の長さぶん前） */
+    /** 弁への到着（上流は一定の流量）：k 番目の粒は (k+0.5)/FG − supLead 秒に弁に着く */
+    uArr0(k) { return (k + 0.5 + (this.g.supplyPhase || 0)) / this.FG; }
+    reachTime(k) { return this.uArr0(k) - this.supLead[k & 1]; }
+    /** 弁からの解放：合流点 JFG に arriveTime(k) に着くよう、弁から先の長さぶん前 */
+    relTime(k) { return this.arriveTime(k) - (this.supply[this.supIdx(k)].L - this.supValve) / this.g.SUP_V; }
+    /** k 番目の新鮮ガスの粒を供給路の入口（配管端末器）に出す時刻 */
     spawnTime(k) {
-      return this.arriveTime(k) - this.supply[(k & 1) ? 1 : 2].L / this.g.SUP_V;   // 出発はそのガスの基準の経路（1.3.1。注入式では 4 本とも同じ長さ）
+      if (!this.phased) return this.arriveTime(k) - this.supply[(k & 1) ? 1 : 2].L / this.g.SUP_V;   // 用手換気：一定。出発はそのガスの基準の経路
+      return this.reachTime(k) - this.supValve / this.g.SUP_V;
+    }
+    /** 供給路での位置（1.3.1、人工呼吸）：弁まで一定の速さ、弁で解放まで待ち（同じ管で待つ粒は 7 px ずつ手前に並ぶ）、弁から先は一定の速さ */
+    supPos(k, t) {
+      const V = this.g.SUP_V;
+      if (!this.phased) return (t - this.spawnTime(k)) * V;
+      const reach = this.reachTime(k);
+      if (t < reach) return (t - this.spawnTime(k)) * V;
+      const rel = this.relTime(k);
+      if (t >= rel) return this.supValve + (t - rel) * V;
+      let q = 0;
+      for (let j = k - 2; j >= k - 2 * this.nCyc && this.relTime(j) > t; j -= 2) q++;
+      return this.supValve - 7 * q;
     }
     /** 供給路の粒を出す。O2（偶数 k）と N2O（奇数 k）は経路の長さが違い、同じ到着時刻でも出発時刻が違うので、
      *  別々のカウンターで出す（2026-11-04：1 つのカウンターで交互に出していたため、N2O が O2 より 3 秒遅れて出発し、
@@ -167,7 +191,7 @@
         while (this.spawnTime(this.nextKs[par]) <= t + 1e-9) {
           const k = this.nextKs[par]; this.nextKs[par] += 2;
           const path = this.supply[this.supIdx(k)];
-          const s = (t - this.spawnTime(k)) * this.g.SUP_V;
+          const s = this.supPos(k, t);
           if (s < path.L) this.add({ st: "sup", sup: this.supIdx(k), s, k, kind: par ? "N2O" : "O2", co2: false });
         }
       }
@@ -371,7 +395,7 @@
           else if (p.s < 0) this.exitNear(p, -p.s);
         } else if (p.st === "sup") {
           const L = this.supply[p.sup].L;                       // 新鮮ガスは一定に回路へ（呼気中は吸収装置を逆向きに）
-          p.s += g.SUP_V * DT;
+          p.s = this.phased ? this.supPos(p.k, t + DT) : p.s + g.SUP_V * DT;   // 人工呼吸：位置は粒の番号と時刻だけで決まる（弁まで一定、弁で待ち、弁から先は一定）
           if (p.s > L) { const over = p.s - L; if (ph === "i") this.enterTube(p, "A", over); else this.enterTube(p, "D", this.tubes.D.L - over); }
         } else if (p.st === "trans") {
           p.u += p.speed * DT;

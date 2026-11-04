@@ -634,6 +634,8 @@ GEO = {
     # 1.3.1：供給路の出発時刻の基準を変えたので用手換気も走査し直した（多め 13.00 で一定。以前は 14）
     "supplyPhase": (0.0 if LOW_FLOW else 0.5) if MANUAL else (0.875 if SHORT else 0.625 if LOW_FLOW else 0.375),
     "SP": 40.0, "SUP_V": 88.0, "SCAV_V": 120.0, "LUNG_MIN": LUNG_MIN,
+    # 供給路でガスモジュールの弁（ノズル。y = FM_B − 24）までの長さ（1.3.1）：配管端末器 → 合流 → 縦の管。ここまでは一定の流量で、流量の変化は弁で作る
+    "supValve": (OUT_Y - JOIN_Y) + 30 + (JOIN_Y - (FM_B - 24)),
     "tubeSpacing": TUBE_SPACING,
     "tubes": TUBES,
     "absD": [_cD[2], _cD[3]],                                  # D の弧長のうち吸収装置の範囲
