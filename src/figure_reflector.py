@@ -140,7 +140,7 @@ for name, x in GASES:
     pipe([(xp, OUT_Y), (xp, JOIN_Y)], inner=PIPE[name] if MODE == "color" else "#fff")
     pipe([(xp, JOIN_Y), (xc, JOIN_Y)])
     pipe([(xc, CYL_T), (xc, JOIN_Y)])
-    pipe([(x, JOIN_Y), (x, FM_B + 20)])
+    pipe([(x, JOIN_Y), (x, FM_B)])          # 1.3.1：ガスモジュールの底まで（1.3.0 ではニードル弁の本体を外したぶん 20 px 届いていなかった。本人の指摘）
     pipe([(x, FM_T), (x, MAN_Y)])
     # 配管端末器：識別色（2色版は色名）
     # 配管端末器（2026-11-02）：壁（斜線）に取り付けた金属の端末器。識別色の帯に色名、上に差し込んだホースの口金（金属）。
