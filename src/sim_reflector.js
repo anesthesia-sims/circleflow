@@ -130,8 +130,9 @@
       const co2Init = { A: () => false, B: () => true, C: () => true, R: () => true, D: s => s < g.absD[1], M: () => false };
       for (const nm of TUBES) {
         const L = this.tubes[nm].L, sp = this.spc[nm], n = Math.floor(L / sp);
+        const mt = nm === "M" ? this.mTargets(n) : null;      // M は止まる位置に置く
         for (let i = 0; i < n; i++) {
-          const s = (i + 0.5) * sp;
+          const s = mt ? mt[i] : (i + 0.5) * sp;
           this.add(nm === "M" ? { st: "tube", tube: nm, s, kind: "O2", refl: true, co2: false } : { st: "tube", tube: nm, s, co2: co2Init[nm](s) });
         }
       }
@@ -238,13 +239,20 @@
       else if (smin >= this.spc.M) this.add({ st: "tube", tube: "M", s: Math.max(0, smin - this.spc.M), kind: "O2", refl: true, co2: false });
     }
 
+    /** 管 M で粒が止まる位置（先頭から）。電磁弁の鉄心（管 M の始めから 22 px の角）の前後にかからないように、そこに当たる粒は
+     *  配管の口の側へ寄せる */
+    mTargets(n) {
+      const L = this.tubes.M.L, sp = this.spc.M, out = [];
+      let pos = L - 1e-6;
+      for (let i = 0; i < n; i++) { if (i > 0) pos -= sp; if (pos > 13 && pos < 35) pos = 12; out.push(Math.max(0, pos)); }
+      return out;
+    }
     /** 管 M の粒を、先頭から 1 間隔ずつの位置へ詰めて進める（電磁弁が開いている吸気中だけ） */
     stepM() {
       const arr = this.particles.filter(p => p.st === "tube" && p.tube === "M").sort((a, b) => b.s - a.s);
       const L = this.tubes.M.L, sp = this.spc.M, v = Math.max(80, 1.5 * Math.abs(this.flows(this.tc(this.t)).R)) * DT;
-      // 止まる位置は電磁弁の鉄心（管 M の始めから 22 px の角）にかからないように、そこに当たる粒は配管の口の側へ寄せる
-      let pos = L - 1e-6;
-      arr.forEach((p, i) => { if (i > 0) pos -= sp; if (pos > 13 && pos < 31) pos = 12; const target = Math.max(0, pos); if (p.s < target) p.s = Math.min(target, p.s + v); });
+      const tg = this.mTargets(arr.length);
+      arr.forEach((p, i) => { if (p.s < tg[i]) p.s = Math.min(tg[i], p.s + v); });
     }
 
     // ---------- 席の選び方 ----------

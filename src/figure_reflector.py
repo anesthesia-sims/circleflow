@@ -476,20 +476,21 @@ R_PTS += _turn(RX1 - RR, RYS[1] + RR, -90, 90)[1:]            # 右で折り返�
 R_PTS += [(RX0 + RR, RYS[2])]
 R_PTS += _turn(RX0 + RR, RYS[2] + RR, -90, -270)[1:]
 R_PTS += [(RX1, RYS[3])]
-K = (RX1, RYS[3])                                                 # 奥の端
+RK = (RX1, RYS[3])                                                # 奥の端（2026-11-05：以前は K と名付けていて、黒の色の名前 K を上書きし、
+                                                                  # このあとの部品の縁が描かれていなかった）
 R_PTS = [(round(x, 1), round(y, 1)) for x, y in R_PTS]
 pipe(R_PTS, inner=EXP)
 text("ボリュームリフレクタ", J[0] + 14, RYS[0] - 3, 15, weight=700)   # 2026-11-04：合流点から下りる管に重ならないよう、管の右へ
 # 奥の端 K からの分岐：上はリフレクタガス（O2）の入口、下は PEEP/APL 弁
 KX = 1215
 APX = 1280                                      # PEEP/APL 弁（右端。2026-11-03：用手換気の呼吸バッグを K の右に置くため右へ寄せ、出口を左向きにした）
-pipe([K, (APX, RYS[3])], inner=EXP)
+pipe([RK, (APX, RYS[3])], inner=EXP)
 # リフレクタガスモジュール：O2 の配管から電磁弁（コイルで鉄心を引く弁。青＝動く部品）を通してリフレクタの奥へ流す。
 # 吸気中だけ弁が開く（SMIL で鉄心が上がる）。実機は電子制御で流量を決める
 GM_T = 548
 pipe([(KX, RYS[3]), (KX, GM_T + 30)], inner="#e6e6e6")          # 内腔は駆動ガスの色（灰）
 rect(KX - 24, GM_T, 48, 32, fill=METAL, rx=4)
-add(f'<rect x="{KX-3.5}" y="{GM_T+18}" width="7" height="{14}" fill="#e6e6e6"/>')                     # 出口の通路
+add(f'<rect x="{KX-3.5}" y="{GM_T+18}" width="7" height="{16.5}" fill="#e6e6e6"/>')                   # 出口の通路（箱の下の縁を越えて下りの管につなぐ。2026-11-05）
 add(f'<rect x="{KX-18}" y="{GM_T+10}" width="36" height="9" fill="#e6e6e6"/>')                        # 弁の部屋
 add(f'<rect x="{KX+16}" y="{GM_T+10.5}" width="9.2" height="8" fill="#e6e6e6"/>')                     # 右から O2 が入る
 for _k in range(4):                                                                                   # コイル
@@ -602,7 +603,7 @@ TUBES = {
     "D": [J, (AX, EXP_Y), (AX, CB), (AX, CT), J_FG],                                    # 合流点 → 吸収装置 → 回路の入口
     "R": R_PTS,                                                                         # 合流点 J → ボリュームリフレクタ → 奥の端 K
     # K → PEEP/APL 弁（弁座と弁板のすき間から弁板のふちを回る）→ 余剰ガス排出装置 → 外
-    "S": [K, (APX, RYS[3]), (APX, APY + 19.5), (APX - 12, APY + 19.5), (APX - 12, APY + 30), (SCX, APY + 30), (SCX, SC_T + 17), (1300, SC_T + 17)],
+    "S": [RK, (APX, RYS[3]), (APX, APY + 19.5), (APX - 12, APY + 19.5), (APX - 12, APY + 30), (SCX, APY + 30), (SCX, SC_T + 17), (1300, SC_T + 17)],
 }
 
 
@@ -654,7 +655,7 @@ GEO = {
     # 供給路は 4 本：流量計（O2 は x=420、N2O は x=100）から合流管で混ざった新鮮ガスを、気化室とバイパスに分ける。
     # 粒の番号 k で選ぶ（偶数 O2・奇数 N2O、6 粒のうち 2 粒が気化室）。2026-11-04：O2 だけが気化室・N2O だけがバイパスに固定されていたのを直した
     "supply": [supply_path(420, True), supply_path(100, False), supply_path(420, False), supply_path(100, True)],
-    "nodes": {"J": J, "K": K, "MJ": (KX, RYS[3]), "JFG": J_FG, "Y": (YX, YY), "LG": LG},
+    "nodes": {"J": J, "K": RK, "MJ": (KX, RYS[3]), "JFG": J_FG, "Y": (YX, YY), "LG": LG},
     "lung": {"hilum": HIL, "s0": LUNG_S0, "s1": LUNG_S1,
              "slots": [(lx + dx, LOBE_T + 10 + 11.5 * r) for lx in LOBES for r in range(8) for dx in (-6, 6)]},
     "exhale": {"tau": TAU, "tEnd": T_EXH},
