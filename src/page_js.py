@@ -475,8 +475,12 @@ MAIN_JS = r"""
       { els: () => [$('moreBtn')], txt: L.steps[9] },
     ];
     // 見どころのツアー（2026-11-05 著者と相談）：場面・速さ・時刻を自動で切り替え、図の範囲（図の座標）を明るく残して説明する。文は L.hl
-    // 見どころのツアー（2026-11-05 著者と相談）：細部を方式ごとに切り替えて見比べる 25 段。場面・速さ・時刻・図の範囲（図の座標）。文は L.hl
+    // 見どころのツアー（2026-11-05 著者と相談）：細部を方式ごとに切り替えて見比べる 32 段（1.7.3 で送り出すしくみ・吸収剤の交換・ガスが足りないときを加えた）。場面・速さ・時刻・図の範囲（図の座標）。文は L.hl
     const HL = [
+      { scene: 'bellows', speed: 1, t: 0, svgRect: [1000, 480, 1240, 660] },
+      { scene: 'piston', speed: 1, t: 0, svgRect: [880, 130, 1010, 330] },
+      { scene: 'blower', speed: 0.5, t: 0, svgRect: [795, 40, 1130, 240] },
+      { scene: 'reflector', speed: 1, t: 0, svgRect: [755, 470, 1310, 630] },
       { scene: 'bellows', speed: 1, t: 0, svgRect: [800, 140, 970, 222] },
       { scene: 'piston', speed: 1, t: 0, svgRect: [925, 12, 1040, 108] },
       { scene: 'blower', speed: 1, t: 0, svgRect: [925, 12, 1040, 108] },
@@ -493,14 +497,17 @@ MAIN_JS = r"""
       { scene: 'bellows', speed: 16, t: 0, svgRect: [735, 265, 1150, 650] },
       { scene: 'bellowsLow', speed: 16, t: 0, svgRect: [735, 265, 955, 445] },
       { scene: 'blower', speed: 16, t: 0, svgRect: [690, 265, 1150, 650] },
+      { scene: 'bellows', speed: 1, t: 0, svgRect: [695, 240, 870, 500] },
       { scene: 'bellowsMan', speed: 1, t: 2.0, svgRect: [680, 510, 850, 672] },
       { scene: 'pistonMan', speed: 1, t: 2.0, svgRect: [690, 500, 1020, 685] },
       { scene: 'blowerMan', speed: 1, t: 2.0, svgRect: [690, 500, 1020, 685] },
       { scene: 'reflectorMan', speed: 1, t: 2.0, svgRect: [1100, 590, 1335, 705] },
       { scene: 'bellows', speed: 1, t: 0, svgRect: [10, 85, 640, 300] },
-      { scene: 'reflector', speed: 1, t: 0, svgRect: [10, 40, 640, 300] },
       { scene: 'blower', speed: 1, t: 0, svgRect: [10, 40, 640, 300] },
-      { scene: 'blower', speed: 0.5, t: 0, svgRect: [795, 40, 1130, 240] },
+      { scene: 'reflector', speed: 1, t: 0, svgRect: [10, 40, 640, 300] },
+      { scene: 'bellows', speed: 1, t: 2.3, svgRect: [1000, 480, 1240, 660] },
+      { scene: 'piston', speed: 1, t: 2.3, svgRect: [685, 120, 1135, 660] },
+      { scene: 'blower', speed: 1, t: 2.3, svgRect: [685, 200, 975, 660] },
       { scene: 'reflectorShort', speed: 1, t: 30, svgRect: [690, 15, 1335, 740] },
     ].map((h, k) => Object.assign(h, { hand: false, txt: '<b class="ttl">' + L.hl[k][0] + (L.hl[k][1] ? '<span class="sub">' + L.hl[k][1] + '</span>' : '') + '</b>' + L.hl[k][2] }));
     let STEPS = STEPS_HELP;
