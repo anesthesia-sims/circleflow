@@ -442,8 +442,10 @@ MAIN_JS = r"""
       setPlaying(wasPlaying);
       try { localStorage.setItem('circleflow-tour-seen', '1'); } catch (e) {}
     };
-    next.onclick = () => i < STEPS.length - 1 ? go(i + 1) : close();
-    prev.onclick = () => i > 0 && go(i - 1);
+    const goNext = () => i < STEPS.length - 1 ? go(i + 1) : close();
+    const goPrev = () => { if (i > 0) go(i - 1); };
+    next.onclick = goNext;
+    prev.onclick = goPrev;
     $('tourSkip').onclick = close;
     const follow = () => {                                        // 毎フレーム：穴を目標に合わせる（粒は動く、画面はずれる）
       if (holeTw) { holeTw(performance.now()); return; }
@@ -451,7 +453,7 @@ MAIN_JS = r"""
     };
     addEventListener('resize', () => { if (tour.isOpen && target) placeBubble(target()); });
     addEventListener('scroll', () => { if (tour.isOpen && target) placeBubble(target()); }, { passive: true });
-    return { isOpen: false, open, close, follow };
+    return { isOpen: false, open, close, follow, goNext, goPrev };
   })();
   $('helpBtn').onclick = () => tour.open('help');
   $('hlBtn').onclick = () => tour.open('hl');
@@ -465,7 +467,14 @@ MAIN_JS = r"""
       else untrack();
       return;
     }
-    if (tour.isOpen) return;
+    if (tour.isOpen) {                                         // ツアー中のキー（2026-11-05 著者の依頼）：→ Enter スペース で進む、← BS で戻る（Esc は上で閉じる）
+      const fwd = e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ', back = e.key === 'ArrowLeft' || e.key === 'Backspace';
+      if (!fwd && !back) return;
+      e.preventDefault();                                      // BS でページが戻ったり、スペースでスクロールしたりしないように
+      if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.bubble')) document.activeElement.blur();   // ボタンに焦点があると二重に進むので外す
+      if (fwd) tour.goNext(); else tour.goPrev();
+      return;
+    }
     if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
     if (e.key === 'ArrowRight') { t += 0.1; setPlaying(false); }
     if (e.key === 'ArrowLeft') { t = Math.max(0, t - 0.1); setPlaying(false); }

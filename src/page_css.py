@@ -119,6 +119,7 @@ CSS = r"""
   .bubble .bb { display:flex; justify-content:flex-end; gap:6px; margin-top:6px; }
   .bubble .bb button { font-size:13px; padding:4px 12px; border-radius:6px; border:1.5px solid var(--blue); background:#fff; color:var(--blue); cursor:pointer; }
   .bubble .bb button.pri { background:var(--blue); color:#fff; }
+  .bubble .keys { font-size:11px; color:#888; margin-top:6px; text-align:right; }   /* ツアーのキー操作の案内（2026-11-05）。狭い画面では出さない */
   .bubble kbd { font:inherit; font-size:12px; border:1px solid #aaa; border-radius:4px; padding:0 4px; }
   body.cap .wrap { padding:0; max-width:none; }
   body.cap .chrome { display:none !important; }
@@ -158,6 +159,7 @@ CSS = r"""
     .abs .meter { flex:1; width:auto; }
     .abs .el { min-width:0; font-size:13px; }
     .card p { font-size:14px; }
+    .bubble .keys { display:none; }
     /* 狭い画面では解説カードを図の上に重ねず、図の下に出す（図が小さいので重ねると部品が隠れる） */
     .card { position:relative; left:auto; bottom:auto; max-width:none; margin:0; border:none; border-top:1.5px solid var(--fg); border-radius:0; transform:none; }
     .card:not(.show) { display:none; } }
