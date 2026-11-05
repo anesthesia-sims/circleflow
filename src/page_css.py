@@ -111,6 +111,7 @@ CSS = r"""
   /* 説明の吹き出しは、明るく切り抜いた場所（穴）の外に置き、青い枠で図と見分ける（2026-11-02。旧：図の中に重ねると図の一部に見えた） */
   .bubble { position:absolute; width:min(360px, calc(100vw - 24px)); background:#fff; border:2px solid var(--blue); border-radius:10px; padding:12px 14px 10px; font-size:15px; line-height:1.65;
     transition:left .45s ease, top .45s ease; }
+  .bubble .ttl { display:block; margin-bottom:4px; }
   .bubble .dots { display:flex; gap:5px; margin:8px 0 0; }
   .bubble .dots i { width:7px; height:7px; border-radius:50%; background:#cfd6e3; }
   .bubble .dots i.on { background:var(--blue); }

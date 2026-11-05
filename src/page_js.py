@@ -332,7 +332,7 @@ MAIN_JS = r"""
       const pt = figs[type].createSVGPoint(); pt.x = x; pt.y = y;
       const s = pt.matrixTransform(figs[type].getScreenCTM()); return [s.x, s.y];
     };
-    const STEPS = [
+    const STEPS_HELP = [
       { els: () => [...figs[type].querySelectorAll('text[data-term="particles"]')], padLeft: 22, hand: false,
         txt: L.steps[0] },
       { els: () => [playBtn], txt: L.steps[1] },
@@ -351,13 +351,33 @@ MAIN_JS = r"""
         txt: L.steps[7] },
       { els: () => [$('moreBtn')], txt: L.steps[8] },
     ];
-    dots.innerHTML = STEPS.map(() => '<i></i>').join('');
+    // 見どころのツアー（2026-11-05 著者と相談）：場面・速さ・時刻を自動で切り替え、図の範囲（図の座標）を明るく残して説明する。文は L.hl
+    const HL = [
+      { scene: 'bellows', speed: 1, t: 0, svgRect: [800, 140, 970, 222] },
+      { scene: 'bellows', speed: 0.5, t: 0, svgRect: [1185, 225, 1337, 515] },
+      { scene: 'bellows', speed: 1, t: 2.3, svgRect: [735, 95, 990, 445] },
+      { scene: 'bellows', speed: 1, t: 0, svgRect: [735, 40, 1000, 250] },
+      { scene: 'bellowsLow', speed: 16, t: 0, svgRect: [735, 265, 955, 445] },
+      { scene: 'bellowsMan', speed: 1, t: 2.0, svgRect: [680, 510, 850, 672] },
+      { scene: 'piston', speed: 1, t: 0, svgRect: [690, 30, 950, 660] },
+      { scene: 'reflector', speed: 1, t: 2.5, svgRect: [10, 56, 990, 300] },
+      { scene: 'reflectorShort', speed: 1, t: 30, svgRect: [690, 15, 1335, 740] },
+    ].map((h, k) => Object.assign(h, { hand: false, txt: '<b class="ttl">' + L.hl[k][0] + '</b>' + L.hl[k][1] }));
+    let STEPS = STEPS_HELP;
     const go = n => {
       timers.forEach(clearTimeout); timers = [];
       if (cleanup) { cleanup(); cleanup = null; }
       i = n; const st = STEPS[i];
       let els = null, pt = null, pid = null;
-      if (st.particle) {
+      if (st.scene) {                                            // 見どころ：場面・速さ・時刻を切り替えて再生
+        if (type !== st.scene) show(st.scene);
+        const sb = document.querySelector(`[data-speed="${st.speed}"]`); if (sb) sb.click();
+        t = st.t; setPlaying(true);
+      }
+      if (st.svgRect) {
+        stage.scrollIntoView({ block: 'nearest' });
+        target = () => { const q = st.svgRect, [a, b] = svgToScreen(q[0], q[1]), [c, d] = svgToScreen(q[2], q[3]); return [a - 6, b - 6, c + 6, d + 6]; };
+      } else if (st.particle) {
         setPlaying(false);
         const cand = sim.particles.filter(p => p.st === 'tube' && p.tube === 'A');
         const p = cand[Math.floor(cand.length / 2)] || sim.particles.find(p => p.st === 'tube');
@@ -374,8 +394,9 @@ MAIN_JS = r"""
       btxt.innerHTML = st.txt;
       [...dots.children].forEach((d, j) => d.classList.toggle('on', j === i));
       prev.disabled = i === 0;
-      next.textContent = i === STEPS.length - 1 ? L.start : L.next;
+      next.textContent = i === STEPS.length - 1 ? (STEPS === STEPS_HELP ? L.start : L.hlEnd) : L.next;
       placeBubble(r);
+      if (st.svgRect) later(() => placeBubble(target()), 120);   // 場面の切り替えやスクロールで画面がずれたあとに置き直す
       if (st.hand === false) hand.style.opacity = '0';
       else {
         const [x, y] = st.particle ? [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2] : st.at ? st.at(r) : [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2 + 4];
@@ -394,8 +415,10 @@ MAIN_JS = r"""
         }, 850);
       }
     };
-    const open = () => {
+    const open = kind => {
       closeMore(); closeCard(); wasPlaying = playing;
+      STEPS = kind === 'hl' ? HL : STEPS_HELP;
+      dots.innerHTML = STEPS.map(() => '<i></i>').join('');
       box.classList.add('show'); hole = null;
       hand.style.transition = 'none'; hand.style.transform = `translate(${innerWidth - 80}px, ${innerHeight - 80}px)`; hand.style.opacity = '0';
       void hand.offsetWidth; hand.style.transition = '';
@@ -404,7 +427,9 @@ MAIN_JS = r"""
     const close = () => {
       timers.forEach(clearTimeout); timers = [];
       if (cleanup) { cleanup(); cleanup = null; }
-      box.classList.remove('show'); tour.isOpen = false; setPlaying(wasPlaying);
+      box.classList.remove('show'); tour.isOpen = false;
+      if (STEPS === HL) { const sb = document.querySelector('[data-speed="1"]'); if (sb) sb.click(); setPlaying(true); return; }   // 見どころ：その場面のまま 1 倍速で続ける
+      setPlaying(wasPlaying);
       try { localStorage.setItem('circleflow-tour-seen', '1'); } catch (e) {}
     };
     next.onclick = () => i < STEPS.length - 1 ? go(i + 1) : close();
@@ -415,9 +440,11 @@ MAIN_JS = r"""
       if (target) { hole = target(); drawHole(hole); }
     };
     addEventListener('resize', () => { if (tour.isOpen && target) placeBubble(target()); });
+    addEventListener('scroll', () => { if (tour.isOpen && target) placeBubble(target()); }, { passive: true });
     return { isOpen: false, open, close, follow };
   })();
-  $('helpBtn').onclick = tour.open;
+  $('helpBtn').onclick = () => tour.open('help');
+  $('hlBtn').onclick = () => tour.open('hl');
 
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') return;

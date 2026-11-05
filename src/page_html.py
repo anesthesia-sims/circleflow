@@ -8,6 +8,7 @@ BODY_TOP = r"""
   <h1>CircleFlow<span>麻酔器と呼吸回路のガスの流れ</span></h1>
   @@LANG@@
   <button id="helpBtn" aria-label="使い方"><span class="q">?</span>使い方</button>
+  <button id="hlBtn">見どころ</button>
   <button id="moreBtn">くわしく</button>
 </header>
 <div class="bar chrome">
