@@ -101,7 +101,7 @@ MAIN_JS = r"""
            `H${x0 + R} A${R},${R} 0 0 1 ${x0},${y1 - R} V${y0 + R} A${R},${R} 0 0 1 ${x0 + R},${y0} Z`;
   };
   const setVB = (k, vb) => { vbCur[k] = vb; figs[k].setAttribute('viewBox', vb.map(v => v.toFixed(2)).join(' ')); fitStroke(figs[k]);
-    stage.classList.toggle('zoomed', vb[3] < homeVB(k)[3] - 0.5); };
+    stage.classList.toggle('zoomed', vb[3] < BASE[k][3] - 0.5); };   // 縦に動かす余地があるか（全体の高さより狭く見ている）。ふだんの範囲と比べると、2 本指で広げたあとに外れて縦の指がページのスクロールになった（2026-11-05 iPhone で確認）
   const setHole = (k, r) => { holeCur[k] = r; dims[k].setAttribute('d', r ? holePath(r, 'M-6000,-6000 H8000 V8000 H-6000 Z') : 'M-6000,-6000 H8000 V8000 H-6000 Z'); };
   const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
   const lerp = (a, b, e) => a.map((v, i) => v + (b[i] - v) * e);
