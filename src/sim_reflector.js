@@ -128,12 +128,16 @@
       this.n = Math.round(t0 / DT);
       // 管に粒を敷く。R は呼気の終わりの状態（患者側のガスで満たされ、O2 はない）から始める
       const co2Init = { A: () => false, B: () => true, C: () => true, R: () => true, D: s => s < g.absD[1], M: () => false };
+      // 「不足」の場面（2026-11-05 著者の判断）：境目が患者側へ進み続ける場面なので、途中の状態から始める。J から O2_FROM 粒目より奥を
+      // リフレクタガス（O2）で満たしておく（慣らしの 6 呼吸で 1 呼吸に約 1 粒ずつ進み、開始時には境目が J から約 6 粒目）
+      const O2_FROM = this.uptake > 0 ? g.O2_FROM : Infinity;
       for (const nm of TUBES) {
         const L = this.tubes[nm].L, sp = this.spc[nm], n = Math.floor(L / sp);
         const mt = nm === "M" ? this.mTargets(n) : null;      // M は止まる位置に置く
         for (let i = 0; i < n; i++) {
           const s = mt ? mt[i] : (i + 0.5) * sp;
-          this.add(nm === "M" ? { st: "tube", tube: nm, s, kind: "O2", refl: true, co2: false } : { st: "tube", tube: nm, s, co2: co2Init[nm](s) });
+          const isO2 = nm === "M" || (nm === "R" && i >= O2_FROM);
+          this.add(isO2 ? { st: "tube", tube: nm, s, kind: "O2", refl: true, co2: false } : { st: "tube", tube: nm, s, co2: co2Init[nm](s) });
         }
       }
       for (let i = 0; i < g.LUNG_MIN; i++) {
@@ -318,7 +322,7 @@
           const idx = this.pickLungEntry();
           if (idx < 0) { p.s = this.tubes.B.L; break; }
           this.lSlots[idx] = p.id;
-          p.co2 = true; p.refl = false;                 // リフレクタガス（O₂）も肺胞に入れば患者のガス（灰 → CO₂ の色）。「不足」の場面
+          p.co2 = true;                                 // 肺胞で CO₂ を受け取る。リフレクタガス（O₂）の印は肺胞の中では残し（届いたことが見える）、呼気で出るときに外す（2026-11-05 著者の判断）
           this.startTransit(p, [g.nodes.LG, this.lSlotXY(idx)], Math.max(Math.abs(F.B), 60), { type: "slot", store: "l", slot: idx });
           break;
         }
@@ -412,6 +416,7 @@
       if (idx < 0) return false;
       const p = this.byId.get(this.lSlots[idx]);
       this.lSlots[idx] = null;
+      p.refl = false;                                       // 肺胞から出る呼気は患者のガス（リフレクタガスだった粒も CO₂ の色に）
       const path = [this.lSlotXY(idx), g.nodes.LG];
       const speed = pathLen(path) / Math.max(tArr - this.t, MIN_TRIP);
       this.startTransit(p, path, speed, { type: "tube", tube: "B", far: true });
