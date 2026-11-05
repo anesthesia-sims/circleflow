@@ -11,9 +11,11 @@ CSS = r"""
   /* 図・操作・時刻のバーが 1 画面に入るよう、画面の高さから幅を決める（--ar は図の横 ÷ 縦。場面を切り替えると変わる） */
   .wrap { max-width:max(620px, min(1300px, calc((100vh - 170px) * var(--ar, 1.515) + 32px))); margin:0 auto; padding:10px 16px 20px; }
   .top { display:flex; align-items:center; gap:10px; margin:2px 0 8px; }
-  .top h1 { font-size:20px; margin:0; flex:1; }
+  .top h1 { font-size:20px; margin:0; flex:1 0 auto; }
   .top h1 span { font-size:14px; font-weight:400; color:var(--sub); margin-left:10px; }
   .top a.lang { font-size:14px; color:var(--blue); margin-right:4px; white-space:nowrap; }
+  .top a.lang .short, .top button .short { display:none; }   /* 狭い画面では English → EN、日本語 → JA、英語のボタンは Guide・More（2026-11-05） */
+  #fsBtnTop[hidden], #fsBtnRow[hidden] { display:none; }
   .top button { white-space:nowrap; }   /* 狭い画面で「How to use」などが 2 行に折れないように（2026-11-02） */
   .langnote { display:flex; align-items:center; gap:10px; margin:0 0 8px; padding:6px 8px 6px 12px; font-size:14px;
     border:1.5px solid var(--blue); border-radius:8px; }
@@ -37,7 +39,21 @@ CSS = r"""
   #play { width:40px; height:34px; border-radius:50%; border:1.5px solid var(--blue); background:var(--blue); color:#fff; cursor:pointer;
     display:grid; place-items:center; padding:0; }
   #play svg { width:16px; height:16px; }
+  .rng { display:none; align-items:center; gap:8px; margin:0 0 8px; }
+  .rng .seg { flex:1; display:flex; }
+  .rng .seg button { flex:1; padding:6px 4px; font-size:13px; white-space:nowrap; }
+  .rng .fsBtn { font-size:13px; padding:6px 10px; border:1.5px solid var(--fg); border-radius:8px; background:#fff; color:var(--fg); cursor:pointer; white-space:nowrap; }
+  .fsBtn.on { background:var(--fg); color:#fff; }
+  .hint { display:flex; align-items:center; gap:8px; margin:0 0 8px; padding:6px 8px 6px 12px; font-size:13px; line-height:1.5;
+    border:1.5px solid var(--line); border-radius:8px; color:var(--sub); }
+  .hint[hidden] { display:none; }
+  .hint span { flex:1; }
+  .hint button { border:none; background:none; font-size:16px; cursor:pointer; color:var(--sub); padding:0 4px; }
   .stage { position:relative; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  /* 図の上の指の動き：ふだんは縦の動きをページのスクロールに渡し（pan-y）、横の動きと 2 本指の拡大縮小を図が受ける。
+     ふだんの範囲より狭く見ているとき（zoomed）は縦の動きも図のずらしに使う（2026-11-05） */
+  .stage .fig { touch-action:pan-y; }
+  .stage.zoomed .fig { touch-action:none; }
   .fig svg { width:100%; height:auto; display:block; }
   .fig[hidden] { display:none; }
   .fig .svgcap { display:none; }
@@ -128,13 +144,15 @@ CSS = r"""
      名前を上に小さく、図の下は「再生＋バー」「速さ」「吸収剤」の 3 段。成り行きで折り返すと、並びが崩れて見えた（2026-11-02） */
   .cyc { display:none; }          /* 狭い画面だけ：方式・換気・新鮮ガスを、押すたびに切り替わる 3 つのボタン 1 段に */
   #speedCycle { display:none; }   /* 狭い画面だけ：速さを 1 つのボタンで順送り（¼ → ½ → 1× → 4× → 16×） */
-  @media (max-width:640px) {
+  /* 狭い画面と、背の低い画面（スマートフォンの横向き。2026-11-05 に追加：操作部を 1 段にして図の高さを残す） */
+  @media (max-width:640px), (max-height:500px) {
     .wrap { max-width:none; padding:10px 12px 16px; }   /* 画面の高さから決めた幅（最小 620 px）をやめ、画面の幅いっぱいに */
-    .top { gap:6px; }
-    .top h1 { font-size:19px; }
+    .top { gap:5px; }
+    .top h1 { font-size:18px; }
     .top h1 span { display:none; }
     .top a.lang { font-size:13px; margin-right:0; }
-    .top button { font-size:13px; padding:5px 8px; }
+    .top a.lang .full, .top button .full { display:none; } .top a.lang .short, .top button .short { display:inline; }
+    .top button { font-size:12.5px; padding:5px 7px; }
     .top button .q { display:none; }
     .bar { display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
     #typeSeg, #ventGrp, #flowGrp { display:none; }
@@ -163,6 +181,6 @@ CSS = r"""
     /* 狭い画面では解説カードを図の上に重ねず、図の下に出す（図が小さいので重ねると部品が隠れる） */
     .card { position:relative; left:auto; bottom:auto; max-width:none; margin:0; border:none; border-top:1.5px solid var(--fg); border-radius:0; transform:none; }
     .card:not(.show) { display:none; } }
-  /* 背の低い画面（スマートフォンの横）：高さから幅を決めると狭くなりすぎるので、幅いっぱいにして縦に送る */
-  @media (max-height:500px) and (min-width:641px) { .wrap { max-width:none; } }
+  /* 狭い画面（縦向き）だけ：図の表示範囲の段を出し、全画面は見出しではなくその段のボタンで */
+  @media (max-width:640px) { .rng { display:flex; } #fsBtnTop { display:none; } }
 """

@@ -35,6 +35,7 @@
 - **部品の名前をクリック**：点線の下線がある名前をクリックすると、その部品を拡大して、はたらきを短く説明します。「前へ・次へ」でガスの流れの順に部品をたどれます
 - **時刻のバー**：吸気・呼気のバーを押すとその時刻で止まり、いま起きていることを説明します
 - **くわしく**：3 つの方式の比較や、吸収剤の消費のくわしい説明
+- **スマートフォン**：縦向きでは図の右半分（呼吸回路）から始まり、「全体・ガス供給・呼吸回路」で表示範囲を切り替えられます。図は 2 本指で拡大、指でずらせます。横向きにすると図が大きく見え、「全画面」でブラウザの枠を消せます（勉強会のスクリーン投影にも）
 - スペースキー：再生／一時停止
 - ← →：0.1 秒ずつ送る
 - Esc：説明を閉じる／粒の追跡をやめる
@@ -77,6 +78,7 @@
 
 | 版 | 日付 | 内容 |
 |---|---|---|
+| 1.5 | 2026-11-05 | スマートフォン対応。図を 2 本指で拡大、指でずらせるようにし、縦向きの狭い画面では「全体・ガス供給・呼吸回路」の表示範囲を切り替えられる（呼吸回路から始まる）。横向きの案内と「全画面」ボタンを追加し、横向きでは操作部を 1 段にまとめた。狭い画面では見どころのツアーが示す範囲へ寄る |
 | 1.4 | 2026-11-05 | 「見どころ」のツアーを追加。ふだんは気づかない細部を 9 つ、方式と場面を自動で切り替えて案内する。1.4.1：開いたときに新しい版があれば 1 回だけ自動で読み直す。1.4.2：見どころを方式ごとに切り替えて見比べる 18 段に（気化器の違いを追加）。1.4.3：ツアーをキーで操作（Esc で閉じる、← BS で戻る、→ Enter スペースで進む）。1.4.5：使い方のツアーに見どころの紹介を追加 |
 | 1.3 | 2026-11-04 | ボリュームリフレクタ式のガス供給を実機（Flow-i）の構成に合わせ、流量計と可変バイパス式の気化器の代わりに、電子制御のガスモジュール・注入式の気化器・制御部を描いた。人工呼吸の新鮮ガスは主に吸気中に流れる形に（1 呼吸の 2/3 を吸気中）。新鮮ガスが患者の取り込みより少なく、リフレクタガス（O₂）が回路へ入っていく「不足」の場面を追加（全 13 場面）。説明文の断定（上昇式ベローズの陰圧、APL 弁が開く条件、リフレクタの両端のガス）を直し、気化器では O₂・N₂O の両方が気化室とバイパスを通るようにした。1.3.1：配管からガスモジュールへの管の途切れと、供給路の粒の間隔の乱れを直し、全場面の 1 回換気量を 13 粒にそろえた。1.3.2：リフレクタ式の人工呼吸で、ガスモジュールより上流の粒を一定に流し、吸気中に多く通す流量の変化はモジュールの弁で作る形にした。1.3.4〜1.3.11：リフレクタガスがガスモジュールから流れ込むようにし、モジュールの内部を弁座のある L 字に、電磁コイルを鉄心の両側の巻線の断面（通電中は黒）に描き直した。押すためのガス（リフレクタガスと上昇式ベローズの駆動ガス）を灰の四角で示し、リフレクタガスのいる範囲の管腔を薄い灰で塗る（ポインターを重ねると名前が出る）。描かれていなかった部品の縁を直した。「不足」の場面は数呼吸で O₂ が肺胞に届く状態から始め、肺胞の中でも O₂ の粒を四角のまま見せる |
 | 1.2 | 2026-11-03〜04 | ボリュームリフレクタ式に用手換気の場面を追加（全 12 場面）。3 つの方式の図の幅と配置をそろえ、スマートフォンでは操作部を切り替えボタンにまとめた。余剰ガスの経路、呼吸バッグから出る粒の速さ、笑気の供給の表示などを修正。ボリュームリフレクタ式の新鮮ガスは、一定に流れ、呼気中は吸収装置を逆向きに通ってリフレクタへ入る形に改めた |
@@ -137,6 +139,7 @@ For beginners, the screen shows only the figure and the controls; explanations a
 - **Click a part name**: names with a dotted underline zoom in on that part and explain what it does. Prev / Next follow the parts in the order the gas flows.
 - **Time bar**: press the inspiration / expiration bar to stop at that moment and see what is happening.
 - **Learn more**: how the three types differ, and details of absorbent use.
+- **On a phone**: in portrait the page starts with the right half of the figure (the breathing circuit); All / Gas supply / Circuit switch the view. Pinch to zoom and drag to move the figure. Turn the phone sideways for a larger figure, and use Full screen to hide the browser bars (also handy for projecting in class).
 - Space: play / pause; ← →: step 0.1 s; Esc: close an explanation or stop following a particle.
 - Open `en/index.html?term=inspValve` to start with that part's explanation open (for linking from textbooks or slides; the names are the keys of `TERMS` in `src/page_terms.py`).
 - Open `en/index.html?type=pistonMan&t=1.5` to get a still frame of that scene at that time (for video or figure capture). Scene names: `bellows`, `bellowsLow`, `bellowsMan`, `bellowsLowMan`, `piston`, `pistonLow`, `pistonMan`, `pistonLowMan`, `reflector`, `reflectorLow`, `reflectorMan`, `reflectorLowMan`.
@@ -177,6 +180,7 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.5 | 2026-11-05 | Phone support: pinch to zoom and drag to move the figure; on narrow portrait screens the view can be switched between All, Gas supply and Circuit (starting with the circuit). A hint to turn the phone sideways and a Full screen button; in landscape the controls fold into one row. On narrow screens the Highlights tour zooms to each detail |
 | 1.4 | 2026-11-05 | Highlights tour: nine easy-to-miss details of the circuit, with the type and scene switched automatically for each. 1.4.1: the page reloads itself once when a newer version has been published. 1.4.2: the highlights tour now compares the types step by step (18 steps, including the vaporizers). 1.4.3: keyboard control of the tours (Esc close, ← Backspace back, → Enter Space next). 1.4.5: the How-to-use tour now introduces the Highlights tour |
 | 1.3 | 2026-11-04 | The gas supply of the volume reflector figure now follows the real machine (Flow-i): electronically controlled gas modules, injection vaporizers and a control unit replace the flowmeters and variable-bypass vaporizers. During mechanical ventilation the fresh gas is delivered mainly during inspiration (two thirds of each breath). New Too low scene, in which fresh gas is less than the patient's uptake and reflector gas (O₂) enters the circuit (13 scenes in all). Overstated explanations (negative pressure with the ascending bellows, when the APL valve opens, the gas at the two ends of the reflector) were corrected, and both O₂ and N₂O now pass through the vaporizing chamber and the bypass. 1.3.1: fixed the gap between the pipeline and the gas modules and the uneven spacing of supply particles, and brought the tidal volume of every scene to 13 particles. 1.3.2: on the reflector ventilator scenes the supply particles upstream of the gas modules now flow uniformly, and the inspiratory-weighted flow is made at the module valve. 1.3.4 to 1.3.11: reflector gas now flows in from the gas module, whose interior is redrawn as an L-shaped path with a valve seat and a solenoid coil shown in section on both sides of the plunger (dark while energized); gas that pushes (reflector gas and the bellows drive gas) is shown as gray squares, and the part of the reflector filled with reflector gas is shaded light gray (its name appears on hover); missing part outlines were restored. The Too low scene now starts a few breaths before O₂ reaches the alveoli, where it stays shown as a square |
 | 1.2 | 2026-11-03 to 04 | Manual ventilation scenes for the volume reflector type (12 scenes in all). The three figures now share the same width and layout, and on phones the controls fold into cycling buttons. Fixes to the scavenging path, the speed of particles leaving the reservoir bag, the display of the N₂O supply, and more. On the volume reflector type, fresh gas now flows constantly and, during expiration, passes backward through the absorber into the reflector |

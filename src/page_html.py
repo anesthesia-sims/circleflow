@@ -10,6 +10,7 @@ BODY_TOP = r"""
   <button id="helpBtn" aria-label="使い方"><span class="q">?</span>使い方</button>
   <button id="hlBtn">見どころ</button>
   <button id="moreBtn">くわしく</button>
+  <button class="fsBtn" id="fsBtnTop" aria-pressed="false">全画面</button>
 </header>
 <div class="bar chrome">
   <div class="cyc" id="cycRow"><button id="typeCycle"><small>方式</small><b></b></button><button id="ventCycle"><small>換気</small><b></b></button><button id="flowCycle"><small>新鮮ガス</small><b></b></button></div>
@@ -21,6 +22,8 @@ BODY_TOP = r"""
   <div class="grp" id="flowGrp"><span class="lab">新鮮ガス</span><div class="seg">
     <button data-flow="high" class="on">多め</button><button data-flow="low">低流量</button><button data-flow="short" hidden>不足</button></div></div>
 </div>
+<div class="rng chrome" id="rngRow"><div class="seg" id="rangeSeg"><button data-range="all">全体</button><button data-range="supply">ガス供給</button><button data-range="circuit">呼吸回路</button></div><button class="fsBtn" id="fsBtnRow" aria-pressed="false">全画面</button></div>
+<div class="hint chrome" id="rotHint" hidden><span>横向きにすると図が大きく見えます。図は 2 本指で拡大、指でずらせます。</span><button id="rotHintX" aria-label="案内を閉じる">✕</button></div>
 <div class="stage" id="stage">
 """
 

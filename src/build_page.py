@@ -91,7 +91,7 @@ BODY_TOP = BODY_TOP.replace("@@LANGNOTE@@", _note)
 ALT = "".join(f'<link rel="alternate" hreflang="{k}" href="{v}">\n' for k, v in sorted(HREF.items()))
 if "ja" in HREF:
     ALT += f'<link rel="alternate" hreflang="x-default" href="{HREF["ja"]}">\n'
-BODY_TOP = BODY_TOP.replace("@@LANG@@", f'<a class="lang" href="{OTHER}" hreflang="{_other}" lang="{_other}">{"日本語" if _other == "ja" else "English"}</a>' if OTHER else "")
+BODY_TOP = BODY_TOP.replace("@@LANG@@", f'<a class="lang" href="{OTHER}" hreflang="{_other}" lang="{_other}"><span class="full">{"日本語" if _other == "ja" else "English"}</span><span class="short">{"JA" if _other == "ja" else "EN"}</span></a>' if OTHER else "")   # 狭い画面では短い表記（2026-11-05）
 # 新しい版の確認（2026-11-05 著者の依頼）：GitHub Pages は HTML を 10 分キャッシュしてよいと指示するので、開いたときに VERSION を
 # キャッシュを使わずに取り、ページに埋めた版と違えば 1 回だけ再読み込みする。ファイルとして開いたとき・通信できないときは何もしない。
 # 開いて 3 秒以上たっていたら（操作を始めている）再読み込みしない。同じ版への再読み込みは 1 回だけ（公開直後に VERSION だけ先に新しくなる

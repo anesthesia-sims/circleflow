@@ -37,6 +37,16 @@ MAIN_JS = r"""
     vbCur[k] = BASE[k].slice();
   }
   let type = TYPES.includes(q.get('type')) ? q.get('type') : 'bellows';
+  // ---------- 図の表示範囲（2026-11-05 著者と相談：スマートフォン対応）----------
+  // 狭い画面で幅 1340 の図を幅いっぱいに縮めると文字が約 5 px になって読めない。そこで図の左右（ガス供給機構・気化器／呼吸回路。
+  // 図の点線の枠は x 12〜680 と 692〜1328）を幅 692・高さは全体の範囲として用意し、縦向きの狭い画面では「呼吸回路」から始める。
+  // 2 本指で拡大縮小・指でずらしたあとは custom。部品の解説を閉じたとき・場面を切り替えたときは、この「ふだんの範囲」に戻る。
+  // 3 方式の図は同じ座標（幅 1340）なので範囲は共通
+  const RANGES = { all: k => BASE[k].slice(), supply: k => [0, 0, 692, BASE[k][3]], circuit: k => [BASE[k][2] - 692, 0, 692, BASE[k][3]] };
+  const narrowMq = matchMedia('(max-width:640px)');
+  let range = 'all', userVB = null;
+  const homeVB = k => range === 'custom' && userVB ? userVB.slice() : (RANGES[range] || RANGES.all)(k);
+  const sameVB = (a, b) => a.every((v, i) => Math.abs(v - b[i]) < 0.5);
 
   // 粒：実行時シミュレーション。8 つの場面はそれぞれ独立に動く（初めて表示するときに作る）
   const sims = {}, layers = {};
@@ -90,7 +100,8 @@ MAIN_JS = r"""
     return `${outer} M${x0 + R},${y0} H${x1 - R} A${R},${R} 0 0 1 ${x1},${y0 + R} V${y1 - R} A${R},${R} 0 0 1 ${x1 - R},${y1} ` +
            `H${x0 + R} A${R},${R} 0 0 1 ${x0},${y1 - R} V${y0 + R} A${R},${R} 0 0 1 ${x0 + R},${y0} Z`;
   };
-  const setVB = (k, vb) => { vbCur[k] = vb; figs[k].setAttribute('viewBox', vb.map(v => v.toFixed(2)).join(' ')); fitStroke(figs[k]); };
+  const setVB = (k, vb) => { vbCur[k] = vb; figs[k].setAttribute('viewBox', vb.map(v => v.toFixed(2)).join(' ')); fitStroke(figs[k]);
+    stage.classList.toggle('zoomed', vb[3] < homeVB(k)[3] - 0.5); };
   const setHole = (k, r) => { holeCur[k] = r; dims[k].setAttribute('d', r ? holePath(r, 'M-6000,-6000 H8000 V8000 H-6000 Z') : 'M-6000,-6000 H8000 V8000 H-6000 Z'); };
   const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
   const lerp = (a, b, e) => a.map((v, i) => v + (b[i] - v) * e);
@@ -109,7 +120,7 @@ MAIN_JS = r"""
   };
   const card = $('card'), cardTtl = $('cardTtl'), cardTxt = $('cardTxt'), cardNav = $('cardNav'), stage = $('stage');
   const targetVB = (k, r) => {
-    const [, , W0, H0] = BASE[k], ar = H0 / W0, pad = 24;
+    const [, , W0] = BASE[k], h = homeVB(k), ar = h[3] / h[2], pad = 24;   // 縦横比はふだんの範囲に合わせる（図の高さが変わらないように）
     const rw = r[2] - r[0] + 2 * pad, rh = r[3] - r[1] + 2 * pad;
     const over = getComputedStyle(card).position === 'absolute';               // 狭い画面ではカードは図の下（重ならない）
     const c = over ? Math.min(0.55, (card.offsetHeight + 28) / stage.clientHeight) : 0;   // 下の解説カードに隠れる割合
@@ -127,23 +138,23 @@ MAIN_JS = r"""
     card.classList.add('show');
     const r = rectOf(id, type);
     if (r) tween(type, targetVB(type, r), [r[0] - 12, r[1] - 12, r[2] + 12, r[3] + 12], 0.5);
-    else tween(type, BASE[type], null, 0);
+    else tween(type, homeVB(type), null, 0);
   };
   const openPhase = ph => {
     focus = { kind: 'phase' };
     cardTtl.innerHTML = `<span class="ph ${ph[3]}">${ph[0]}</span>${L.now}`;
     cardTxt.textContent = ph[4]; cardNav.hidden = true;
     card.classList.add('show');
-    tween(type, BASE[type], null, 0);
+    tween(type, homeVB(type), null, 0);
   };
   const closeCard = () => {
     if (!focus) return;
     focus = null; card.classList.remove('show');
-    tween(type, BASE[type], null, 0);
+    tween(type, homeVB(type), null, 0);
   };
   const closeCardNow = k => {                                      // 場面を切り替えるとき：動きなしで戻す
     focus = null; card.classList.remove('show'); tw = null;
-    setVB(k, BASE[k].slice()); dims[k].setAttribute('fill-opacity', '0'); setHole(k, null);
+    setVB(k, homeVB(k)); dims[k].setAttribute('fill-opacity', '0'); setHole(k, null);
   };
   const stepTerm = d => {
     const ids = termsHere(), i = ids.indexOf(focus && focus.id);
@@ -188,6 +199,7 @@ MAIN_JS = r"""
     type = tp;
     sim = getSim(tp); layer = layers[tp]; flow = tp.includes('Short') ? 'short' : tp.includes('Low') ? 'low' : 'high'; man = tp.endsWith('Man');
     for (const k of Object.keys(figs)) $('fig-' + k).hidden = k !== tp;
+    tw = null; setVB(tp, homeVB(tp));
     document.querySelectorAll('#typeSeg button').forEach(b => b.classList.toggle('on', b.dataset.type === family(tp)));
     document.querySelectorAll('[data-flow]').forEach(b => b.classList.toggle('on', b.dataset.flow === flow));
     document.querySelector('[data-flow="short"]').hidden = !(family(tp) === 'reflector' && !man);
@@ -240,6 +252,7 @@ MAIN_JS = r"""
     return pt.matrixTransform(figs[k].getScreenCTM().inverse());
   };
   for (const k of TYPES) figs[k].addEventListener('click', ev => {
+    if (gestured) { gestured = false; return; }               // 指でずらした・広げた直後の click（タップではない）
     const tEl = ev.target.closest && ev.target.closest('text.term');
     if (tEl) { openTerm(tEl.dataset.term); return; }
     const loc = toSvg(k, ev);
@@ -250,6 +263,95 @@ MAIN_JS = r"""
     getSim(k).trackNear(loc.x, loc.y, 14);
     updateTrack();
   });
+
+  // ---------- 表示範囲の切り替え（狭い画面のボタン）----------
+  const setRange = (r, animate) => {
+    range = r; if (r !== 'custom') userVB = null;
+    document.querySelectorAll('[data-range]').forEach(b => b.classList.toggle('on', b.dataset.range === r));
+    if (focus) { closeCard(); return; }                           // 解説を閉じると、新しい範囲へ戻る
+    if (animate) tween(type, homeVB(type), null, 0); else { tw = null; setVB(type, homeVB(type)); }
+  };
+  document.querySelectorAll('[data-range]').forEach(b => b.onclick = () => setRange(b.dataset.range, true));
+  // 狭い画面（縦向き）になったら「呼吸回路」から、広い画面に戻ったら全体
+  const applyNarrow = () => { if (narrowMq.matches) { if (range === 'all') setRange('circuit', false); } else if (range !== 'all') setRange('all', false); };
+  narrowMq.addEventListener('change', applyNarrow);
+
+  // ---------- 指の操作（2026-11-05）：2 本指で拡大縮小、1 本指でずらす ----------
+  // 図の上の pointerdown から指を追い、動かした量が 8 px 未満ならタップ（粒の追跡・部品の名前の click）として扱う。
+  // 範囲は図の中に収め、幅は全体の 1/5 まで。縦横比は変えない。解説を開いているあいだの操作は一時的で、閉じるとふだんの範囲へ戻る。
+  // pointer capture は使わない（Chrome では捕まえた要素に click が行き、部品の名前の click が取れなくなる）
+  let gestured = false;
+  const ptrs = new Map();
+  let g0 = null, moved = false;
+  const gestureStart = () => ({ vb: vbCur[type].slice(), r: figs[type].getBoundingClientRect(), p: [...ptrs.values()].map(p => ({ x: p.x, y: p.y })) });
+  const clampVB = (k, vb) => {
+    const [, , W0, H0] = BASE[k], ar = vb[3] / vb[2];
+    const vw = Math.max(W0 / 5, Math.min(W0, H0 / ar, vb[2])), vh = vw * ar;
+    return [Math.max(0, Math.min(W0 - vw, vb[0])), Math.max(0, Math.min(H0 - vh, vb[1])), vw, vh];
+  };
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const applyGesture = vb => {
+    moved = true; tw = null; setVB(type, vb);
+    if (!focus) {                                                 // ふだんの範囲を指で決めた（custom）。ふだんの範囲と同じなら変えない
+      if (!sameVB(vb, homeVB(type))) { range = 'custom'; userVB = vb.slice(); document.querySelectorAll('[data-range]').forEach(b => b.classList.remove('on')); }
+    }
+  };
+  stage.addEventListener('pointerdown', e => {
+    if (!e.target.closest('.fig')) return;                        // 解説カード・追跡の札の上は図の操作にしない
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    gestured = false;
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.size === 1) moved = false;
+    g0 = gestureStart();
+  });
+  addEventListener('pointermove', e => {
+    if (!ptrs.has(e.pointerId) || !g0) return;
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const ps = [...ptrs.values()], p0 = g0.p, r = g0.r, vb0 = g0.vb, k = vb0[2] / r.width;   // k：画面 1 px あたりの図の座標
+    if (ps.length >= 2 && p0.length >= 2) {
+      const d0 = dist(p0[0], p0[1]), d1 = dist(ps[0], ps[1]); if (d0 < 1 || d1 < 1) return;
+      const s = d0 / d1;                                          // 指を広げると範囲は狭く（拡大）
+      const m0 = { x: (p0[0].x + p0[1].x) / 2, y: (p0[0].y + p0[1].y) / 2 }, m1 = { x: (ps[0].x + ps[1].x) / 2, y: (ps[0].y + ps[1].y) / 2 };
+      const fx = vb0[0] + (m0.x - r.left) * k, fy = vb0[1] + (m0.y - r.top) * k;   // 始めに 2 本指の中点にあった図の点を、いまの中点に置く
+      applyGesture(clampVB(type, [fx - (m1.x - r.left) * k * s, fy - (m1.y - r.top) * k * s, vb0[2] * s, vb0[3] * s]));
+    } else if (ps.length === 1) {
+      const dx = ps[0].x - p0[0].x, dy = ps[0].y - p0[0].y;
+      if (!moved && Math.hypot(dx, dy) < 8) return;
+      applyGesture(clampVB(type, [vb0[0] - dx * k, vb0[1] - dy * k, vb0[2], vb0[3]]));
+    }
+  });
+  const endPtr = e => {
+    if (!ptrs.has(e.pointerId)) return;
+    ptrs.delete(e.pointerId);
+    if (ptrs.size) g0 = gestureStart();                            // 残った指で続ける（基準を取り直す）
+    else { g0 = null; gestured = moved; moved = false; }
+  };
+  addEventListener('pointerup', endPtr); addEventListener('pointercancel', endPtr);
+  // iOS の Safari は touch-action だけではページの拡大（2 本指）を止めないので、図の上の 2 本指と、狭く見ているときの指の動きは既定の動作を止める
+  stage.addEventListener('touchmove', e => { if (e.target.closest && e.target.closest('.fig') && (e.touches.length >= 2 || stage.classList.contains('zoomed'))) e.preventDefault(); }, { passive: false });
+
+  // ---------- 全画面（2026-11-05）：ブラウザの枠を消す。スマートフォンの横向きと、勉強会のスクリーン投影用 ----------
+  const fsBtns = [...document.querySelectorAll('.fsBtn')];
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  if (!(document.fullscreenEnabled || document.webkitFullscreenEnabled)) fsBtns.forEach(b => b.hidden = true);
+  const toggleFs = () => {
+    const d = document, el = d.documentElement;
+    const p = fsEl() ? (d.exitFullscreen || d.webkitExitFullscreen).call(d) : (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    if (p && p.catch) p.catch(() => {});
+  };
+  fsBtns.forEach(b => b.onclick = toggleFs);
+  const fsChanged = () => fsBtns.forEach(b => { b.classList.toggle('on', !!fsEl()); b.setAttribute('aria-pressed', fsEl() ? 'true' : 'false'); });
+  document.addEventListener('fullscreenchange', fsChanged); document.addEventListener('webkitfullscreenchange', fsChanged);
+
+  // ---------- 横向きの案内（2026-11-05）：指で触れる狭い画面の縦向きで出す。閉じるか、横向きにしたら、以後は出さない ----------
+  {
+    const hint = $('rotHint'), land = matchMedia('(orientation: landscape)');
+    let off = false; try { off = localStorage.getItem('circleflow-rotate-hint-off') === '1'; } catch (e) {}
+    const dismiss = () => { hint.hidden = true; try { localStorage.setItem('circleflow-rotate-hint-off', '1'); } catch (e) {} };
+    if (!off && navigator.maxTouchPoints > 0 && narrowMq.matches && !land.matches) hint.hidden = false;
+    $('rotHintX').onclick = dismiss;
+    land.addEventListener('change', () => { if (land.matches && !hint.hidden) dismiss(); });
+  }
 
   // 時刻のバー：押す・ずらすとその時刻で止まり、離すとその場面の説明を出す
   let dragging = false;
@@ -292,7 +394,12 @@ MAIN_JS = r"""
   const tour = (() => {
     const box = $('tour'), dim = $('tourDim'), hand = $('hand'), bubble = $('bubble');
     const btxt = $('bubbleTxt'), dots = $('bubbleDots'), next = $('tourNext'), prev = $('tourPrev');
-    let i = -1, timers = [], hole = null, holeTw = null, cleanup = null, target = null, wasPlaying = true;
+    let i = -1, timers = [], hole = null, holeTw = null, cleanup = null, target = null, wasPlaying = true, savedRange = null;
+    const fitVB = r => {                                          // 図の範囲 r が入る、全体と同じ縦横比の表示範囲（狭い画面の見どころ用）
+      const [, , W0, H0] = BASE[type], ar = H0 / W0, pad = 30, rw = r[2] - r[0] + 2 * pad, rh = r[3] - r[1] + 2 * pad;
+      const vw = Math.min(W0, Math.max(rw, rh / ar)), vh = vw * ar;
+      return clampVB(type, [(r[0] + r[2]) / 2 - vw / 2, (r[1] + r[3]) / 2 - vh / 2, vw, vh]);
+    };
     const later = (f, ms) => timers.push(setTimeout(f, ms));
     const rectOfEls = els => {
       const rs = els.map(e => e.getBoundingClientRect());
@@ -387,6 +494,7 @@ MAIN_JS = r"""
       }
       if (st.svgRect) {
         stage.scrollIntoView({ block: 'nearest' });
+        if (narrowMq.matches) { tween(type, fitVB(st.svgRect), null, 0); later(() => placeBubble(target()), 650); }   // 狭い画面：示す範囲へ寄せる（動きの終わりに吹き出しを置き直す）
         target = () => { const q = st.svgRect, [a, b] = svgToScreen(q[0], q[1]), [c, d] = svgToScreen(q[2], q[3]); return [a - 6, b - 6, c + 6, d + 6]; };
       } else if (st.particle) {
         setPlaying(false);
@@ -429,6 +537,7 @@ MAIN_JS = r"""
     const open = kind => {
       closeMore(); closeCard(); wasPlaying = playing;
       STEPS = kind === 'hl' ? HL : STEPS_HELP;
+      if (narrowMq.matches) { savedRange = { range, userVB }; setRange('all', false); }   // 狭い画面：ツアーのあいだは全体を見せ、閉じたら戻す
       dots.innerHTML = STEPS.map(() => '<i></i>').join('');
       box.classList.add('show'); hole = null;
       hand.style.transition = 'none'; hand.style.transform = `translate(${innerWidth - 80}px, ${innerHeight - 80}px)`; hand.style.opacity = '0';
@@ -439,6 +548,7 @@ MAIN_JS = r"""
       timers.forEach(clearTimeout); timers = [];
       if (cleanup) { cleanup(); cleanup = null; }
       box.classList.remove('show'); tour.isOpen = false;
+      if (savedRange) { range = savedRange.range; userVB = savedRange.userVB; savedRange = null; setRange(range, true); }
       if (STEPS === HL) { const sb = document.querySelector('[data-speed="1"]'); if (sb) sb.click(); setPlaying(true); return; }   // 見どころ：その場面のまま 1 倍速で続ける
       setPlaying(wasPlaying);
       try { localStorage.setItem('circleflow-tour-seen', '1'); } catch (e) {}
@@ -482,6 +592,7 @@ MAIN_JS = r"""
     if (e.key === '?') tour.open();
   });
   show(type);
+  applyNarrow();
   setPlaying(true);
   requestAnimationFrame(frame);
   let seen = false;
