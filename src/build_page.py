@@ -92,11 +92,23 @@ ALT = "".join(f'<link rel="alternate" hreflang="{k}" href="{v}">\n' for k, v in 
 if "ja" in HREF:
     ALT += f'<link rel="alternate" hreflang="x-default" href="{HREF["ja"]}">\n'
 BODY_TOP = BODY_TOP.replace("@@LANG@@", f'<a class="lang" href="{OTHER}" hreflang="{_other}" lang="{_other}">{"日本語" if _other == "ja" else "English"}</a>' if OTHER else "")
+# 新しい版の確認（2026-11-05 著者の依頼）：GitHub Pages は HTML を 10 分キャッシュしてよいと指示するので、開いたときに VERSION を
+# キャッシュを使わずに取り、ページに埋めた版と違えば 1 回だけ再読み込みする。ファイルとして開いたとき・通信できないときは何もしない。
+# 開いて 3 秒以上たっていたら（操作を始めている）再読み込みしない。同じ版への再読み込みは 1 回だけ（公開直後に VERSION だけ先に新しくなる
+# ことがあるため）
+VCHECK = ("<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '@@VERSION@@';\n"
+          "  fetch(new URL('" + ("../VERSION" if LANG == "en" else "VERSION") + "', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {\n"
+          "    v = v.trim(); if (!v || v === V || performance.now() > 3000) return;\n"
+          "    let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}\n"
+          "    if (done === v) return; try { sessionStorage.setItem('circleflow-reloaded', v); } catch (e) {}\n"
+          "    location.reload();\n"
+          "  }).catch(() => {}); })();</script>")
 html = """<!doctype html>
 <html lang="@@HTMLLANG@@"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>""" + TITLE + """</title>
 """ + ALT + """
+""" + VCHECK + """
 <style>""" + CSS + """</style></head>""" + BODY_TOP + FIGS + BODY_MID + """
 <script>""" + GEOS + SIM_PRE + """</script>
 """ + "".join(f"<script>\n{_js}\n</script>\n" for _js in SIMS) + """<script>
