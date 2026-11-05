@@ -603,7 +603,7 @@
       }
       for (; i < pool.length; i++) pool[i].style.display = "none";
       for (; j < sq.length; j++) sq[j].style.display = "none";
-      this.renderBoundary(layer);
+      this.renderTint(layer);
       this.renderAbsorbent(layer);
       const tp = this.tracked !== null ? this.byId.get(this.tracked) : null;
       if (tp) {
@@ -623,30 +623,50 @@
       if (k < 0) return null;
       return k === 0 ? Math.max(0, arr[0].s - this.spc.R / 2) : (arr[k - 1].s + arr[k].s) / 2;
     }
-    /** 境目の線（管を横切る青い点線）と「境目」の文字。膜があると誤解されないよう、管の外まで出した点線にする（2026-11-05） */
-    renderBoundary(layer) {
+    /** リフレクタガス（O2）のいる範囲（境目から奥の端 K まで）の管腔を薄い灰で塗る（2026-11-05 著者と相談、案 A）。押すためのガスの部屋
+     *  （上昇式ベローズのハウジング、ガスモジュールの下りの管）と同じ色。塗りの端がそのまま境目になる。名前は常には出さず、塗った範囲に
+     *  ポインターを重ねたとき（スマートフォンでは触れたとき 1.5 秒）だけ出す。O2 がリフレクタにないときは塗らない */
+    renderTint(layer) {
       const ns = "http://www.w3.org/2000/svg";
-      if (!layer._bnd) {
-        const g = document.createElementNS(ns, "g");
-        g.setAttribute("pointer-events", "none");
-        const ln = document.createElementNS(ns, "line");
-        ln.setAttribute("stroke", "#1f5fae"); ln.setAttribute("stroke-width", "1.8"); ln.setAttribute("stroke-dasharray", "2.6 1.6");
-        const tx = document.createElementNS(ns, "text");
-        tx.setAttribute("font-size", "11"); tx.setAttribute("fill", "#1f5fae"); tx.setAttribute("text-anchor", "middle");
-        tx.setAttribute("stroke", "#fff"); tx.setAttribute("stroke-width", "3"); tx.setAttribute("paint-order", "stroke");
-        g.appendChild(ln); g.appendChild(tx); layer.appendChild(g); layer._bnd = { g, ln, tx };
+      if (!layer._tint) {
+        const tint = document.createElementNS(ns, "polyline");
+        tint.setAttribute("fill", "none"); tint.setAttribute("stroke", "#e6e6e6"); tint.setAttribute("stroke-width", "7");
+        tint.setAttribute("stroke-linejoin", "round"); tint.setAttribute("pointer-events", "none");
+        layer.insertBefore(tint, layer.firstChild);                  // 粒の下に敷く
+        const hit = document.createElementNS(ns, "polyline");          // ポインターを受ける透明な太い線（粒の上。クリックは図の側で座標から扱う）
+        hit.setAttribute("fill", "none"); hit.setAttribute("stroke", "#000"); hit.setAttribute("stroke-opacity", "0"); hit.setAttribute("stroke-width", "16");
+        hit.setAttribute("stroke-linejoin", "round"); hit.setAttribute("pointer-events", "stroke");
+        const tip = document.createElementNS(ns, "text");
+        tip.setAttribute("font-size", "13"); tip.setAttribute("fill", "#333"); tip.setAttribute("pointer-events", "none");
+        tip.setAttribute("stroke", "#fff"); tip.setAttribute("stroke-width", "3.5"); tip.setAttribute("paint-order", "stroke");
+        tip.style.display = "none";
+        layer.appendChild(hit); layer.appendChild(tip);
+        const svg = layer.ownerSVGElement;
+        const place = ev => {
+          const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+          const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+          const T = simText(), name = T.reflGas.charAt(0).toUpperCase() + T.reflGas.slice(1);
+          tip.textContent = name;
+          tip.setAttribute("x", (q.x + 10).toFixed(1)); tip.setAttribute("y", (q.y - 12).toFixed(1));
+          tip.style.display = "";
+        };
+        let timer = null;
+        hit.addEventListener("pointermove", ev => { if (ev.pointerType === "mouse") place(ev); });
+        hit.addEventListener("pointerleave", ev => { if (ev.pointerType === "mouse") tip.style.display = "none"; });
+        hit.addEventListener("pointerdown", ev => {
+          if (ev.pointerType === "mouse") return;
+          place(ev); clearTimeout(timer); timer = setTimeout(() => { tip.style.display = "none"; }, 1500);
+        });
+        layer._tint = { tint, hit, tip };
       }
-      const b = layer._bnd, s = this.manual ? null : this.boundaryS();
-      if (s === null) { b.g.style.display = "none"; return; }
-      const R = this.tubes.R, L = R.L;
-      const [x, y] = R.xy(s), [x0, y0] = R.xy(Math.max(0, s - 2)), [x1, y1] = R.xy(Math.min(L, s + 2));
-      let tx = x1 - x0, ty = y1 - y0; const n = Math.hypot(tx, ty) || 1; tx /= n; ty /= n;
-      let nx = -ty, ny = tx; if (ny > 0 || (Math.abs(ny) < 1e-6 && nx > 0)) { nx = -nx; ny = -ny; }   // 文字は上（なければ左）側に
-      b.ln.setAttribute("x1", (x - nx * 9).toFixed(1)); b.ln.setAttribute("y1", (y - ny * 9).toFixed(1));
-      b.ln.setAttribute("x2", (x + nx * 9).toFixed(1)); b.ln.setAttribute("y2", (y + ny * 9).toFixed(1));
-      b.tx.setAttribute("x", (x + nx * 15).toFixed(1)); b.tx.setAttribute("y", (y + ny * 15 + 4).toFixed(1));
-      b.tx.textContent = simText().bnd;
-      b.g.style.display = "";
+      const b = layer._tint, s = this.manual ? null : this.boundaryS();
+      if (s === null) { b.tint.style.display = "none"; b.hit.style.display = "none"; b.tip.style.display = "none"; return; }
+      const R = this.tubes.R, L = R.L, pts = [];
+      for (let u = s; u < L; u += 4) pts.push(R.xy(u));
+      pts.push(R.xy(L));
+      const str = pts.map(q => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" ");
+      b.tint.setAttribute("points", str); b.hit.setAttribute("points", str);
+      b.tint.style.display = ""; b.hit.style.display = "";
     }
     renderAbsorbent(layer) {
       const svg = layer.ownerSVGElement;
