@@ -112,6 +112,7 @@ CSS = r"""
   .bubble { position:absolute; width:min(360px, calc(100vw - 24px)); background:#fff; border:2px solid var(--blue); border-radius:10px; padding:12px 14px 10px; font-size:15px; line-height:1.65;
     transition:left .45s ease, top .45s ease; }
   .bubble .ttl { display:block; margin-bottom:4px; }
+  .bubble .ttl .sub { font-weight:400; font-size:13px; color:#555; margin-left:8px; white-space:nowrap; }
   .bubble .dots { display:flex; gap:5px; margin:8px 0 0; }
   .bubble .dots i { width:7px; height:7px; border-radius:50%; background:#cfd6e3; }
   .bubble .dots i.on { background:var(--blue); }
