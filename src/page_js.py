@@ -54,7 +54,7 @@ MAIN_JS = r"""
   for (const k of TYPES) layers[k] = figs[k].querySelector('g[id^="particles"]');
   const getSim = k => (sims[k] = sims[k] || (family(k) === 'piston' ? new PistonSim(window.SCENE_GEO[k], 7) : family(k) === 'reflector' ? new ReflectorSim(window.SCENE_GEO[k], 7) : family(k) === 'blower' ? new BlowerSim(window.SCENE_GEO[k], 7) : new BellowsSim(window.SCENE_GEO[k], 7)));
   let sim = null, layer = null;
-  const drawSim = tt => { sim.seek(tt); sim.render(layer); };
+  const drawSim = tt => { sim.seek(tt); sim.render(layer); if (sim.tubeD && sim.tubeD.bypass) figs[type].classList.toggle('bypOpen', !!sim.bypass); };   // バイパス弁の栓は粒の道と同じ時刻で回す（1.7.4）
 
   if (q.has('t')) {                     // コマ撮り用：指定時刻で止める
     document.body.classList.add('cap');
@@ -497,7 +497,8 @@ MAIN_JS = r"""
       { scene: 'bellows', speed: 16, t: 0, svgRect: [735, 265, 1150, 650] },
       { scene: 'bellowsLow', speed: 16, t: 0, svgRect: [735, 265, 955, 445] },
       { scene: 'blower', speed: 16, t: 0, svgRect: [690, 265, 1150, 650] },
-      { scene: 'bellows', speed: 1, t: 0, svgRect: [695, 240, 870, 500] },
+      { scene: 'bellowsLow', speed: 1, t: 0, svgRect: [690, 230, 980, 500],   // 1.7.4：2 呼吸目で開いて 4 呼吸目で閉じる（シミュレーションの時刻で予約。段を離れると記録ごと消す）
+        act: () => getSim('bellowsLow').scheduleBypass([[CYC, true], [3 * CYC, false]]), undo: () => { getSim('bellowsLow').clearBypass(); figs.bellowsLow.classList.remove('bypOpen'); } },
       { scene: 'bellowsMan', speed: 1, t: 2.0, svgRect: [680, 510, 850, 672] },
       { scene: 'pistonMan', speed: 1, t: 2.0, svgRect: [690, 500, 1020, 685] },
       { scene: 'blowerMan', speed: 1, t: 2.0, svgRect: [690, 500, 1020, 685] },

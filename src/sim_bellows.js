@@ -504,6 +504,29 @@
     }
     /** 刻み n の時点でバイパスが開いているか（記録から） */
     bypassAt(n) { let on = false; for (const e of this.bypEvents) if (e.n <= n) on = e.on; return on; }
+    /** 刻み n0 より後の保存点を捨て、いまが n0 以降ならその前の保存点に戻す（次の seek で記録どおりに進め直す） */
+    _resetFrom(n0) {
+      for (const k of [...this.checkpoints.keys()]) if (k * this.STEPS_PER_CYC >= n0) this.checkpoints.delete(k);
+      if (this.n < n0) return;
+      let kk = null;
+      for (const k of this.checkpoints.keys()) if (k * this.STEPS_PER_CYC < n0 && (kk === null || k > kk)) kk = k;
+      if (kk !== null) { this.restore(this.checkpoints.get(kk)); this.trail = []; }
+    }
+    /** 時刻（秒）を決めて開閉を予約する（1.7.4、見どころの段）。plan = [[時刻, 開くか], ...]。一時停止・速さ・巻き戻しに関係なく同じ時刻に開閉する */
+    scheduleBypass(plan) {
+      if (!this.tubeD.bypass) return;
+      this.clearBypass();
+      this.bypEvents = plan.map(([T, on]) => ({ n: Math.floor(T / DT + 1e-6) + 1, on }));
+      this._resetFrom(Math.min(...this.bypEvents.map(e => e.n)));
+    }
+    /** 開閉の記録をすべて消して、閉じた回路に戻す */
+    clearBypass() {
+      if (!this.bypEvents.length) return;
+      const n0 = Math.min(...this.bypEvents.map(e => e.n));
+      this.bypEvents = [];
+      this._resetFrom(n0);
+      this.applyBypass(false, false);
+    }
 
     // ---------- 保存と巻き戻し ----------
     snapshot() {

@@ -55,6 +55,8 @@ CSS = r"""
   .stage .fig { touch-action:pan-y; }
   .stage.zoomed .fig { touch-action:none; }
   .fig svg { width:100%; height:auto; display:block; }
+  .fig svg .bypPlug { transition:transform .3s; }
+  .fig svg.bypOpen .bypPlug { transform:rotate(90deg); }
   .fig[hidden] { display:none; }
   .fig .svgcap { display:none; }
   /* 押せる部品の名前：下の点線は文字の下線（text-decoration）ではなく、文字の幅に合わせて引いた線（uline）。
