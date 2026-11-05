@@ -6,7 +6,7 @@
 <link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/">
 <link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/">
 
-<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.5.0';
+<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.5.1';
   fetch(new URL('VERSION', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = v.trim(); if (!v || v === V || performance.now() > 3000) return;
     let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}
@@ -9684,7 +9684,7 @@
   </div>
 </div>
 <footer class="foot chrome">
-  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。プログラムは <a href="https://opensource.org/license/mit" rel="license">MIT</a>、図と文章は <a href="https://creativecommons.org/licenses/by/4.0/deed.ja" rel="license">CC BY 4.0</a>。ソースコード：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版 1.5.0<br>
+  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。プログラムは <a href="https://opensource.org/license/mit" rel="license">MIT</a>、図と文章は <a href="https://creativecommons.org/licenses/by/4.0/deed.ja" rel="license">CC BY 4.0</a>。ソースコード：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版 1.5.1<br>
   教育用の模式図で、臨床の判断や機器の操作に用いるものではありません。特定のメーカーとは関係ありません。<br>
   謝辞：帝京大学医学部附属溝口病院 麻酔科の平林剛先生から、呼吸回路と人工呼吸器の方式について助言をいただきました。内容の誤りは著者の責任です。<br>
   もし間違いに気づかれましたら、<a href="https://github.com/anesthesia-sims/circleflow/issues/new">GitHub の Issue</a> へ投稿していただくか、メール（<a href="mailto:masaaki.asamoto@gmail.com?subject=CircleFlow">masaaki.asamoto@gmail.com</a>）でご連絡をお願いします。
@@ -12366,10 +12366,17 @@ const L = {
     const box = $('tour'), dim = $('tourDim'), hand = $('hand'), bubble = $('bubble');
     const btxt = $('bubbleTxt'), dots = $('bubbleDots'), next = $('tourNext'), prev = $('tourPrev');
     let i = -1, timers = [], hole = null, holeTw = null, cleanup = null, target = null, wasPlaying = true, savedRange = null;
-    const fitVB = r => {                                          // 図の範囲 r が入る、全体と同じ縦横比の表示範囲（狭い画面の見どころ用）
-      const [, , W0, H0] = BASE[type], ar = H0 / W0, pad = 30, rw = r[2] - r[0] + 2 * pad, rh = r[3] - r[1] + 2 * pad;
-      const vw = Math.min(W0, Math.max(rw, rh / ar)), vh = vw * ar;
+    // 狭い画面の見どころ用：図の範囲 r が入る表示範囲。縦横比は r に合わせる（全体の横長 〜 呼吸回路の範囲の縦長の間。
+    // 図の高さがそれに合わせて変わる）。幅は全体の 1/3 より狭くしない（文字が大きくなりすぎず、まわりも見える）。2026-11-05 著者の指摘で直した
+    const fitVB = r => {
+      const [, , W0, H0] = BASE[type], pad = 30, rw = r[2] - r[0] + 2 * pad, rh = r[3] - r[1] + 2 * pad;
+      const ar = Math.max(H0 / W0, Math.min(H0 / 692, rh / rw));
+      const vw = Math.max(W0 / 3, rw, rh / ar), vh = vw * ar;
       return clampVB(type, [(r[0] + r[2]) / 2 - vw / 2, (r[1] + r[3]) / 2 - vh / 2, vw, vh]);
+    };
+    const rectAfter = (vb, q) => {                                // 表示範囲が vb になったとき、図の範囲 q が画面のどこに来るか（寄る動きの終わりの位置）
+      const r = figs[type].getBoundingClientRect(), s = r.width / vb[2];
+      return [r.left + (q[0] - vb[0]) * s - 6, r.top + (q[1] - vb[1]) * s - 6, r.left + (q[2] - vb[0]) * s + 6, r.top + (q[3] - vb[1]) * s + 6];
     };
     const later = (f, ms) => timers.push(setTimeout(f, ms));
     const rectOfEls = els => {
@@ -12458,14 +12465,18 @@ const L = {
       if (cleanup) { cleanup(); cleanup = null; }
       i = n; const st = STEPS[i];
       let els = null, pt = null, pid = null;
+      let zoomTo = null;                                         // 狭い画面：寄る動きの終わりの、示す範囲の画面上の位置
       if (st.scene) {                                            // 見どころ：場面・速さ・時刻を切り替えて再生
-        if (type !== st.scene) show(st.scene);
+        if (type !== st.scene) { const prev = vbCur[type].slice(); show(st.scene); if (narrowMq.matches) setVB(type, prev); }   // 狭い画面：前の範囲を引き継いで、そこから寄る
         const sb = document.querySelector(`[data-speed="${st.speed}"]`); if (sb) sb.click();
         t = st.t; setPlaying(true);
       }
       if (st.svgRect) {
         stage.scrollIntoView({ block: 'nearest' });
-        if (narrowMq.matches) { tween(type, fitVB(st.svgRect), null, 0); later(() => placeBubble(target()), 650); }   // 狭い画面：示す範囲へ寄せる（動きの終わりに吹き出しを置き直す）
+        if (narrowMq.matches) {                                // 狭い画面：示す範囲へ寄せる。吹き出しは終わりの位置に置き、動きが終わってから置き直す（終わる前に置き直すと穴に重なる）
+          const vb = fitVB(st.svgRect); zoomTo = rectAfter(vb, st.svgRect); tween(type, vb, null, 0);
+          const settle = () => { if (tw) later(settle, 150); else placeBubble(target()); }; later(settle, 650);
+        }
         target = () => { const q = st.svgRect, [a, b] = svgToScreen(q[0], q[1]), [c, d] = svgToScreen(q[2], q[3]); return [a - 6, b - 6, c + 6, d + 6]; };
       } else if (st.particle) {
         setPlaying(false);
@@ -12480,13 +12491,14 @@ const L = {
         target = st.padLeft ? () => { const q = rectOfEls(els); q[0] -= st.padLeft; return q; } : () => rectOfEls(els);
       }
       const r = target();
-      moveHole(r);
+      if (zoomTo) { holeTw = null; hole = null; }                 // 寄る動きのあいだは穴を毎コマ目標に合わせる（follow）。寄る前の位置へ動かしてから跳ばない
+      else moveHole(r);
       btxt.innerHTML = st.txt;
       [...dots.children].forEach((d, j) => d.classList.toggle('on', j === i));
       prev.disabled = i === 0;
       next.textContent = i === STEPS.length - 1 ? (STEPS === STEPS_HELP ? L.start : L.hlEnd) : L.next;
-      placeBubble(r);
-      if (st.svgRect) later(() => placeBubble(target()), 120);   // 場面の切り替えやスクロールで画面がずれたあとに置き直す
+      placeBubble(zoomTo || r);
+      if (st.svgRect && !zoomTo) later(() => placeBubble(target()), 120);   // 場面の切り替えやスクロールで画面がずれたあとに置き直す
       if (st.hand === false) hand.style.opacity = '0';
       else {
         const [x, y] = st.particle ? [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2] : st.at ? st.at(r) : [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2 + 4];
@@ -12508,7 +12520,7 @@ const L = {
     const open = kind => {
       closeMore(); closeCard(); wasPlaying = playing;
       STEPS = kind === 'hl' ? HL : STEPS_HELP;
-      if (narrowMq.matches) { savedRange = { range, userVB }; setRange('all', false); }   // 狭い画面：ツアーのあいだは全体を見せ、閉じたら戻す
+      if (narrowMq.matches) { savedRange = { range, userVB }; if (kind !== 'hl') setRange('all', false); }   // 狭い画面：使い方は全体を見せる。見どころは今の範囲から寄り始める。閉じたら戻す
       dots.innerHTML = STEPS.map(() => '<i></i>').join('');
       box.classList.add('show'); hole = null;
       hand.style.transition = 'none'; hand.style.transform = `translate(${innerWidth - 80}px, ${innerHeight - 80}px)`; hand.style.opacity = '0';
