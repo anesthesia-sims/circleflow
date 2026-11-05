@@ -459,6 +459,14 @@ rect(BLX - 26, MAN_Y + BL_R + 10, 52, 22, fill=METAL, rx=4)
 for _ex in (BLX - 26, BLX + 21):
     add(f'<rect x="{_ex}" y="{MAN_Y+BL_R+10}" width="5" height="22" rx="1.5" fill="#9a9a9a" stroke="{K}" stroke-width="1.4"/>')
 add(f'<rect x="{BLX-5}" y="{MAN_Y+BL_R-1}" width="10" height="12" rx="1" fill="{METAL}" stroke="{K}" stroke-width="1.4"/>')   # 軸の支え
+# 外気取り込み弁（陰圧防止、1.7.2）：ブロワの吸い込み側（吸収装置からブロワへ上がる縦の管）に付ける。呼吸バッグがしぼみきって
+# 回路が陰圧になると外気（室内の空気）を入れる。描き方はピストン式の図と同じ（逆止弁の断面、閉じた姿。このシミュレーターでは開かない）
+AV_Y = 255
+pipe([(AX, AV_Y), (AX + 28, AV_Y)], inner=INSP, w=8)
+check_valve(AX + 40, AV_Y, rot=-90)          # 右の外気側から左の管へだけ通す
+arrow(AX + 64, AV_Y, 180, K, 10)
+text("外気取り込み弁", AX + 70, AV_Y - 2, 14, color="#333")
+text("（陰圧防止）", AX + 70, AV_Y + 16, 13, color="#333")
 text("ブロワ", BLX, MAN_Y + BL_R + 54, 16, "middle", 700)
 text("（ファン）", BLX, MAN_Y + BL_R + 72, 13, "middle", color="#333")
 if MANUAL:   # 用手換気で止まっていることの注記。操作ページでは隠して解説に回す（class="svgnote"。コマ撮りでは出す）
