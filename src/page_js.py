@@ -333,11 +333,18 @@ MAIN_JS = r"""
   // ---------- 全画面（2026-11-05）：ブラウザの枠を消す。スマートフォンの横向きと、勉強会のスクリーン投影用 ----------
   const fsBtns = [...document.querySelectorAll('.fsBtn')];
   const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
-  if (!(document.fullscreenEnabled || document.webkitFullscreenEnabled)) fsBtns.forEach(b => b.hidden = true);
+  // 出す条件は「全画面にする関数があること」（document.fullscreenEnabled で判定すると iPhone の Safari で偽になりボタンが出なかった。2026-11-05 著者の報告）。
+  // 押して 1 秒たっても全画面にならないブラウザ（iPhone の Chrome など）では、ボタンを隠して以後は出さない
+  const docEl = document.documentElement, canFs = !!(docEl.requestFullscreen || docEl.webkitRequestFullscreen);
+  let noFs = false; try { noFs = localStorage.getItem('circleflow-nofs') === '1'; } catch (e) {}
+  if (!canFs || noFs) fsBtns.forEach(b => b.hidden = true);
+  const giveUpFs = () => { fsBtns.forEach(b => b.hidden = true); try { localStorage.setItem('circleflow-nofs', '1'); } catch (e) {} };
   const toggleFs = () => {
-    const d = document, el = d.documentElement;
-    const p = fsEl() ? (d.exitFullscreen || d.webkitExitFullscreen).call(d) : (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    const d = document;
+    if (fsEl()) { const p = (d.exitFullscreen || d.webkitExitFullscreen).call(d); if (p && p.catch) p.catch(() => {}); return; }
+    let p = null; try { p = (docEl.requestFullscreen || docEl.webkitRequestFullscreen).call(docEl); } catch (e) {}
     if (p && p.catch) p.catch(() => {});
+    setTimeout(() => { if (!fsEl()) giveUpFs(); }, 1000);
   };
   fsBtns.forEach(b => b.onclick = toggleFs);
   const fsChanged = () => fsBtns.forEach(b => { b.classList.toggle('on', !!fsEl()); b.setAttribute('aria-pressed', fsEl() ? 'true' : 'false'); });

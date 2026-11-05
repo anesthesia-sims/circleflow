@@ -6,7 +6,7 @@
 <link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/">
 <link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/">
 
-<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.5.1';
+<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.5.2';
   fetch(new URL('VERSION', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = v.trim(); if (!v || v === V || performance.now() > 3000) return;
     let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}
@@ -9684,7 +9684,7 @@
   </div>
 </div>
 <footer class="foot chrome">
-  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。プログラムは <a href="https://opensource.org/license/mit" rel="license">MIT</a>、図と文章は <a href="https://creativecommons.org/licenses/by/4.0/deed.ja" rel="license">CC BY 4.0</a>。ソースコード：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版 1.5.1<br>
+  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。プログラムは <a href="https://opensource.org/license/mit" rel="license">MIT</a>、図と文章は <a href="https://creativecommons.org/licenses/by/4.0/deed.ja" rel="license">CC BY 4.0</a>。ソースコード：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版 1.5.2<br>
   教育用の模式図で、臨床の判断や機器の操作に用いるものではありません。特定のメーカーとは関係ありません。<br>
   謝辞：帝京大学医学部附属溝口病院 麻酔科の平林剛先生から、呼吸回路と人工呼吸器の方式について助言をいただきました。内容の誤りは著者の責任です。<br>
   もし間違いに気づかれましたら、<a href="https://github.com/anesthesia-sims/circleflow/issues/new">GitHub の Issue</a> へ投稿していただくか、メール（<a href="mailto:masaaki.asamoto@gmail.com?subject=CircleFlow">masaaki.asamoto@gmail.com</a>）でご連絡をお願いします。
@@ -12304,11 +12304,18 @@ const L = {
   // ---------- 全画面（2026-11-05）：ブラウザの枠を消す。スマートフォンの横向きと、勉強会のスクリーン投影用 ----------
   const fsBtns = [...document.querySelectorAll('.fsBtn')];
   const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
-  if (!(document.fullscreenEnabled || document.webkitFullscreenEnabled)) fsBtns.forEach(b => b.hidden = true);
+  // 出す条件は「全画面にする関数があること」（document.fullscreenEnabled で判定すると iPhone の Safari で偽になりボタンが出なかった。2026-11-05 著者の報告）。
+  // 押して 1 秒たっても全画面にならないブラウザ（iPhone の Chrome など）では、ボタンを隠して以後は出さない
+  const docEl = document.documentElement, canFs = !!(docEl.requestFullscreen || docEl.webkitRequestFullscreen);
+  let noFs = false; try { noFs = localStorage.getItem('circleflow-nofs') === '1'; } catch (e) {}
+  if (!canFs || noFs) fsBtns.forEach(b => b.hidden = true);
+  const giveUpFs = () => { fsBtns.forEach(b => b.hidden = true); try { localStorage.setItem('circleflow-nofs', '1'); } catch (e) {} };
   const toggleFs = () => {
-    const d = document, el = d.documentElement;
-    const p = fsEl() ? (d.exitFullscreen || d.webkitExitFullscreen).call(d) : (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    const d = document;
+    if (fsEl()) { const p = (d.exitFullscreen || d.webkitExitFullscreen).call(d); if (p && p.catch) p.catch(() => {}); return; }
+    let p = null; try { p = (docEl.requestFullscreen || docEl.webkitRequestFullscreen).call(docEl); } catch (e) {}
     if (p && p.catch) p.catch(() => {});
+    setTimeout(() => { if (!fsEl()) giveUpFs(); }, 1000);
   };
   fsBtns.forEach(b => b.onclick = toggleFs);
   const fsChanged = () => fsBtns.forEach(b => { b.classList.toggle('on', !!fsEl()); b.setAttribute('aria-pressed', fsEl() ? 'true' : 'false'); });
