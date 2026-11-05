@@ -83,6 +83,7 @@ EN = {
     "ボリュームリフレクタ": {"t": "Volume reflector", "size": 15},
     "リフレクタガス（O₂）": {"t": "Reflector gas (O₂)", "size": 13},                    # 凡例
     "リフレクタガス": {"t": "Reflector gas", "size": 12},
+    "リフレクタガスモジュール（O₂）": {"t": "Reflector gas module (O₂)", "size": 12},
     "モジュール（O₂）": {"t": "module (O₂)", "size": 12},
     "電磁弁": {"t": "solenoid", "size": 10},
     "PEEP/APL弁": {"t": "PEEP/APL valve", "size": 10, "dx": -3},

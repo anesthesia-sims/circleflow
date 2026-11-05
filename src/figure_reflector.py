@@ -489,25 +489,32 @@ pipe([RK, (APX, RYS[3])], inner=EXP)
 # 吸気中だけ弁が開く（SMIL で鉄心が上がる）。実機は電子制御で流量を決める
 GM_T = 548
 pipe([(KX, RYS[3]), (KX, GM_T + 30)], inner="#e6e6e6")          # 内腔は駆動ガスの色（灰）
-rect(KX - 24, GM_T, 48, 32, fill=METAL, rx=4)
+rect(KX - 24, GM_T - 14, 48, 46, fill=METAL, rx=4)          # 2026-11-05：コイルを鉄心の両側に置くため、上へ 14 px 高くした
+add(f'<rect x="{KX-5}" y="{GM_T-12}" width="10" height="{23}" fill="#e6e6e6"/>')                        # 鉄心が上下する筒
 # 2026-11-05：内部を L 字に（入口 → 鉄心の下の弁座 → 出口）。以前は部屋が鉄心の左へも伸び、行き止まりの通路に見えた
 add(f'<rect x="{KX-3.5}" y="{GM_T+19}" width="7" height="{15.5}" fill="#e6e6e6"/>')                   # 出口の通路（弁座の穴から箱の下の縁を越えて下りの管へ）
 add(f'<rect x="{KX-6}" y="{GM_T+10}" width="24" height="9" fill="#e6e6e6"/>')                         # 弁の部屋（鉄心のすぐ左まで）
 add(f'<rect x="{KX+16}" y="{GM_T+10.5}" width="9.2" height="8" fill="#e6e6e6"/>')                     # 右から O2 が入る
 for _sx in (KX - 7, KX + 3.5):                                                                       # 弁座（出口の穴のふち）。閉じると鉄心の先がここに座る
     add(f'<rect x="{_sx}" y="{GM_T+19}" width="3.5" height="2.5" fill="{METAL}" stroke="{K}" stroke-width="1"/>')
-for _k in range(4):                                                                                   # コイル
-    add(f'<rect x="{KX-14+7*_k}" y="{GM_T+3}" width="4" height="5" fill="none" stroke="{K}" stroke-width="1"/>')
+# コイル（2026-11-05 著者と相談、案 3）：鉄心の筒の両側に巻いた電線の断面（丸）。通電している吸気中は黒、止めている呼気中は白
 _gk = f"0;{TI/CYC-0.012:.4f};{TI/CYC+0.018:.4f};0.985;1"
+for _bx in (KX - 19, KX + 7):
+    add(f'<rect x="{_bx}" y="{GM_T-11}" width="12" height="19" rx="1.5" fill="#fff" stroke="{K}" stroke-width="1.2"/>')
+    for _cx in (_bx + 3.5, _bx + 8.5):
+        for _cy in (GM_T - 7, GM_T - 1.5, GM_T + 4):
+            _fill = "#fff" if MANUAL else K
+            _an = "" if MANUAL else f'<animate attributeName="fill" values="{K};{K};#fff;#fff;{K}" keyTimes="{_gk}" dur="{CYC}s" repeatCount="indefinite"/>'
+            add(f'<circle cx="{_cx}" cy="{_cy}" r="1.9" fill="{_fill}" stroke="{K}" stroke-width="0.9">{_an}</circle>')
 if MANUAL:
     add('<g>')                                                                                        # 用手換気：電磁弁は閉じたまま（リフレクタガスを止める）
 else:
     add(f'<g><animateTransform attributeName="transform" type="translate" values="0 -5;0 -5;0 0;0 0;0 -5" keyTimes="{_gk}" dur="{CYC}s" repeatCount="indefinite"/>')
-add(f'<rect x="{KX-4}" y="{GM_T+8}" width="8" height="11" rx="1" fill="{B}" stroke="{K}" stroke-width="1.2"/>')   # 鉄心（下がると出口をふさぐ）
+add(f'<rect x="{KX-4}" y="{GM_T+2}" width="8" height="17" rx="1" fill="{B}" stroke="{K}" stroke-width="1.2"/>')   # 鉄心（コイルの中を上下し、下がると弁座に座って出口をふさぐ）
 add('</g>')
 pipe([(KX + 24, GM_T + 14.5), (KX + 44, GM_T + 14.5)], inner=PIPE["O₂"], w=9)                        # O2 の配管（右から）
-text("リフレクタガス", KX - 35, GM_T - 25, 13, color="#333")   # 2026-11-04：1 行ではとぐろの管の壁に重なるので 2 行に
-text("モジュール（O₂）", KX - 35, GM_T - 8, 13, color="#333")
+# 2026-11-05：箱を高くしたので、名前は 1 行にして箱のすぐ上に（2 行のままでは 1 行目が「肺胞」と同じ高さに並んだ）
+text("リフレクタガスモジュール（O₂）", KX, GM_T - 21, 12, "middle", color="#333")
 # 2026-11-05：配管の口には O₂。「電磁弁」の文字は置かない（鉄心の動きで分かる。1.3.7 の引き出し線は名前の右端にかかっていた。著者の判断）
 text("O₂", KX + 48, GM_T + 19, 12, color="#333")
 # PEEP/APL 弁：ばねで弁座に押しつけた弁板。呼気では開いて余ったガスを余剰ガス排出装置へ逃がし、呼気の終わりの圧（PEEP）を
