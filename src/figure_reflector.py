@@ -508,7 +508,10 @@ add('</g>')
 pipe([(KX + 24, GM_T + 14.5), (KX + 44, GM_T + 14.5)], inner=PIPE["O₂"], w=9)                        # O2 の配管（右から）
 text("リフレクタガス", KX - 35, GM_T - 25, 13, color="#333")   # 2026-11-04：1 行ではとぐろの管の壁に重なるので 2 行に
 text("モジュール（O₂）", KX - 35, GM_T - 8, 13, color="#333")
-text("電磁弁", KX + 52, GM_T + 19, 11, color="#666")
+# 2026-11-05：「電磁弁」は配管の口の右に置いていて配管の名前に読めたので、名前の右に置いて引き出し線でコイルへ。配管の口には O₂
+text("電磁弁", KX + 75, GM_T - 8, 12, color="#333")
+leader(KX + 73, GM_T - 10, KX + 14, GM_T + 5)
+text("O₂", KX + 48, GM_T + 19, 12, color="#333")
 # PEEP/APL 弁：ばねで弁座に押しつけた弁板。呼気では開いて余ったガスを余剰ガス排出装置へ逃がし、呼気の終わりの圧（PEEP）を
 # 設定の値に保つ。用手換気では APL 弁として働く（1 つの弁が兼用）。実機は電子制御で、ばねとつまみは模式
 APY = RYS[3] + 2
@@ -726,7 +729,7 @@ add(f'<circle cx="30" cy="{L2-6}" r="6" fill="#2b2b2b" stroke="#fff" stroke-widt
 text("CO₂ を含まないガス", 44, L2, 17)
 add(f'<circle cx="222" cy="{L2-6}" r="6" fill="{C_CO2_DOT}" stroke="#fff" stroke-width="1"/>')
 text("CO₂ を含むガス", 236, L2, 17)
-add(f'<circle cx="392" cy="{L2-6}" r="6" fill="{C_DRV}" stroke="#fff" stroke-width="1"/>')
+add(f'<rect x="386.5" y="{L2-11.5}" width="11" height="11" rx="1.2" fill="{C_DRV}" stroke="#fff" stroke-width="1"/>')   # 四角：押すためのガス（2026-11-05）
 text("リフレクタガス（O₂）", 406, L2, 17)
 # 2026-11-02：流れの矢印の凡例はやめた（流れの矢印をやめたため）
 

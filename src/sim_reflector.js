@@ -566,8 +566,27 @@
         ring.setAttribute("r", "8"); ring.setAttribute("fill", "none"); ring.setAttribute("stroke", "#d33"); ring.setAttribute("stroke-width", "2.2");
         layer.appendChild(ring); layer._ring = ring;
       }
-      let i = 0;
+      // 2026-11-05：リフレクタガス（O2）の粒は四角（押すためのガス）、患者側のガスは丸。形で区別する
+      if (!layer._sq) layer._sq = [];
+      const sq = layer._sq;
+      let i = 0, j = 0;
       for (const p of this.particles) {
+        const [x, y] = this.xy(p);
+        if (p.refl) {
+          let r = sq[j];
+          if (!r) {
+            r = document.createElementNS(ns, "rect");
+            r.setAttribute("width", "6.2"); r.setAttribute("height", "6.2"); r.setAttribute("rx", "0.8");
+            r.setAttribute("fill", C_REFL); r.setAttribute("stroke", "#fff"); r.setAttribute("stroke-width", "1");
+            r.style.cursor = "pointer";
+            layer.insertBefore(r, layer._trail);
+            sq.push(r);
+          }
+          r.setAttribute("x", (x - 3.1).toFixed(1)); r.setAttribute("y", (y - 3.1).toFixed(1));
+          r.dataset.id = p.id; r.style.display = "";
+          j++;
+          continue;
+        }
         let c = pool[i];
         if (!c) {
           c = document.createElementNS(ns, "circle");
@@ -576,14 +595,15 @@
           layer.insertBefore(c, layer._trail);
           pool.push(c);
         }
-        const [x, y] = this.xy(p);
         c.setAttribute("cx", x.toFixed(1)); c.setAttribute("cy", y.toFixed(1));
-        c.setAttribute("fill", p.refl ? C_REFL : p.co2 ? C_CO2 : C_FRESH);
+        c.setAttribute("fill", p.co2 ? C_CO2 : C_FRESH);
         c.dataset.id = p.id;
         c.style.display = "";
         i++;
       }
       for (; i < pool.length; i++) pool[i].style.display = "none";
+      for (; j < sq.length; j++) sq[j].style.display = "none";
+      this.renderBoundary(layer);
       this.renderAbsorbent(layer);
       const tp = this.tracked !== null ? this.byId.get(this.tracked) : null;
       if (tp) {
@@ -595,6 +615,38 @@
       } else {
         layer._ring.style.display = "none"; layer._trail.style.display = "none";
       }
+    }
+    /** リフレクタの中の、リフレクタガス（O2）と患者側のガスの境目の s（J からの道のり）。O2 がなければ null */
+    boundaryS() {
+      const arr = this.particles.filter(p => p.st === "tube" && p.tube === "R").sort((a, b) => a.s - b.s);
+      const k = arr.findIndex(p => p.refl);
+      if (k < 0) return null;
+      return k === 0 ? Math.max(0, arr[0].s - this.spc.R / 2) : (arr[k - 1].s + arr[k].s) / 2;
+    }
+    /** 境目の線（管を横切る青い点線）と「境目」の文字。膜があると誤解されないよう、管の外まで出した点線にする（2026-11-05） */
+    renderBoundary(layer) {
+      const ns = "http://www.w3.org/2000/svg";
+      if (!layer._bnd) {
+        const g = document.createElementNS(ns, "g");
+        g.setAttribute("pointer-events", "none");
+        const ln = document.createElementNS(ns, "line");
+        ln.setAttribute("stroke", "#1f5fae"); ln.setAttribute("stroke-width", "1.8"); ln.setAttribute("stroke-dasharray", "2.6 1.6");
+        const tx = document.createElementNS(ns, "text");
+        tx.setAttribute("font-size", "11"); tx.setAttribute("fill", "#1f5fae"); tx.setAttribute("text-anchor", "middle");
+        tx.setAttribute("stroke", "#fff"); tx.setAttribute("stroke-width", "3"); tx.setAttribute("paint-order", "stroke");
+        g.appendChild(ln); g.appendChild(tx); layer.appendChild(g); layer._bnd = { g, ln, tx };
+      }
+      const b = layer._bnd, s = this.manual ? null : this.boundaryS();
+      if (s === null) { b.g.style.display = "none"; return; }
+      const R = this.tubes.R, L = R.L;
+      const [x, y] = R.xy(s), [x0, y0] = R.xy(Math.max(0, s - 2)), [x1, y1] = R.xy(Math.min(L, s + 2));
+      let tx = x1 - x0, ty = y1 - y0; const n = Math.hypot(tx, ty) || 1; tx /= n; ty /= n;
+      let nx = -ty, ny = tx; if (ny > 0 || (Math.abs(ny) < 1e-6 && nx > 0)) { nx = -nx; ny = -ny; }   // 文字は上（なければ左）側に
+      b.ln.setAttribute("x1", (x - nx * 9).toFixed(1)); b.ln.setAttribute("y1", (y - ny * 9).toFixed(1));
+      b.ln.setAttribute("x2", (x + nx * 9).toFixed(1)); b.ln.setAttribute("y2", (y + ny * 9).toFixed(1));
+      b.tx.setAttribute("x", (x + nx * 15).toFixed(1)); b.tx.setAttribute("y", (y + ny * 15 + 4).toFixed(1));
+      b.tx.textContent = simText().bnd;
+      b.g.style.display = "";
     }
     renderAbsorbent(layer) {
       const svg = layer.ownerSVGElement;

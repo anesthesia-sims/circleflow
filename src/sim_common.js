@@ -85,7 +85,7 @@
     inAbs: "二酸化炭素吸収装置の中", A: "吸気側の管", B: "気管（死腔）", C: "呼気側の管", D: "吸収装置側の管",
     Ebag: "呼吸バッグ側の管", Event: "人工呼吸器側の管", F: "吸収装置側の管", G: "デカップリング弁側の管", P: "ピストンの口",
     H: "呼吸バッグ側の管", sup: "供給路", scav: "余剰ガス", bag: "呼吸バッグの中", bellows: "ベローズの中", lung: "肺胞の中",
-    cyl: "ピストンのシリンダーの中", trans: "移動中", R: "ボリュームリフレクタの中", M: "ガスモジュールの管", reflGas: "リフレクタガス（O₂）",
+    cyl: "ピストンのシリンダーの中", trans: "移動中", R: "ボリュームリフレクタの中", M: "ガスモジュールの管", bnd: "境目", reflGas: "リフレクタガス（O₂）",
     fmt: (gas, id, co2, where) => `${gas} として供給された粒 #${id}（${co2 ? "CO₂ を含む" : "CO₂ なし"}、${where}）`,
   };
   const simText = () => Object.assign({}, SIM_TEXT_JA, (typeof window !== "undefined" && window.SIM_TEXT) || {});

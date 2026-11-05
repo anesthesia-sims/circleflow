@@ -718,11 +718,13 @@ for i in (range(ND) if not MANUAL else ()):      # 用手換気では駆動ガ�
             x, y = _along([home, PORT, OUTSIDE], (t - t_out) / TRIP); o = 1
         xs.append(f"{x:.1f}"); ys.append(f"{y:.1f}"); ops.append(str(o))
     kt = ";".join(f"{t / CYC:.4f}" for t in ts)
-    add(f'<circle r="3" fill="{C_DRV}" stroke="#fff" stroke-width="1" cx="{OUTSIDE[0]}" cy="{OUTSIDE[1]}" opacity="0">'
-        f'<animate attributeName="cx" values="{";".join(xs)}" keyTimes="{kt}" dur="{CYC}s" repeatCount="indefinite"/>'
-        f'<animate attributeName="cy" values="{";".join(ys)}" keyTimes="{kt}" dur="{CYC}s" repeatCount="indefinite"/>'
+    # 2026-11-05：駆動ガスの粒は四角（リフレクタ式のリフレクタガスと同じ「押すためのガス」の印。患者が吸うガスの丸と形で区別する）
+    xs = [f"{float(v) - 3:.1f}" for v in xs]; ys = [f"{float(v) - 3:.1f}" for v in ys]
+    add(f'<rect width="6" height="6" rx="0.8" fill="{C_DRV}" stroke="#fff" stroke-width="1" x="{OUTSIDE[0]-3}" y="{OUTSIDE[1]-3}" opacity="0">'
+        f'<animate attributeName="x" values="{";".join(xs)}" keyTimes="{kt}" dur="{CYC}s" repeatCount="indefinite"/>'
+        f'<animate attributeName="y" values="{";".join(ys)}" keyTimes="{kt}" dur="{CYC}s" repeatCount="indefinite"/>'
         f'<animate attributeName="opacity" values="{";".join(ops)}" keyTimes="{kt}" calcMode="discrete" dur="{CYC}s" repeatCount="indefinite"/>'
-        '</circle>')
+        '</rect>')
 
 
 # ================= 字幕と進行バー =================
