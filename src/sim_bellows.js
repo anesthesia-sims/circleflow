@@ -66,6 +66,11 @@
       this.absRows = ab.rows; this.absCap = ab.cap; this.absSpread = ab.spread;
       this.absFresh = hexRGB(ab.fresh); this.absUsedC = hexRGB(ab.used);
       this.swaps = [];                                        // 吸収剤を交換した時刻（刻みの番号）
+      // 吸収装置のバイパス（1.7.0）：開くと管 D の道が吸収装置を迂回する道（geo.bypass）に替わり、CO2 は除かれない。
+      // 開閉は刻みの番号で記録し（bypEvents）、巻き戻して再生しても同じ時刻に開閉する
+      this.tubeD = { normal: this.tubes.D, bypass: geo.bypass ? new Poly(geo.bypass) : null };
+      this.spcD0 = this.spc.D;
+      this.bypEvents = []; this.bypass = false;
       this.tracked = null;                                    // 追跡中の粒の id
       this.trail = [];                                        // 追跡中の粒の足跡 [t, x, y]
       this.reset();
@@ -433,6 +438,7 @@
       // 吸収に使われるのは、入口から数えて最初のまだ使える層（使用済みの層を抜けた先の吸収剤）
       const rows = this.absRows, sLo = rows[0][0], sHi = rows[rows.length - 1][1];
       for (const p of this.particles) {
+        if (this.bypass) break;                          // バイパス中：粒は吸収剤を通らない（1.7.0）
         if (p.st !== "tube" || p.tube !== "D" || !p.co2 || p.s < sLo || p.s >= sHi) continue;
         const k = this.absUse.findIndex(u => u < 1 - 1e-9);
         if (k < 0) continue;                             // 全層を使い切った：CO2 は除かれない
@@ -441,6 +447,7 @@
       }
       this.n++;
       if (this.swaps.includes(this.n)) this.absUse.fill(0);
+      for (const e of this.bypEvents) if (e.n === this.n) this.applyBypass(e.on, true);   // 記録した時刻でバイパスを開閉（再生時）
       this.spawnSupply();
       if (this.tracked !== null) {
         const p = this.byId.get(this.tracked);
@@ -479,6 +486,24 @@
       return [0, 0];
     }
 
+    // ---------- 吸収装置のバイパス（1.7.0） ----------
+    /** いまの時刻でバイパスを開く／閉じる（記録して、巻き戻し後の再生でも同じ時刻に開閉する） */
+    setBypass(on) {
+      if (!this.tubeD.bypass || on === this.bypass) return;
+      this.bypEvents = this.bypEvents.filter(e => e.n !== this.n + 1);
+      this.bypEvents.push({ n: this.n + 1, on });      // 次の刻みで切り替える（step の中で applyBypass が呼ばれる）
+      for (const k of [...this.checkpoints.keys()]) if (k * this.STEPS_PER_CYC > this.n) this.checkpoints.delete(k);
+    }
+    /** 管 D の道を切り替える。rescale のときは D の粒の位置を道の長さの比で合わせる（復元のときは粒の位置がその道のものなので合わせない） */
+    applyBypass(on, rescale) {
+      const to = on ? this.tubeD.bypass : this.tubeD.normal;
+      if (!to) return;
+      if (rescale && to !== this.tubes.D) { const k = to.L / this.tubes.D.L; for (const p of this.particles) if (p.st === "tube" && p.tube === "D") p.s *= k; }
+      this.tubes.D = to; this.spc.D = this.spcD0 * to.L / this.tubeD.normal.L; this.bypass = on;
+    }
+    /** 刻み n の時点でバイパスが開いているか（記録から） */
+    bypassAt(n) { let on = false; for (const e of this.bypEvents) if (e.n <= n) on = e.on; return on; }
+
     // ---------- 保存と巻き戻し ----------
     snapshot() {
       return JSON.stringify({
@@ -496,6 +521,7 @@
       this.bSlots = o.bSlots; this.lSlots = o.lSlots;
       this.particles = o.particles;
       this.byId = new Map(this.particles.map(p => [p.id, p]));
+      if (this.tubeD) this.applyBypass(this.bypassAt(this.n), false);   // その時刻の道に戻す（1.7.0）
     }
     /** 時刻 T（秒、0 以上）の状態にする */
     seek(T) {

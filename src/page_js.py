@@ -212,6 +212,8 @@ MAIN_JS = r"""
     }
     buildTimeline(tp);
     underline(tp);
+    $('absByp').hidden = !(sim.tubeD && sim.tubeD.bypass);   // バイパスはベローズ式の図だけ
+    { const on = !!sim.bypass; $('absByp').classList.toggle('on', on); $('bypChip').hidden = !on; for (const k of Object.keys(figs)) figs[k].classList.toggle('bypOpen', k === tp && on); }
     document.documentElement.style.setProperty('--ar', (BASE[tp][2] / BASE[tp][3]).toFixed(4));
   };
 
@@ -378,6 +380,12 @@ MAIN_JS = r"""
   document.querySelectorAll('[data-vent]').forEach(b => b.onclick = () => { const mn = b.dataset.vent === 'man'; show(key(family(type), avail(family(type), flow, mn), mn)); });
   playBtn.onclick = () => setPlaying(!playing);
   $('absSwap').onclick = () => { sim.seek(t); sim.swapAbsorbent(); sim.render(layer); updateAbs(t); };
+  // 吸収装置のバイパス（1.7.0、ベローズ式だけ）：開くと粒は吸収剤を通らず、CO₂ が吸気側へ戻る。作動中は赤い札で知らせる
+  const bypChip = $('bypChip');
+  const updateByp = () => { const on = !!(sim.bypass); $('absByp').classList.toggle('on', on); $('absByp').setAttribute('aria-pressed', on ? 'true' : 'false'); bypChip.hidden = !on; figs[type].classList.toggle('bypOpen', on); };
+  const setByp = on => { if (!sim.setBypass || !sim.tubeD || !sim.tubeD.bypass) return; sim.seek(t); sim.setBypass(on); sim.seek(t + 1 / 120); sim.render(layer); updateByp(); };
+  $('absByp').onclick = () => setByp(!sim.bypass);
+  $('bypX').onclick = () => setByp(false);
   $('typeCycle').onclick = () => { const bs = [...document.querySelectorAll('#typeSeg button')], i = bs.findIndex(x => x.classList.contains('on')); bs[(i + 1) % bs.length].click(); };
   $('ventCycle').onclick = () => document.querySelector('[data-vent]:not(.on)').click();
   $('flowCycle').onclick = () => { const bs = [...document.querySelectorAll('[data-flow]')].filter(b => !b.hidden), i = bs.findIndex(x => x.classList.contains('on')); bs[(i + 1) % bs.length].click(); };
@@ -475,7 +483,7 @@ MAIN_JS = r"""
       { els: () => [$('moreBtn')], txt: L.steps[9] },
     ];
     // 見どころのツアー（2026-11-05 著者と相談）：場面・速さ・時刻を自動で切り替え、図の範囲（図の座標）を明るく残して説明する。文は L.hl
-    // 見どころのツアー（2026-11-05 著者と相談）：細部を方式ごとに切り替えて見比べる 25 段。場面・速さ・時刻・図の範囲（図の座標）。文は L.hl
+    // 見どころのツアー（2026-11-05 著者と相談）：細部を方式ごとに切り替えて見比べる 26 段。場面・速さ・時刻・図の範囲（図の座標）。文は L.hl
     const HL = [
       { scene: 'bellows', speed: 1, t: 0, svgRect: [800, 140, 970, 222] },
       { scene: 'piston', speed: 1, t: 0, svgRect: [925, 12, 1040, 108] },
@@ -493,6 +501,7 @@ MAIN_JS = r"""
       { scene: 'bellows', speed: 16, t: 0, svgRect: [735, 265, 1150, 650] },
       { scene: 'bellowsLow', speed: 16, t: 0, svgRect: [735, 265, 955, 445] },
       { scene: 'blower', speed: 16, t: 0, svgRect: [690, 265, 1150, 650] },
+      { scene: 'bellowsLow', speed: 4, t: 0, svgRect: [690, 230, 980, 500], act: () => setByp(true), undo: () => setByp(false) },
       { scene: 'bellowsMan', speed: 1, t: 2.0, svgRect: [680, 510, 850, 672] },
       { scene: 'pistonMan', speed: 1, t: 2.0, svgRect: [690, 500, 1020, 685] },
       { scene: 'blowerMan', speed: 1, t: 2.0, svgRect: [690, 500, 1020, 685] },
@@ -543,7 +552,7 @@ MAIN_JS = r"""
       next.textContent = i === STEPS.length - 1 ? (STEPS === STEPS_HELP ? L.start : L.hlEnd) : L.next;
       placeBubble(zoomTo || r);
       if (st.svgRect && !zoomTo) later(() => placeBubble(target()), 120);   // 場面の切り替えやスクロールで画面がずれたあとに置き直す
-      if (st.hand === false) hand.style.opacity = '0';
+      if (st.hand === false) { hand.style.opacity = '0'; if (st.act) { st.act(); cleanup = st.undo || null; } }   // 見どころ：操作を伴う段（吸収装置のバイパスなど。1.7.0）
       else {
         const [x, y] = st.particle ? [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2] : st.at ? st.at(r) : [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2 + 4];
         handTo(x, y);

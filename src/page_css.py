@@ -99,6 +99,12 @@ CSS = r"""
   .abs .el { color:var(--sub); min-width:5.6em; }
   .lk { border:none; background:none; padding:0; cursor:pointer; color:inherit; text-decoration:underline dotted 1.6px; text-underline-offset:3px; }
   .abs #absSwap { font-size:13px; padding:3px 10px; border-radius:6px; cursor:pointer; border:1.5px solid var(--violet); background:#fff; color:var(--violet); }
+  .abs #absByp { font-size:13px; padding:3px 10px; border-radius:6px; cursor:pointer; border:1.5px solid var(--sub); background:#fff; color:var(--sub); }   /* 吸収装置のバイパス（ベローズ式だけ。1.7.0） */
+  .abs #absByp.on { border-color:var(--red); background:var(--red); color:#fff; }
+  .abs #absByp[hidden] { display:none; }
+  .chip.byp { left:auto; right:12px; }
+  .fig svg .bypPlug { transition:transform .3s; }
+  .fig svg.bypOpen .bypPlug { transform:rotate(90deg); }
   .foot { margin-top:16px; padding-top:8px; border-top:1px solid var(--line); font-size:12px; line-height:1.7; color:var(--sub); }
   .foot a { color:var(--blue); }
   /* くわしい解説 */

@@ -441,6 +441,21 @@ for yy in (PT, PB):
     add(f'<line x1="{AX-35}" y1="{yy}" x2="{AX+35}" y2="{yy}" stroke="{K}" stroke-width="2" stroke-dasharray="2 3.8"/>')
 for yy in (CT - 5, CB - 7):
     rect(AX - 44, yy, 88, 12, fill=METAL, rx=3)
+# 吸収装置のバイパス（1.7.0、2026-11-05。平林剛先生の提案）：換気を止めずに吸収剤を交換できるよう、一部の機種（GE Carestation 620 系、
+# アコマなど）にある迂回路。吸収装置の入口側（下）で分かれて左を上がり、出口側（上）で合流する。途中の栓（青＝動く部品）はふだん閉じていて、
+# 操作ページの「バイパス」ボタンで開く（svg に class bypOpen が付くと栓が 90° 回って通路がつながり、粒は GEO の bypass の道を通る）
+BYP_X = 722
+BYP_B, BYP_T = CB + 20, CT - 20                   # 分岐（下）と合流（上）の高さ
+BYP_V = (BYP_B + BYP_T) / 2                       # 栓の高さ
+pipe([(AX, BYP_B), (BYP_X, BYP_B), (BYP_X, BYP_T), (AX, BYP_T)], inner=EXP, w=10)
+rect(BYP_X - 13, BYP_V - 13, 26, 26, fill=METAL, rx=4)                                                    # 栓の本体
+add(f'<rect x="{BYP_X-2.5}" y="{BYP_V-14.2}" width="5" height="28.4" fill="{EXP}"/>')                      # 本体の中の通路
+add(f'<g class="bypPlug" style="transform-box:fill-box;transform-origin:center">'
+    f'<circle cx="{BYP_X}" cy="{BYP_V}" r="8" fill="{B}" stroke="{K}" stroke-width="1.4"/>'
+    f'<rect x="{BYP_X-9}" y="{BYP_V-2.5}" width="18" height="5" fill="{EXP}"/>'                           # 栓の穴（閉：横向きで通路をふさぐ。開：縦向き）
+    f'<line x1="{BYP_X-9}" y1="{BYP_V-2.5}" x2="{BYP_X+9}" y2="{BYP_V-2.5}" stroke="{K}" stroke-width="0.8"/>'
+    f'<line x1="{BYP_X-9}" y1="{BYP_V+2.5}" x2="{BYP_X+9}" y2="{BYP_V+2.5}" stroke="{K}" stroke-width="0.8"/></g>')
+text("バイパス弁", BYP_X - 22, BYP_B + 24, 13, color="#333")
 # 切替弁
 pipe([(SX, EXP_Y), (SX, SY - 22)], inner=EXP)
 # 切替弁の断面（2026-11-02）：本体（灰）に 3 本の通路（上：呼気側の合流点から、左：APL 弁・呼吸バッグへ、
@@ -651,6 +666,7 @@ GEO = {
     "tubeSpacing": TUBE_SPACING,
     "tubes": TUBES,
     "absD": [_cD[2], _cD[3]],                                  # D の弧長のうち吸収装置の範囲
+    "bypass": [(SX, EXP_Y), (AX, EXP_Y), (AX, BYP_B), (BYP_X, BYP_B), (BYP_X, BYP_T), (AX, BYP_T), J_FG],   # 吸収装置のバイパスを通る D の道（1.7.0）
     # 吸収剤の層（入口側から）：D の弧長の範囲。層ごとの容量は CO2 の粒の数（時間を縮めた値）
     "absorber": {
         "rows": [[_cD[2] + (CB - (PT + 7 + r * ABS_PITCH + ABS_PITCH / 2)), _cD[2] + (CB - (PT + 7 + r * ABS_PITCH - ABS_PITCH / 2))]

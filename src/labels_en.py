@@ -62,6 +62,7 @@ EN = {
     "ベローズ": "Bellows",
     "駆動ガス（O₂）": {"t": "Drive gas (O₂)", "size": 13},
     "余剰ガス弁": {"t": "Relief valve", "size": 13},
+    "バイパス弁": {"t": "Bypass valve", "size": 12},        # 吸収装置のバイパス（1.7.0）
     "余剰ガス排出装置": {"t": "Scavenging system", "size": 15},
     ("r", "余剰ガス排出装置"): {"t": "Scavenging system", "size": 14},
     "大気": {"t": "To room", "size": 11},
