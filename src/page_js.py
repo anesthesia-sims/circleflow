@@ -349,7 +349,8 @@ MAIN_JS = r"""
         act: () => openTerm('inspValve'), afterFocus: true, undo: () => closeCard() },
       { els: () => [$('absbox'), $('speedGrp').offsetParent ? $('speedGrp') : $('speedCycle')], at: r => [r[2] - 40, (r[1] + r[3]) / 2],
         txt: L.steps[7] },
-      { els: () => [$('moreBtn')], txt: L.steps[8] },
+      { els: () => [$('hlBtn')], txt: L.steps[8] },                     // 見どころの紹介（2026-11-05 著者の依頼）
+      { els: () => [$('moreBtn')], txt: L.steps[9] },
     ];
     // 見どころのツアー（2026-11-05 著者と相談）：場面・速さ・時刻を自動で切り替え、図の範囲（図の座標）を明るく残して説明する。文は L.hl
     // 見どころのツアー（2026-11-05 著者と相談）：細部を方式ごとに切り替えて見比べる 18 段。場面・速さ・時刻・図の範囲（図の座標）。文は L.hl

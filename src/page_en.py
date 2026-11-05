@@ -227,12 +227,13 @@ UI = {
     "steps": [
         'Each moving particle in the figure is gas: <b>black</b> is gas without CO₂, <b style="color:#e8590c">orange</b> is gas with CO₂. Watch the particles to see how the gas flows.',
         "Play or pause (or press <kbd>Space</kbd>).",
-        "Switch between the two ventilator types.",
+        "Switch the ventilator type.",
         "Switch the scene: <b>manual</b> ventilation by squeezing the bag, or <b>low</b> fresh gas flow.",
         "The inspiration and expiration bar. Press it to stop at that moment and see what is happening (<kbd>←</kbd> <kbd>→</kbd> step 0.1 s).",
         "Click a particle to follow it with a red ring and trail (<kbd>Esc</kbd> to stop).",
         "Click a part name with a dotted underline to zoom in on that part and read about it.",
         "How much of the CO₂ absorbent has been used. Set the speed to 4× or 16× to watch it turn purple.",
+        "The <b>Highlights</b> tour: easy-to-miss details such as the PEEP made by the spill valve, where fresh gas goes during expiration, and how the vaporizers differ, compared across the types.",
         "More detailed explanations, such as how the types differ, are here. To see this guide again, use How to use."],
 }
 SIM_TEXT = {
