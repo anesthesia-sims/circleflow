@@ -67,6 +67,7 @@
       this.absFresh = hexRGB(ab.fresh); this.absUsedC = hexRGB(ab.used);
       this.swaps = [];                                        // 吸収剤を交換した時刻（刻みの番号）
       // 吸収装置のバイパス（1.7.0）：開くと管 D の道が吸収装置を迂回する道（geo.bypass）に替わり、CO2 は除かれない。
+      // 1.7.1：操作ページからは使っていない（著者の判断でボタンをなくし、図は閉じた姿だけ）。仕組みは残す
       // 開閉は刻みの番号で記録し（bypEvents）、巻き戻して再生しても同じ時刻に開閉する
       this.tubeD = { normal: this.tubes.D, bypass: geo.bypass ? new Poly(geo.bypass) : null };
       this.spcD0 = this.spc.D;

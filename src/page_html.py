@@ -29,7 +29,6 @@ BODY_TOP = r"""
 
 BODY_MID = r"""
   <div class="chip chrome" id="chip" hidden><b>追跡中</b><span id="chipMsg"></span><button id="chipX" aria-label="追跡をやめる">✕</button></div>
-  <div class="chip byp chrome" id="bypChip" hidden><b>吸収装置バイパス作動中</b><span>CO₂ が吸収されずに戻ります</span><button id="bypX" aria-label="バイパスを閉じる">✕</button></div>
   <div class="card chrome" id="card" role="dialog" aria-live="polite">
     <button class="x" id="cardX" aria-label="閉じる">✕</button>
     <h3 id="cardTtl"></h3><p id="cardTxt"></p>
@@ -47,7 +46,6 @@ BODY_MID = r"""
     <button class="meter" id="absMeter" aria-label="吸収剤の使用率"><i id="absBar"></i><output id="absPct">0%</output></button>
     <span class="el" id="absEl">1 呼吸目</span>
     <button id="absSwap">交換</button>
-    <button id="absByp" hidden aria-pressed="false">バイパス</button>
   </div>
 </div>
 <footer class="foot chrome">
@@ -88,7 +86,7 @@ BODY_MID = r"""
   <p>「新鮮ガス：低流量」は、新鮮ガスをその 4 分の 1 に減らした場合です。呼気のほとんどが吸収装置を通って再び吸われるため、消費が速くなります（約 20〜25 呼吸）。使い切るとオレンジの粒が吸気側の管を通って患者へ戻り、吸気の CO₂ が上がります（カプノグラムの基線が 0 に戻らなくなる）。</p>
   <p>ボリュームリフレクタ式では、呼気と新鮮ガスはリフレクタへ入り、次の吸気で後から入った順に押し出されます。多めの場面では、押し出されるのは呼気のあとに入った新鮮ガスで、呼気の CO₂ はリフレクタの奥から PEEP/APL 弁を通って出ていくため、吸収剤の色は変わりません。低流量では押し出す量が増え、約 23 呼吸で使い切ります。</p>
   <p>方式ごとの呼吸数の違いは、実際の機種どうしの比較ではありません。指示薬の色は、使用後にしばらく置くと白に戻ることがあります。交換の判断は色だけでなく、吸気の CO₂ も合わせて行います。</p>
-  <p>一部の機種には、換気を止めずに吸収剤を交換できるよう、吸収装置を迂回するバイパスがあります。ベローズ式の図の「バイパス」ボタンで開くと、呼気は吸収剤を通らずに戻り、CO₂ を含む粒がそのまま患者へ届きます。閉じ忘れても換気量は変わらないので気づきにくく、作動中であることを示す表示や警報が大切です。</p>
+  <p>一部の機種には、換気を止めずに吸収剤を交換できるよう、吸収装置を迂回するバイパスがあります。開いているあいだは、呼気は吸収剤を通らずに戻り、CO₂ を含むガスが患者へ届きます（ベローズ式の図に、閉じた状態で描いてあります）。</p>
   <p class="small">本図は模式図です。部品の形・位置・弁の構成は機種によって異なります（ピストン式は Dräger Fabius 型、ブロワ式は Dräger Perseus 型、ボリュームリフレクタ式は Getinge（Maquet）Flow-i 型の構成を参考にしています）。1 呼吸は 6 秒（吸気 2 秒・呼気 4 秒）で表示しています。ガスの量や時間、吸収剤の容量は見やすさのために整えた値です。</p>
 </div></div>
 <div class="tour chrome" id="tour" aria-live="polite">
