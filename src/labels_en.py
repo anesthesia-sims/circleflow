@@ -106,8 +106,8 @@ EN = {
     "新鮮ガス": {"t": "Fresh gas", "size": 12},
     "ブロワが呼吸バッグのガスを吸収装置を通して引き、新鮮ガスと合わさって吸気弁から患者へ送る":
         {"t": "The blower draws bag gas through the absorber; it joins the fresh gas and goes through the inspiratory valve to the patient", "size": 15},
-    "呼気は呼気弁と PEEP/Pmax 弁を通って呼吸バッグへ。新鮮ガスは止まったブロワと吸収装置を逆に通ってバッグへ":
-        {"t": "Exhaled gas passes the expiratory and PEEP/Pmax valves into the bag; fresh gas flows back through the idle blower and absorber to the bag", "size": 15},
+    "呼気は呼気弁と PEEP/Pmax 弁を通って呼吸バッグへ。新鮮ガスは循環流に乗って吸気弁から Y ピースを回り、呼気側からバッグへ":
+        {"t": "Exhaled gas passes the expiratory and PEEP/Pmax valves into the bag; fresh gas rides the circle flow round the Y-piece to the bag", "size": 14},
     "呼吸バッグを手で押すと、ガスは吸収装置と止まったブロワを通り、新鮮ガスと合わさって吸気弁から患者へ":
         {"t": "Squeezing the bag sends gas through the absorber and the stopped blower; it joins the fresh gas and goes to the patient", "size": 15},
     "用手換気ではブロワが止まり、": "In manual ventilation, the",

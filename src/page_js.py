@@ -484,7 +484,7 @@ MAIN_JS = r"""
       { scene: 'bellows', speed: 0.5, t: 0, svgRect: [1185, 225, 1337, 515] },
       { scene: 'bellows', speed: 1, t: 2.3, svgRect: [735, 95, 990, 445] },
       { scene: 'piston', speed: 1, t: 2.3, svgRect: [690, 30, 950, 660] },
-      { scene: 'blower', speed: 1, t: 2.3, svgRect: [690, 30, 1010, 450] },
+      { scene: 'blower', speed: 1, t: 2.3, svgRect: [690, 30, 1335, 520] },
       { scene: 'reflector', speed: 1, t: 2.3, svgRect: [10, 56, 990, 445] },
       { scene: 'bellows', speed: 1, t: 0, svgRect: [735, 40, 1000, 250] },
       { scene: 'piston', speed: 1, t: 0, svgRect: [690, 30, 950, 660] },

@@ -13,7 +13,10 @@
  *    バッグから引く量は VT_P から吸気中の新鮮ガスを引いた分（一定の速さ）。
  *    呼気（TI〜周期の終わり）PEEP/Pmax 弁が開き、呼気はバッグへ。新鮮ガスは止まったブロワと吸収装置を逆に通ってバッグへ。
  *    バッグが満杯（NG_FULL）になると、入ってきたガスは APL バイパス弁（用手換気では APL 弁）から余剰ガス排出装置へ
- *  - 人工呼吸と用手換気で粒の動きは同じ形（違いは図の側：ファンの回転、手の印、APL 弁と APL バイパス弁の姿、余るガスの出口）
+ *  - 循環流（1.6.1）：人工呼吸では呼気中もブロワがゆっくり回り、約 0.6 L/分（CIRC ≒ 0.26 粒/秒）を吸気弁から回路に一周させる。新鮮ガスは
+ *    ブロワの下流で加わるので逆流せず、この流れに乗って吸気側の管 A から Y ピースへ進み、呼気と合流して C → 分岐 NX へ。NX では循環流のぶん
+ *    だけが吸収装置（F）へ、残り（呼気＋新鮮ガス）がバッグ（H）へ（粒の行き先は流量の比で選ぶ）。用手換気ではブロワが止まり循環流はなく、
+ *    新鮮ガスは止まったブロワと吸収装置を逆に通ってバッグへ（1.6.0 までの形）
  *  - 部屋から出る粒の予定・吸収剤・圧の均し・新鮮ガスの到着のずらし（supplyPhase）・交換の記録はピストン式と同じ
  */
 (function () {
@@ -38,6 +41,7 @@
       this.VT = geo.VT_P;
       this.manual = !!geo.manual;
       this.vbag = (this.VT - this.FG * this.TI) / this.TI;  // 吸気でバッグから引く量（粒/秒）
+      this.circ = geo.CIRC || 0;                              // 呼気中の循環流（粒/秒。用手換気は 0）
       this.STEPS_PER_CYC = Math.round(this.CYC / DT);
       this.gSlotDef = geo.bag.slots;
       this.lSlotDef = geo.lung.slots;
@@ -80,8 +84,10 @@
         const v = this.vbag;
         return { A: (v + FG) * s.A, B: (v + FG) * s.B, C: 0, F: v * s.F, W: v * s.W, H: -v * s.H };
       }
-      const ex = this.exRate(tc - this.TI);                   // 呼気：呼気はバッグへ、新鮮ガスはブロワと吸収装置を逆に通ってバッグへ
-      return { A: 0, B: -ex * s.B, C: ex * s.C, F: -FG * s.F, W: -FG * s.W, H: (ex + FG) * s.H };
+      const ex = this.exRate(tc - this.TI), c = this.circ;
+      if (!c) return { A: 0, B: -ex * s.B, C: ex * s.C, F: -FG * s.F, W: -FG * s.W, H: (ex + FG) * s.H };   // 用手換気：新鮮ガスはブロワと吸収装置を逆に通ってバッグへ
+      // 人工呼吸：循環流 c がブロワ → 吸気弁 → Y → 呼気側と一周し、新鮮ガスはそれに乗って Y へ。NX で c だけが吸収装置へ戻り、呼気＋新鮮ガスはバッグへ
+      return { A: (c + FG) * s.A, B: -ex * s.B, C: (ex + c + FG) * s.C, F: c * s.F, W: c * s.W, H: (ex + FG) * s.H };
     }
 
     // ---------- 席の位置 ----------
@@ -188,7 +194,7 @@
     exitFar(p, over, F) {
       const g = this.g, nd = g.nodes, tc = this.tc(this.t);
       switch (p.tube) {
-        case "A": this.enterTube(p, "B", over); break;
+        case "A": if (F.B > 0) this.enterTube(p, "B", over); else this.enterTube(p, "C", over); break;   // 呼気中（循環流）は Y ピースで呼気側へ
         case "B": {                                                   // 肺胞へ
           const idx = this.pickLungEntry();
           if (idx < 0) { p.s = this.tubes.B.L; break; }
@@ -196,7 +202,10 @@
           this.toRoom(p, "l", idx, [nd.LG, this.lSlotXY(idx)], Math.max(Math.abs(F.B), 60));
           break;
         }
-        case "C": this.enterTube(p, "H", over); break;               // 呼気はバッグ側へ
+        case "C": {                                                  // 分岐 NX：循環流のぶんだけ吸収装置へ、残りはバッグへ（流量の比で選ぶ）
+          const rF = F.F > 0 ? F.F / this.spc.F : 0, rH = F.H / this.spc.H;
+          this.enterTube(p, rF > 0 && this.rng.next() < rF / (rF + rH) ? "F" : "H", over); break;
+        }
         case "F": this.enterTube(p, "W", over); break;               // 吸収装置を抜けてブロワへ
         case "W": this.enterTube(p, "A", over); break;               // ブロワを抜けて吸気側へ（新鮮ガスの入口で合流）
         case "H": {                                                   // 呼吸バッグへ。満杯なら余剰ガス排出装置へ
@@ -314,8 +323,8 @@
           const L = this.supply[p.sup].L;
           if (p.s > L) {
             const over = p.s - L;
-            if (F.A > 0) this.enterTube(p, "A", over);                      // 吸気中：そのまま患者へ
-            else this.enterTube(p, "W", this.tubes.W.L - over);           // 呼気中：止まったブロワと吸収装置を逆に通ってバッグへ
+            if (F.A > 0) this.enterTube(p, "A", over);                      // 吸気中はそのまま患者へ。人工呼吸の呼気中は循環流に乗って Y へ
+            else this.enterTube(p, "W", this.tubes.W.L - over);           // 用手換気の呼気中：止まったブロワと吸収装置を逆に通ってバッグへ
           }
         } else if (p.st === "trans") {
           p.u += p.speed * DT;

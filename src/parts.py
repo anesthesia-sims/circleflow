@@ -46,13 +46,14 @@ def valve_detour(x, y, direction):
     return [(x, y), (x, y - VD_UP), (x + s * VD_OUT, y - VD_UP), (x + s * VD_OUT, y)]
 
 
-def one_way_valve(x, y, direction, fill, open_phase=None, open_win=None, spring=False):
+def one_way_valve(x, y, direction, fill, open_phase=None, open_win=None, spring=False, rest=0):
     """一方向弁（ドーム弁）の断面。2026-11-02 に論理的な図（仕切りとフラップ）から実物の構造に近い図に変えた。
     入口の通路から縦の筒を上がり、筒の口（弁座）に載った弁板（青）を押し上げて透明なドームの中へ出て、
     出口側の通路を下りて出る。逆向きの流れでは弁板が弁座に押しつけられて閉じる。
     本体は灰（樹脂・金属の塊）、ガスの通路は fill の色（その側の管の内腔と同じ）、ドームは透明（GLASS）。
     direction = 1 なら左→右、-1 なら右→左。open_phase="insp"／"exp" はその相で、open_win=(a, b) は周期の a〜b 秒で
-    弁板が持ち上がる。spring は PEEP/Pmax 弁のばね（弁板が上がると縮む）"""
+    弁板が持ち上がる。spring は PEEP/Pmax 弁のばね（弁板が上がると縮む）。rest は窓の外での弁板の持ち上がり（負の値。
+    ブロワ式の吸気弁は呼気中も循環流で少し開いている。1.6.1）"""
     s = direction
     hw = 4                                          # 通路の半幅（管の内腔とほぼ同じ太さ）
     xo = x + s * VD_OUT                             # 出口側の縦の通路
@@ -90,7 +91,7 @@ def one_way_valve(x, y, direction, fill, open_phase=None, open_win=None, spring=
             f'values="{";".join("0 " + v for v in vals.split(";"))}" '
             f'keyTimes="0;{k1:.4f};{k2:.4f};0.985;1" dur="{CYC}s" repeatCount="indefinite"/>')
     elif open_win:
-        vals, keys = win_keys(open_win[0], open_win[1], -VD_LIFT, 0)
+        vals, keys = win_keys(open_win[0], open_win[1], -VD_LIFT, rest)
         add(f'<g><animateTransform attributeName="transform" type="translate" '
             f'values="{";".join("0 " + v for v in vals.split(";"))}" keyTimes="{keys}" '
             f'dur="{CYC}s" repeatCount="indefinite"/>')
