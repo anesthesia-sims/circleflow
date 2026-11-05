@@ -557,6 +557,9 @@ DRV_C = "#e6e6e6"
 DRV_END = VX0 + 84
 add(f'<path d="M {HX1 - 1},{HY0 + 7} L {DRV_END},{HY0 + 7}" fill="none" stroke="{K}" stroke-width="9" stroke-linecap="butt"/>')
 add(f'<path d="M {HX1 - 7},{HY0 + 7} L {DRV_END},{HY0 + 7}" fill="none" stroke="{DRV_C}" stroke-width="5" stroke-linecap="butt"/>')
+# 管の先端に O₂ の識別色の帯（配管端末器の帯と同じ見せ方。2026-11-05 著者の判断：内腔は「押すためのガス」の灰のまま、
+# 「O₂ の供給から来る」印として帯だけ緑。2 色版は白）
+add(f'<rect x="{DRV_END - 8}" y="{HY0}" width="8" height="14" rx="1.5" fill="{PIPE["O₂"]}" stroke="{K}" stroke-width="1.2"/>')
 text("駆動ガス（O₂）", DRV_END + 18, HY0 + 12, 13, color="#333")
 text("ベローズ", HX1 + 12, HY0 + 62, 16, weight=700)
 if MANUAL:   # 用手換気で止まっていることの注記。操作ページでは隠して解説に回す（class="svgnote"。コマ撮りでは出す。2026-11-02）
