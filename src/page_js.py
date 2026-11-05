@@ -8,14 +8,15 @@ MAIN_JS = r"""
   const CYC = 6.0, NS = 'http://www.w3.org/2000/svg';
   const PHASES = L.phases;
 
-  const TYPES = ['bellows', 'bellowsLow', 'bellowsMan', 'bellowsLowMan', 'piston', 'pistonLow', 'pistonMan', 'pistonLowMan', 'reflector', 'reflectorLow', 'reflectorShort', 'reflectorMan', 'reflectorLowMan'];
+  const TYPES = ['bellows', 'bellowsLow', 'bellowsMan', 'bellowsLowMan', 'piston', 'pistonLow', 'pistonMan', 'pistonLowMan', 'reflector', 'reflectorLow', 'reflectorShort', 'reflectorMan', 'reflectorLowMan', 'blower', 'blowerLow', 'blowerMan', 'blowerLowMan'];
   const $ = id => document.getElementById(id);
   const figs = {};
   for (const k of TYPES) figs[k] = document.querySelector('#fig-' + k + ' svg');
   PHASES.bellowsLow = PHASES.bellows; PHASES.pistonLow = PHASES.piston;
   PHASES.bellowsLowMan = PHASES.bellowsMan; PHASES.pistonLowMan = PHASES.pistonMan;
   PHASES.reflectorLow = PHASES.reflector; PHASES.reflectorLowMan = PHASES.reflectorMan;
-  const family = tp => tp.startsWith('piston') ? 'piston' : tp.startsWith('reflector') ? 'reflector' : 'bellows';
+  PHASES.blowerLow = PHASES.blower; PHASES.blowerLowMan = PHASES.blowerMan;
+  const family = tp => tp.startsWith('piston') ? 'piston' : tp.startsWith('reflector') ? 'reflector' : tp.startsWith('blower') ? 'blower' : 'bellows';
   const key = (fam, fl, mn) => fam + (fl === 'low' ? 'Low' : fl === 'short' ? 'Short' : '') + (mn ? 'Man' : '');
   const avail = (fam, fl, mn) => fl === 'short' && !(fam === 'reflector' && !mn) ? 'low' : fl;   // 「不足」はリフレクタ式の人工呼吸だけ。ほかへ移るときは低流量に
   let flow = 'high', man = false;                                // 新鮮ガス：high（多め）・low（低流量）・short（不足）、換気：用手換気
@@ -51,7 +52,7 @@ MAIN_JS = r"""
   // 粒：実行時シミュレーション。8 つの場面はそれぞれ独立に動く（初めて表示するときに作る）
   const sims = {}, layers = {};
   for (const k of TYPES) layers[k] = figs[k].querySelector('g[id^="particles"]');
-  const getSim = k => (sims[k] = sims[k] || (family(k) === 'piston' ? new PistonSim(window.SCENE_GEO[k], 7) : family(k) === 'reflector' ? new ReflectorSim(window.SCENE_GEO[k], 7) : new BellowsSim(window.SCENE_GEO[k], 7)));
+  const getSim = k => (sims[k] = sims[k] || (family(k) === 'piston' ? new PistonSim(window.SCENE_GEO[k], 7) : family(k) === 'reflector' ? new ReflectorSim(window.SCENE_GEO[k], 7) : family(k) === 'blower' ? new BlowerSim(window.SCENE_GEO[k], 7) : new BellowsSim(window.SCENE_GEO[k], 7)));
   let sim = null, layer = null;
   const drawSim = tt => { sim.seek(tt); sim.render(layer); };
 
@@ -68,7 +69,7 @@ MAIN_JS = r"""
   // ---------- 部品の名前：クリックで拡大して解説 ----------
   const WORD = {};
   for (const [id, tm] of Object.entries(TERMS)) for (const w of tm.words) WORD[w] = id;
-  const rectOf = (id, tp) => TERMS[id].rect ? TERMS[id].rect[family(tp)] || (family(tp) === 'reflector' ? TERMS[id].rect.bellows : null) || null : null;   // ボリュームリフレクタ式の図は上昇式ベローズと同じ配置なので、範囲がなければそちらを使う
+  const rectOf = (id, tp) => TERMS[id].rect ? TERMS[id].rect[family(tp)] || (family(tp) === 'reflector' ? TERMS[id].rect.bellows : family(tp) === 'blower' ? TERMS[id].rect.piston : null) || null : null;   // リフレクタ式の図はベローズ式、ブロワ式の図はピストン式と同じ配置なので、範囲がなければそちらを使う
   for (const k of TYPES) figs[k].querySelectorAll('text').forEach(el => {
     if (el.closest('.svgcap') || el.closest('.svgnote')) return;
     const id = WORD[el.textContent.trim()];
@@ -129,7 +130,7 @@ MAIN_JS = r"""
   };
   let focus = null;                                               // {kind:'term', id} または {kind:'phase'}
   let exhaustedMsg = '';
-  const textOf = id => id === 'exhausted' ? exhaustedMsg : typeof TERMS[id].text === 'string' ? TERMS[id].text : TERMS[id].text[family(type)];
+  const textOf = id => { if (id === 'exhausted') return exhaustedMsg; const t = TERMS[id].text; return typeof t === 'string' ? t : (t[family(type)] ?? t.piston ?? t.bellows); };   // 方式の文がなければピストン式・ベローズ式の文（ブロワ式は多くの部品をピストン式と共有）
   const termsHere = () => TERM_ORDER.filter(id => figs[type].querySelector(`text[data-term="${id}"]`));
   const openTerm = id => {
     focus = { kind: 'term', id };
@@ -474,22 +475,26 @@ MAIN_JS = r"""
       { els: () => [$('moreBtn')], txt: L.steps[9] },
     ];
     // 見どころのツアー（2026-11-05 著者と相談）：場面・速さ・時刻を自動で切り替え、図の範囲（図の座標）を明るく残して説明する。文は L.hl
-    // 見どころのツアー（2026-11-05 著者と相談）：細部を方式ごとに切り替えて見比べる 18 段。場面・速さ・時刻・図の範囲（図の座標）。文は L.hl
+    // 見どころのツアー（2026-11-05 著者と相談）：細部を方式ごとに切り替えて見比べる 22 段。場面・速さ・時刻・図の範囲（図の座標）。文は L.hl
     const HL = [
       { scene: 'bellows', speed: 1, t: 0, svgRect: [800, 140, 970, 222] },
       { scene: 'piston', speed: 1, t: 0, svgRect: [925, 12, 1040, 108] },
+      { scene: 'blower', speed: 1, t: 0, svgRect: [925, 12, 1040, 108] },
       { scene: 'reflector', speed: 1, t: 0, svgRect: [800, 140, 970, 222] },
       { scene: 'bellows', speed: 0.5, t: 0, svgRect: [1185, 225, 1337, 515] },
       { scene: 'bellows', speed: 1, t: 2.3, svgRect: [735, 95, 990, 445] },
       { scene: 'piston', speed: 1, t: 2.3, svgRect: [690, 30, 950, 660] },
+      { scene: 'blower', speed: 1, t: 2.3, svgRect: [690, 30, 1010, 450] },
       { scene: 'reflector', speed: 1, t: 2.3, svgRect: [10, 56, 990, 445] },
       { scene: 'bellows', speed: 1, t: 0, svgRect: [735, 40, 1000, 250] },
       { scene: 'piston', speed: 1, t: 0, svgRect: [690, 30, 950, 660] },
+      { scene: 'blower', speed: 1, t: 0.5, svgRect: [690, 30, 1010, 300] },
       { scene: 'reflector', speed: 1, t: 0, svgRect: [755, 470, 1335, 700] },
       { scene: 'bellows', speed: 16, t: 0, svgRect: [735, 265, 1150, 650] },
       { scene: 'bellowsLow', speed: 16, t: 0, svgRect: [735, 265, 955, 445] },
       { scene: 'bellowsMan', speed: 1, t: 2.0, svgRect: [680, 510, 850, 672] },
       { scene: 'pistonMan', speed: 1, t: 2.0, svgRect: [690, 500, 1020, 685] },
+      { scene: 'blowerMan', speed: 1, t: 2.0, svgRect: [690, 500, 1020, 685] },
       { scene: 'reflectorMan', speed: 1, t: 2.0, svgRect: [1100, 590, 1335, 705] },
       { scene: 'bellows', speed: 1, t: 0, svgRect: [10, 85, 640, 300] },
       { scene: 'reflector', speed: 1, t: 0, svgRect: [10, 40, 640, 300] },

@@ -50,7 +50,8 @@ while _rest and _rest[0].endswith(".js"):
 SIMS = [open(f, encoding="utf-8").read() for f in SIM_FILES]
 SUF = {"bellows": "b", "bellowsLow": "bl", "bellowsMan": "bm", "bellowsLowMan": "blm",
        "piston": "p", "pistonLow": "pl", "pistonMan": "pm", "pistonLowMan": "plm",
-       "reflector": "r", "reflectorLow": "rl", "reflectorShort": "rs", "reflectorMan": "rm", "reflectorLowMan": "rlm"}
+       "reflector": "r", "reflectorLow": "rl", "reflectorShort": "rs", "reflectorMan": "rm", "reflectorLowMan": "rlm",
+       "blower": "w", "blowerLow": "wl", "blowerMan": "wm", "blowerLowMan": "wlm"}
 SCENES = {}
 for _name, _svg, _geo in zip(_rest[0::3], _rest[1::3], _rest[2::3]):
     SCENES[_name] = (uniq_ids(open(_svg, encoding="utf-8").read(), SUF[_name]), open(_geo, encoding="utf-8").read())

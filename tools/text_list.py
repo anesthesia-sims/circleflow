@@ -18,7 +18,7 @@ const out = {
   TERM_ORDER: ev(grab(/const TERM_ORDER = \[[\s\S]*?\];/), "TERM_ORDER"),
   PHASES: ev(grab(/const L = \{[\s\S]*?\n\};/), "L").phases,          // 場面の説明と使い切りの文は L の中（2026-11-04：ページの構造に合わせた）
   exh: ev(grab(/const L = \{[\s\S]*?\n\};/), "L").exhausted,
-  steps: [...grab(/const STEPS = \[[\s\S]*?\n    \];/).matchAll(/txt: '([^']+)'/g)].map(m => m[1].replace(/<[^>]+>/g, "")),
+  steps: [...grab(/const STEPS_HELP = \[[\s\S]*?\n    \];/).matchAll(/txt: '([^']+)'/g)].map(m => m[1].replace(/<[^>]+>/g, "")),
 };
 console.log(JSON.stringify(out));
 """
@@ -38,10 +38,11 @@ FLAG = {
     "bypass": "2026-11-02 に図に描き足した部品。「人工呼吸中は開き、余ったガスは排気の逆止弁を通って排出装置へ」「用手・自発呼吸では閉じて APL 弁が働く」は Miller 10e 図 20.44 の説明どおり。図では弁板を下の操作部の棒で動かす形にしたが、実機の開閉の仕組み（空気圧か電気か）は確かめていない。",
     "exhaust": "2026-11-02 に図に描き足した部品。Miller は名前（exhaust check valve）と「バイパス弁を通ったガスがここを通って排出装置へ」としか書いていない。APL 弁とバイパス弁の合流のあとに置いたこと、用手換気で APL 弁のガスもここを通ることは、図にするための推測。",
 }
-FAM = {"bellows": "上昇式ベローズ", "piston": "ピストン式", "reflector": "ボリュームリフレクタ式"}
+FAM = {"bellows": "ベローズ式（上昇式）", "piston": "ピストン式", "reflector": "ボリュームリフレクタ式", "blower": "ブロワ（タービン）式"}
 SCENE = {"bellows": "上昇式ベローズ・人工呼吸（新鮮ガスの多め・低流量で共通）", "piston": "ピストン式・人工呼吸（多め・低流量で共通）",
          "reflector": "ボリュームリフレクタ式・人工呼吸（多め・低流量で共通）", "reflectorShort": "ボリュームリフレクタ式・人工呼吸・新鮮ガス不足",
-         "bellowsMan": "上昇式ベローズ・用手換気（多め・低流量で共通）", "pistonMan": "ピストン式・用手換気（多め・低流量で共通）", "reflectorMan": "ボリュームリフレクタ式・用手換気（多め・低流量で共通）"}
+         "bellowsMan": "上昇式ベローズ・用手換気（多め・低流量で共通）", "pistonMan": "ピストン式・用手換気（多め・低流量で共通）", "reflectorMan": "ボリュームリフレクタ式・用手換気（多め・低流量で共通）",
+         "blower": "ブロワ（タービン）式・人工呼吸（多め・低流量で共通）", "blowerMan": "ブロワ（タービン）式・用手換気（多め・低流量で共通）"}
 
 
 def main(page, out):

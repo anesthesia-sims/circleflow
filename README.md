@@ -12,17 +12,19 @@
 
 ## できること
 
-- **3 つの方式を比べる**：麻酔器の人工呼吸器は、ガスをためる場所と押す力で、ベローズ式（双回路。上昇式と下降式）・ピストン式（単回路）・ブロワ（タービン）式（単回路）・ボリュームリフレクタ式に分けられます。このページはそのうち、ベローズ式（上昇式。駆動ガスがベローズを押し下げる）、ピストン式（モーターがピストンを動かす。新鮮ガス・デカップリング弁つき）、ボリュームリフレクタ式（リフレクタガス（O₂）が、長い管にためたガスを膜なしで押し出す。ガス供給は電子制御のガスモジュールと注入式の気化器）を、タブで切り替えて比べられます。
+- **4 つの方式を比べる**：麻酔器の人工呼吸器は、ガスをためる場所と押す力で、ベローズ式（双回路。上昇式と下降式）・ピストン式（単回路）・ブロワ（タービン）式（単回路）・ボリュームリフレクタ式に分けられます。このページでは、ベローズ式（上昇式。駆動ガスがベローズを押し下げる）、ピストン式（モーターがピストンを動かす。新鮮ガス・デカップリング弁つき）、ブロワ（タービン）式（モーターが回すラジアルファンが回路の中で流れと圧を作る。デカップリング弁はなく、ガス供給は電子制御のガスミキサー）、ボリュームリフレクタ式（リフレクタガス（O₂）が、長い管にためたガスを膜なしで押し出す。ガス供給は電子制御のガスモジュールと注入式の気化器）を、タブで切り替えて比べられます。
 - **CO₂ を含むガスを色で見る**：黒い粒は CO₂ を含まないガス、オレンジの粒は CO₂ を含むガス（呼気）です。肺胞で CO₂ を受け取り、二酸化炭素吸収装置を通ると CO₂ が除かれます。灰の粒はボリュームリフレクタ式のリフレクタガス（O₂）で、患者側のガスと膜なしで接しています。
 - **粒を追跡する**：粒をクリックすると、その粒の通った道を赤い足跡で表示します。
 - **吸収剤の消費を見る**：CO₂ を吸収した吸収剤は、指示薬の色が白から紫へ変わっていきます（時間を縮めて表示。4 倍・16 倍で早送りできます）。使い切ると CO₂ が吸気側へ戻ります（新鮮ガスが多めの場面では、ほとんど戻りません）。「交換」で新しい吸収剤に戻せます。
-- **場面を切り替える**：新鮮ガス（多め／低流量）と換気（人工呼吸／用手換気）を切り替えられます。ボリュームリフレクタ式の人工呼吸では、新鮮ガスが患者の取り込みより少ない「不足」も選べ、リフレクタガス（O₂）が回路へ入っていくのが見えます。方式と合わせて 13 の場面があります。用手換気では、呼吸バッグを手で押して換気し、余ったガスは APL 弁（ボリュームリフレクタ式では PEEP/APL 弁）から排出されます。
+- **場面を切り替える**：新鮮ガス（多め／低流量）と換気（人工呼吸／用手換気）を切り替えられます。ボリュームリフレクタ式の人工呼吸では、新鮮ガスが患者の取り込みより少ない「不足」も選べ、リフレクタガス（O₂）が回路へ入っていくのが見えます。方式と合わせて 17 の場面があります。用手換気では、呼吸バッグを手で押して換気し、余ったガスは APL 弁（ボリュームリフレクタ式では PEEP/APL 弁）から排出されます。
 
 ![用手換気（上昇式ベローズ）：左は吸気でバッグを手で押す、右は呼気でバッグがふくらみ APL 弁が開く](docs/screenshot-manual.png)
 
 ![ピストン式の呼気②：ピストンが下がり、呼吸バッグのガスと新鮮ガスを吸い込む](docs/screenshot-piston.png)
 
 ![ボリュームリフレクタ式の呼気：呼気と新鮮ガスがリフレクタへ入り、奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ](docs/screenshot-reflector.png)
+
+![ブロワ（タービン）式の吸気：ファンが呼吸バッグのガスを吸収装置を通して引き、新鮮ガスと合わさって患者へ](docs/screenshot-blower.png)
 
 ## 使い方
 
@@ -34,21 +36,21 @@
 - **見どころ**：ふだんは気づかないが知ると回路の理解が深まる細部を 8 つ、方式を切り替えて見比べながら案内します（余剰ガス弁がつくる PEEP、死腔、呼気中の新鮮ガスの行き先、吸気中の新鮮ガスと 1 回換気量、吸収剤、APL 弁が開く順序、気化器の違い、不足で O₂ が患者に届く）。
 - **部品の名前をクリック**：点線の下線がある名前をクリックすると、その部品を拡大して、はたらきを短く説明します。「前へ・次へ」でガスの流れの順に部品をたどれます
 - **時刻のバー**：吸気・呼気のバーを押すとその時刻で止まり、いま起きていることを説明します
-- **くわしく**：3 つの方式の比較や、吸収剤の消費のくわしい説明
+- **くわしく**：人工呼吸器の分類と 4 つの方式の比較や、吸収剤の消費のくわしい説明
 - **スマートフォン**：縦向きでは図の右半分（呼吸回路）から始まり、「全体・ガス供給・呼吸回路」で表示範囲を切り替えられます。図は 2 本指で拡大、指でずらせます。横向きにすると図が大きく見え、「全画面」でブラウザの枠を消せます（勉強会のスクリーン投影にも）
 - スペースキー：再生／一時停止
 - ← →：0.1 秒ずつ送る
 - Esc：説明を閉じる／粒の追跡をやめる
 - `index.html?term=inspValve` のように開くと、その部品の説明を開いた状態になります（教科書やスライドから部品へ直接つなぐ用。名前は `src/page_terms.py` の `TERMS`）
-- `index.html?type=pistonMan&t=1.5` のように開くと、その場面・時刻で止めた 1 コマになります（動画や図のコマ撮り用）。場面の名前は `bellows`・`bellowsLow`・`bellowsMan`・`bellowsLowMan`・`piston`・`pistonLow`・`pistonMan`・`pistonLowMan`・`reflector`・`reflectorLow`・`reflectorShort`・`reflectorMan`・`reflectorLowMan` です。
+- `index.html?type=pistonMan&t=1.5` のように開くと、その場面・時刻で止めた 1 コマになります（動画や図のコマ撮り用）。場面の名前は `bellows`・`bellowsLow`・`bellowsMan`・`bellowsLowMan`・`piston`・`pistonLow`・`pistonMan`・`pistonLowMan`・`reflector`・`reflectorLow`・`reflectorShort`・`reflectorMan`・`reflectorLowMan`・`blower`・`blowerLow`・`blowerMan`・`blowerLowMan` です。
 
 ## 作り直し方
 
 図（SVG）と粒の経路データは Python のスクリプトが作り、粒の動きはブラウザの中で JavaScript が計算します。`src/` を直したら、次の 2 つで作り直して点検します。
 
 ```sh
-./build.sh    # build/ に 13 の場面の図と経路データを日本語・英語で作り、index.html と en/index.html にまとめる（Python 3、標準ライブラリだけ）
-./check.sh    # 13 の場面の粒の動きを点検する（Node.js）
+./build.sh    # build/ に 17 の場面の図と経路データを日本語・英語で作り、index.html と en/index.html にまとめる（Python 3、標準ライブラリだけ）
+./check.sh    # 17 の場面の粒の動きを点検する（Node.js）
 ```
 
 版を上げるときは `VERSION` を直して作り直し、git のタグ（`v1.2.10` の形）を打ちます。2 桁目が上がるときは「更新記録」に 1 行足します。
@@ -57,14 +59,14 @@
 
 | ファイル | 役割 |
 |---|---|
-| `src/figure_bellows.py`・`src/figure_piston.py`・`src/figure_reflector.py` | ベローズ式（上昇式）／ピストン式／ボリュームリフレクタ式の図（SVG）と粒の経路データを作る（`low`：低流量、`short`：不足（リフレクタ式のみ）、`manual`：用手換気、`en`：英語） |
+| `src/figure_bellows.py`・`src/figure_piston.py`・`src/figure_reflector.py`・`src/figure_blower.py` | ベローズ式（上昇式）／ピストン式／ボリュームリフレクタ式／ブロワ（タービン）式の図（SVG）と粒の経路データを作る（`low`：低流量、`short`：不足（リフレクタ式のみ）、`manual`：用手換気、`en`：英語） |
 | `src/palette.py`・`src/svg.py`・`src/parts.py`・`src/geometry.py` | 3 つの図で共通の、色、SVG の道具、部品（弁・バッグ・肺胞など）の描き方、折れ線の計算 |
 | `src/labels_en.py` | 図の中の文字の英語版（日本語との対応表と、文字の大きさ・位置の調整） |
-| `src/sim_common.js`・`src/sim_bellows.js`・`src/sim_piston.js`・`src/sim_reflector.js` | 粒の動きのシミュレーション（ブラウザで動く）。共通部分と方式ごとの部分 |
-| `src/build_page.py` | 13 の場面を 1 つのページにまとめる（`--lang en` で英語版） |
+| `src/sim_common.js`・`src/sim_bellows.js`・`src/sim_piston.js`・`src/sim_reflector.js`・`src/sim_blower.js` | 粒の動きのシミュレーション（ブラウザで動く）。共通部分と方式ごとの部分 |
+| `src/build_page.py` | 17 の場面を 1 つのページにまとめる（`--lang en` で英語版） |
 | `src/page_css.py`・`src/page_html.py`・`src/page_js.py`・`src/page_terms.py` | ページの見た目、HTML、操作の JavaScript、部品の解説と画面の文（日本語） |
 | `src/page_en.py` | ページの英語版の文（画面・部品の解説・場面の説明・使い方） |
-| `tests/check.js` | 1 つの場面の粒の動きの点検（`check.sh` が 13 の場面に対して回す） |
+| `tests/check.js` | 1 つの場面の粒の動きの点検（`check.sh` が 17 の場面に対して回す） |
 | `tools/text_list.py` | ページに出る解説文をすべて Markdown に書き出す |
 
 ## 模式図としての注意
@@ -78,6 +80,7 @@
 
 | 版 | 日付 | 内容 |
 |---|---|---|
+| 1.6 | 2026-11-05 | 4 つ目の方式「ブロワ（タービン）式」（Dräger Perseus 型）を追加（新鮮ガス 多め／低流量 × 人工呼吸／用手換気の 4 場面、全 17 場面）。ピストン・シリンダーの代わりにモーターで回るラジアルファンを吸気側の管に置き、新鮮ガス・デカップリング弁はなく、新鮮ガスはブロワの出口と吸気弁のあいだで加わる。呼吸バッグは人工呼吸中もリザーバー。ガス供給は電子制御のガスミキサー（ガスごとのモジュール）と可変バイパス式の気化器。ブロワとガスミキサーの解説、比較表の 5 列目、見どころのツアーに 4 段（22 段に）。Miller's Anesthesia 10e 第 20 章・Dräger 特許 US9399104B2・Perseus A500 の資料にもとづく |
 | 1.5 | 2026-11-05 | スマートフォン対応。図を 2 本指で拡大、指でずらせるようにし、縦向きの狭い画面では「全体・ガス供給・呼吸回路」の表示範囲を切り替えられる（呼吸回路から始まる）。横向きの案内と「全画面」ボタンを追加し、横向きでは操作部を 1 段にまとめた。狭い画面では見どころのツアーが示す範囲へ寄る。1.5.1：狭い画面の見どころで、いまの範囲から次の範囲へ連続して寄り、穴と吹き出しが一緒に動くようにした（全体へ戻ってから寄り直さない。範囲の縦横比は示す細部に合わせる）。1.5.2：「全画面」ボタンは全画面にする関数があれば出し（iPhone の Safari で出ていなかった）、押しても全画面にならないブラウザでは隠す。1.5.3：2 本指で広げたあとの 1 本指のずらしが、iPhone の Safari でページのスクロールになっていたのを直した。1.5.4：上昇式ベローズの駆動ガス（O₂）の管の先端に、O₂ の識別色の帯を付けた。1.5.5：方式の名前を「ベローズ式（上昇式）」に改め、「くわしく」に人工呼吸器の分類（ベローズ式・ピストン式・ブロワ（タービン）式・ボリュームリフレクタ式、双回路と単回路）を加えた |
 | 1.4 | 2026-11-05 | 「見どころ」のツアーを追加。ふだんは気づかない細部を 9 つ、方式と場面を自動で切り替えて案内する。1.4.1：開いたときに新しい版があれば 1 回だけ自動で読み直す。1.4.2：見どころを方式ごとに切り替えて見比べる 18 段に（気化器の違いを追加）。1.4.3：ツアーをキーで操作（Esc で閉じる、← BS で戻る、→ Enter スペースで進む）。1.4.5：使い方のツアーに見どころの紹介を追加 |
 | 1.3 | 2026-11-04 | ボリュームリフレクタ式のガス供給を実機（Flow-i）の構成に合わせ、流量計と可変バイパス式の気化器の代わりに、電子制御のガスモジュール・注入式の気化器・制御部を描いた。人工呼吸の新鮮ガスは主に吸気中に流れる形に（1 呼吸の 2/3 を吸気中）。新鮮ガスが患者の取り込みより少なく、リフレクタガス（O₂）が回路へ入っていく「不足」の場面を追加（全 13 場面）。説明文の断定（上昇式ベローズの陰圧、APL 弁が開く条件、リフレクタの両端のガス）を直し、気化器では O₂・N₂O の両方が気化室とバイパスを通るようにした。1.3.1：配管からガスモジュールへの管の途切れと、供給路の粒の間隔の乱れを直し、全場面の 1 回換気量を 13 粒にそろえた。1.3.2：リフレクタ式の人工呼吸で、ガスモジュールより上流の粒を一定に流し、吸気中に多く通す流量の変化はモジュールの弁で作る形にした。1.3.4〜1.3.11：リフレクタガスがガスモジュールから流れ込むようにし、モジュールの内部を弁座のある L 字に、電磁コイルを鉄心の両側の巻線の断面（通電中は黒）に描き直した。押すためのガス（リフレクタガスと上昇式ベローズの駆動ガス）を灰の四角で示し、リフレクタガスのいる範囲の管腔を薄い灰で塗る（ポインターを重ねると名前が出る）。描かれていなかった部品の縁を直した。「不足」の場面は数呼吸で O₂ が肺胞に届く状態から始め、肺胞の中でも O₂ の粒を四角のまま見せる |
@@ -122,11 +125,11 @@ An educational simulator that shows the gas inside an anesthesia machine as indi
 
 ## What you can do
 
-- **Compare three ventilator types**: anesthesia ventilators are classified by where the gas is stored and what pushes it: bellows (double circuit; ascending or descending), piston (single circuit), blower/turbine (single circuit) and volume reflector. This page covers the bellows (ascending; drive gas pushes the bellows down), the piston type (a motor drives the piston; with a fresh gas decoupling valve), and the volume reflector type (reflector gas, O₂, pushes the gas stored in a long tube with no membrane between them). Switch between them with the tabs.
+- **Compare four ventilator types**: anesthesia ventilators are classified by where the gas is stored and what pushes it: bellows (double circuit; ascending or descending), piston (single circuit), blower/turbine (single circuit) and volume reflector. This page covers all four: the bellows (ascending; drive gas pushes the bellows down), the piston type (a motor drives the piston; with a fresh gas decoupling valve), the blower (turbine) type (a motor-driven radial fan inside the circuit creates the flow and pressure; no decoupling valve, and the gas supply is an electronically controlled gas mixer), and the volume reflector type (reflector gas, O₂, pushes the gas stored in a long tube with no membrane between them). Switch between them with the tabs.
 - **See CO₂ by color**: black particles are gas without CO₂, orange particles are gas with CO₂ (exhaled gas). Particles pick up CO₂ in the alveoli and lose it in the CO₂ absorber. Gray particles are the reflector gas (O₂) of the volume reflector type, in direct contact with the patient-side gas.
 - **Follow a particle**: click a particle to show its path as a red trail.
 - **Watch the absorbent being used up**: as the absorbent takes up CO₂, its indicator changes from white to purple (time is compressed; speed up to 4× or 16×). Once it is exhausted, CO₂ returns to the inspiratory side (hardly at all in the scenes with high fresh gas flow). Press Replace for fresh absorbent.
-- **Switch scenes**: fresh gas (High / Low flow) and ventilation (Ventilator / Manual). With the volume reflector on the ventilator you can also choose Too low, where fresh gas is less than the patient's uptake and reflector gas (O₂) is seen entering the circuit. Together with the three types, there are 13 scenes. In manual ventilation you squeeze the reservoir bag, and excess gas leaves through the APL valve (the PEEP/APL valve on the volume reflector type).
+- **Switch scenes**: fresh gas (High / Low flow) and ventilation (Ventilator / Manual). With the volume reflector on the ventilator you can also choose Too low, where fresh gas is less than the patient's uptake and reflector gas (O₂) is seen entering the circuit. Together with the four types, there are 17 scenes. In manual ventilation you squeeze the reservoir bag, and excess gas leaves through the APL valve (the PEEP/APL valve on the volume reflector type).
 
 ## How to use
 
@@ -138,19 +141,19 @@ For beginners, the screen shows only the figure and the controls; explanations a
 - **Highlights**: a guided tour of eight easy-to-miss details, comparing the three types step by step (the PEEP made by the relief valve, dead space, where fresh gas goes during expiration, fresh gas and tidal volume, the absorbent, when the APL valve opens, how the vaporizers differ, O₂ reaching the patient when fresh gas is too low).
 - **Click a part name**: names with a dotted underline zoom in on that part and explain what it does. Prev / Next follow the parts in the order the gas flows.
 - **Time bar**: press the inspiration / expiration bar to stop at that moment and see what is happening.
-- **Learn more**: how the three types differ, and details of absorbent use.
+- **Learn more**: the classification of anesthesia ventilators, how the four types differ, and details of absorbent use.
 - **On a phone**: in portrait the page starts with the right half of the figure (the breathing circuit); All / Gas supply / Circuit switch the view. Pinch to zoom and drag to move the figure. Turn the phone sideways for a larger figure, and use Full screen to hide the browser bars (also handy for projecting in class).
 - Space: play / pause; ← →: step 0.1 s; Esc: close an explanation or stop following a particle.
 - Open `en/index.html?term=inspValve` to start with that part's explanation open (for linking from textbooks or slides; the names are the keys of `TERMS` in `src/page_terms.py`).
-- Open `en/index.html?type=pistonMan&t=1.5` to get a still frame of that scene at that time (for video or figure capture). Scene names: `bellows`, `bellowsLow`, `bellowsMan`, `bellowsLowMan`, `piston`, `pistonLow`, `pistonMan`, `pistonLowMan`, `reflector`, `reflectorLow`, `reflectorMan`, `reflectorLowMan`.
+- Open `en/index.html?type=pistonMan&t=1.5` to get a still frame of that scene at that time (for video or figure capture). Scene names: `bellows`, `bellowsLow`, `bellowsMan`, `bellowsLowMan`, `piston`, `pistonLow`, `pistonMan`, `pistonLowMan`, `reflector`, `reflectorLow`, `reflectorShort`, `reflectorMan`, `reflectorLowMan`, `blower`, `blowerLow`, `blowerMan`, `blowerLowMan`.
 
 ## Building
 
 Python scripts draw the figures (SVG) and the particle paths; JavaScript computes the particle motion in the browser. After editing `src/`, rebuild and check with:
 
 ```sh
-./build.sh    # builds the 13 scenes in Japanese and English and writes index.html and en/index.html (Python 3, standard library only)
-./check.sh    # checks the particle motion in all 13 scenes (Node.js)
+./build.sh    # builds the 17 scenes in Japanese and English and writes index.html and en/index.html (Python 3, standard library only)
+./check.sh    # checks the particle motion in all 17 scenes (Node.js)
 ```
 
 To release a new version, update `VERSION`, rebuild, and tag the commit (`v1.2.10`). Add a line to the Changelog when the minor version changes.
@@ -159,14 +162,14 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 
 | File | Purpose |
 |---|---|
-| `src/figure_bellows.py`, `src/figure_piston.py`, `src/figure_reflector.py` | Draw the figure (SVG) and particle paths for each ventilator type, bellows (ascending) / piston / volume reflector (`low`: low flow, `short`: too low (reflector only), `manual`: manual ventilation, `en`: English labels) |
+| `src/figure_bellows.py`, `src/figure_piston.py`, `src/figure_reflector.py`, `src/figure_blower.py` | Draw the figure (SVG) and particle paths for each ventilator type, bellows (ascending) / piston / volume reflector / blower (`low`: low flow, `short`: too low (reflector only), `manual`: manual ventilation, `en`: English labels) |
 | `src/palette.py`, `src/svg.py`, `src/parts.py`, `src/geometry.py` | Shared by the three figures: colors, SVG helpers, part drawings (valves, bag, alveoli, …), polyline math |
 | `src/labels_en.py` | English labels for the figures (mapping from Japanese, with per-label size and position) |
-| `src/sim_common.js`, `src/sim_bellows.js`, `src/sim_piston.js`, `src/sim_reflector.js` | Particle simulation (runs in the browser): shared part and the three ventilator types |
-| `src/build_page.py` | Combines the 13 scenes into one page (`--lang en` for English) |
+| `src/sim_common.js`, `src/sim_bellows.js`, `src/sim_piston.js`, `src/sim_reflector.js`, `src/sim_blower.js` | Particle simulation (runs in the browser): shared part and the four ventilator types |
+| `src/build_page.py` | Combines the 17 scenes into one page (`--lang en` for English) |
 | `src/page_css.py`, `src/page_html.py`, `src/page_js.py`, `src/page_terms.py` | Page styles, HTML, interaction script, and the Japanese explanations and UI text |
 | `src/page_en.py` | English page text (controls, part explanations, scene narration, tour) |
-| `tests/check.js` | Particle check for one scene (`check.sh` runs it for all 13) |
+| `tests/check.js` | Particle check for one scene (`check.sh` runs it for all 17) |
 | `tools/text_list.py` | Writes all explanation text shown on a page to Markdown |
 
 ## Notes on the schematic
@@ -180,6 +183,7 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.6 | 2026-11-05 | A fourth ventilator type, the blower (turbine) type modeled on the Dräger Perseus (High / Low flow × Ventilator / Manual, 4 scenes; 17 scenes in all). A motor-driven radial fan in the inspiratory line replaces the piston and cylinder; there is no fresh gas decoupling valve, and fresh gas joins between the blower outlet and the inspiratory valve. The reservoir bag stays in the circuit during ventilation. The gas supply is an electronically controlled gas mixer (one module per gas) with a variable-bypass vaporizer. Explanations for the blower and the gas mixer, a fifth column in the comparison table, and four more Highlights steps (22). Based on Miller's Anesthesia 10e ch. 20, Dräger patent US9399104B2 and Perseus A500 documentation |
 | 1.5 | 2026-11-05 | Phone support: pinch to zoom and drag to move the figure; on narrow portrait screens the view can be switched between All, Gas supply and Circuit (starting with the circuit). A hint to turn the phone sideways and a Full screen button; in landscape the controls fold into one row. On narrow screens the Highlights tour zooms to each detail. 1.5.1: on narrow screens the Highlights tour now zooms continuously from one detail to the next, with the spotlight and the bubble moving together (no jump back to the whole figure; the view's aspect follows each detail). 1.5.2: the Full screen button is shown whenever the browser has a fullscreen function (it was missing on iPhone Safari) and hides itself in browsers where pressing it has no effect. 1.5.3: after pinching, a one-finger drag scrolled the page instead of moving the figure on iPhone Safari; fixed. 1.5.4: the drive gas (O₂) inlet of the ascending bellows now ends in a band in the O₂ pipeline color. 1.5.5: the type is now named Bellows (ascending), and Learn more opens with the classification of anesthesia ventilators (bellows, piston, blower/turbine, volume reflector; double and single circuit) |
 | 1.4 | 2026-11-05 | Highlights tour: nine easy-to-miss details of the circuit, with the type and scene switched automatically for each. 1.4.1: the page reloads itself once when a newer version has been published. 1.4.2: the highlights tour now compares the types step by step (18 steps, including the vaporizers). 1.4.3: keyboard control of the tours (Esc close, ← Backspace back, → Enter Space next). 1.4.5: the How-to-use tour now introduces the Highlights tour |
 | 1.3 | 2026-11-04 | The gas supply of the volume reflector figure now follows the real machine (Flow-i): electronically controlled gas modules, injection vaporizers and a control unit replace the flowmeters and variable-bypass vaporizers. During mechanical ventilation the fresh gas is delivered mainly during inspiration (two thirds of each breath). New Too low scene, in which fresh gas is less than the patient's uptake and reflector gas (O₂) enters the circuit (13 scenes in all). Overstated explanations (negative pressure with the ascending bellows, when the APL valve opens, the gas at the two ends of the reflector) were corrected, and both O₂ and N₂O now pass through the vaporizing chamber and the bypass. 1.3.1: fixed the gap between the pipeline and the gas modules and the uneven spacing of supply particles, and brought the tidal volume of every scene to 13 particles. 1.3.2: on the reflector ventilator scenes the supply particles upstream of the gas modules now flow uniformly, and the inspiratory-weighted flow is made at the module valve. 1.3.4 to 1.3.11: reflector gas now flows in from the gas module, whose interior is redrawn as an L-shaped path with a valve seat and a solenoid coil shown in section on both sides of the plunger (dark while energized); gas that pushes (reflector gas and the bellows drive gas) is shown as gray squares, and the part of the reflector filled with reflector gas is shaded light gray (its name appears on hover); missing part outlines were restored. The Too low scene now starts a few breaths before O₂ reaches the alveoli, where it stays shown as a square |

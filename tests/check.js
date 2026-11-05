@@ -18,10 +18,11 @@ eval(fs.readFileSync(path.join(src, "sim_common.js"), "utf8"));
 eval(fs.readFileSync(path.join(src, "sim_bellows.js"), "utf8"));
 eval(fs.readFileSync(path.join(src, "sim_piston.js"), "utf8"));
 eval(fs.readFileSync(path.join(src, "sim_reflector.js"), "utf8"));
+eval(fs.readFileSync(path.join(src, "sim_blower.js"), "utf8"));
 
 const file = process.argv[2];
 const geo = JSON.parse(fs.readFileSync(file, "utf8"));
-const make = () => (geo.kind === "piston" ? new PistonSim(geo, 7) : geo.kind === "reflector" ? new ReflectorSim(geo, 7) : new BellowsSim(geo, 7));
+const make = () => (geo.kind === "piston" ? new PistonSim(geo, 7) : geo.kind === "reflector" ? new ReflectorSim(geo, 7) : geo.kind === "blower" ? new BlowerSim(geo, 7) : new BellowsSim(geo, 7));
 const CYC = geo.CYC;
 
 // 回路の外

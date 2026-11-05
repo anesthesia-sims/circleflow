@@ -99,6 +99,18 @@ EN = {
         {"t": "Exhaled and fresh gas enter the reflector; exhalation is smaller by the uptake, so more O₂ stays at the far end than leaves", "size": 14},
     "呼気と新鮮ガスがリフレクタへ入り、そのぶん奥の O₂ と古いガスが PEEP/APL 弁から排出装置へ":
         {"t": "Exhaled and fresh gas enter the reflector; O₂ and the oldest gas at the far end leave through the PEEP/APL valve", "size": 14},
+    # ブロワ（タービン）式（figure_blower.py。1.6.0）
+    "ガスミキサー": {"t": "Gas mixer", "size": 15},
+    "ブロワ": "Blower",
+    "（ファン）": {"t": "(fan)", "size": 12},
+    "新鮮ガス": {"t": "Fresh gas", "size": 12},
+    "ブロワが呼吸バッグのガスを吸収装置を通して引き、新鮮ガスと合わさって吸気弁から患者へ送る":
+        {"t": "The blower draws bag gas through the absorber; it joins the fresh gas and goes through the inspiratory valve to the patient", "size": 15},
+    "呼気は呼気弁と PEEP/Pmax 弁を通って呼吸バッグへ。新鮮ガスは止まったブロワと吸収装置を逆に通ってバッグへ":
+        {"t": "Exhaled gas passes the expiratory and PEEP/Pmax valves into the bag; fresh gas flows back through the idle blower and absorber to the bag", "size": 15},
+    "呼吸バッグを手で押すと、ガスは吸収装置と止まったブロワを通り、新鮮ガスと合わさって吸気弁から患者へ":
+        {"t": "Squeezing the bag sends gas through the absorber and the stopped blower; it joins the fresh gas and goes to the patient", "size": 15},
+    "用手換気ではブロワが止まり、": "In manual ventilation, the",
     # 図の中の説明文（コマ撮りだけに出る）
     "人工呼吸中も呼吸バッグは": "During ventilation, the bag",
     "リザーバーとして回路に残り、": "stays in the circuit as a",
@@ -134,7 +146,7 @@ def en(family, s):
     """日本語 s の英語版を (文字列, 上書きする引数) で返す。日本語を含まない文字はそのまま"""
     if not any("　" <= ch <= "鿿" or "＀" <= ch <= "￯" for ch in s):
         return s, {}
-    v = EN.get((family, s), EN.get(s))
+    v = EN.get((family, s), EN.get(("p", s)) if family == "w" else None) or EN.get(s)   # w（ブロワ式）はピストン式の調整を引き継ぐ（1.6.0）
     if v is None:
         raise KeyError(f"labels_en.py に英語がない：{s!r}")
     t, o = (v, {}) if isinstance(v, str) else (v["t"], {k: v[k] for k in ("size", "dx", "dy", "anchor") if k in v})
