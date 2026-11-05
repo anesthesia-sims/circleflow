@@ -97,6 +97,6 @@ BODY_MID = r"""
     <path d="M19.5 20 v6 M26.5 22 v5" stroke="#1a1a1a" stroke-width="1.6" stroke-linecap="round"/></svg></div>
   <div class="bubble" id="bubble"><div id="bubbleTxt"></div><div class="dots" id="bubbleDots"></div>
     <div class="bb"><button id="tourSkip">閉じる</button><button id="tourPrev">戻る</button><button id="tourNext" class="pri">次へ</button></div>
-    <div class="keys"><kbd>→</kbd> <kbd>Enter</kbd> 進む　<kbd>←</kbd> <kbd>BS</kbd> 戻る　<kbd>Esc</kbd> 閉じる</div></div>
+    <div class="keys"><kbd>Esc</kbd> 閉じる　<kbd>←</kbd> <kbd>BS</kbd> 戻る　<kbd>→</kbd> <kbd>Enter</kbd> 進む</div></div>
 </div>
 """
