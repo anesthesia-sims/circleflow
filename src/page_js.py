@@ -626,6 +626,16 @@ MAIN_JS = r"""
     if (e.key === 'ArrowLeft') { t = Math.max(0, t - 0.1); setPlaying(false); }
     if (e.key === '?') tour.open();
   });
+  // ---------- 埋め込み（2026-11-07 著者の依頼）：ほかのページの iframe に入っているとき、中身の高さを親のページへ知らせる ----------
+  // 東大麻酔科の WordPress（AnesSimulator のページ）は ['setHeight', px] を受けて iframe の高さを合わせるので、同じ約束で送る。
+  // 高さは body の大きさ（html の scrollHeight は iframe の高さを下回らないので、一度伸びた iframe が縮まなくなる）。
+  // 場面の切り替え（図の縦横比）・解説カード・狭い画面の組み替えで変わるので、body の大きさの変化を見張る。相手の origin は問わない（高さしか送らない）
+  if (self !== top) {
+    const post = () => { try { parent.postMessage(['setHeight', Math.ceil(document.body.getBoundingClientRect().height)], '*'); } catch (e) {} };
+    let tm = 0; const queue = () => { clearTimeout(tm); tm = setTimeout(post, 0); };   // rAF で待つと、背景のタブや隠れた画面では送れない（確認：アプリ内ブラウザ）
+    new ResizeObserver(queue).observe(document.body);
+    addEventListener('load', queue); queue();
+  }
   show(type);
   applyNarrow();
   setPlaying(true);

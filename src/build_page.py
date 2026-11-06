@@ -97,6 +97,9 @@ BODY_TOP = BODY_TOP.replace("@@LANG@@", f'<a class="lang" href="{OTHER}" hreflan
 # キャッシュを使わずに取り、ページに埋めた版と違えば 1 回だけ再読み込みする。ファイルとして開いたとき・通信できないときは何もしない。
 # 開いて 3 秒以上たっていたら（操作を始めている）再読み込みしない。同じ版への再読み込みは 1 回だけ（公開直後に VERSION だけ先に新しくなる
 # ことがあるため）
+# 埋め込み（2026-11-07 著者の依頼：東大麻酔科の WordPress に AnesSimulator と同じ形で入れる）：ほかのページの iframe の中にいるときは、
+# CSS が当たる前に html に embedded を付ける（画面の高さから幅を決めるのをやめる。高さの通知は page_js.py）
+EMBED = "<script>if (self !== top) document.documentElement.classList.add('embedded');</script>"
 VCHECK = ("<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '@@VERSION@@';\n"
           "  fetch(new URL('" + ("../VERSION" if LANG == "en" else "VERSION") + "', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {\n"
           "    v = v.trim(); if (!v || v === V || performance.now() > 3000) return;\n"
@@ -109,6 +112,7 @@ html = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>""" + TITLE + """</title>
 """ + ALT + """
+""" + EMBED + """
 """ + VCHECK + """
 <style>""" + CSS + """</style></head>""" + BODY_TOP + FIGS + BODY_MID + """
 <script>""" + GEOS + SIM_PRE + """</script>

@@ -10,6 +10,8 @@ CSS = r"""
   button { font:inherit; }
   /* 図・操作・時刻のバーが 1 画面に入るよう、画面の高さから幅を決める（--ar は図の横 ÷ 縦。場面を切り替えると変わる） */
   .wrap { max-width:max(620px, min(1300px, calc((100vh - 170px) * var(--ar, 1.515) + 32px))); margin:0 auto; padding:10px 16px 20px; }
+  /* ほかのページの iframe に入っているとき（2026-11-07）：高さは親のページが中身に合わせて決めるので、画面の高さから幅を決めない */
+  html.embedded .wrap { max-width:1300px; }
   .top { display:flex; align-items:center; gap:10px; margin:2px 0 8px; }
   .top h1 { font-size:20px; margin:0; flex:1 0 auto; }
   .top h1 span { font-size:14px; font-weight:400; color:var(--sub); margin-left:10px; }
