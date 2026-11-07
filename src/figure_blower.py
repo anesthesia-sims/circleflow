@@ -126,6 +126,7 @@ AX = 790                          # 二酸化炭素吸収装置
 CT, CB = 300, 440
 EXP_Y = 480                       # 呼気側の横の管
 SX, SY = 900, 580                 # 切替弁
+IV_LIFT, IV_REST = 12, 8           # 吸気弁の弁板の持ち上がり（px）：吸気中・人工呼吸の呼気中（循環流。1.7.6）
 IV_X = 1058                       # 吸気弁（2026-11-02：回路内圧計に近すぎたので 28 px 右へ）
 EV_X = 1110                       # 呼気弁
 YX, YY = 1190, 290                # Y ピース
@@ -426,7 +427,10 @@ for (ax, ay), (bx, by) in _legs:
 add(f'<circle cx="{YX}" cy="{YY}" r="7" fill="#fff"/>')
 for (cx, cy), (ux, uy) in [(YI, _ui), (YE, _ue), (YP, (-1, 0))]:
     collar(cx, cy, ux, uy)
-one_way_valve(IV_X, MAN_Y, 1, INSP_FILL, open_win=(0, TI), rest=0 if MANUAL else -3)   # 人工呼吸では呼気中も循環流で少し開いている（1.6.1）
+# 吸気弁：人工呼吸では呼気中も循環流で少し開いている（1.6.1）。1.7.6 で、呼気中の持ち上がりを粒（直径 約 7 px）がちょうど
+# くぐれる高さ（8 px）にし、吸気中はほかの弁より大きく（12 px）開くようにした。以前は呼気中 3 px で、粒が弁板を突き抜けて見え、
+# 閉じているように読めた。粒の通り道（valve_detour）の高さは変えない
+one_way_valve(IV_X, MAN_Y, 1, INSP_FILL, open_win=(0, TI), rest=0 if MANUAL else -IV_REST, lift=IV_LIFT)
 one_way_valve(EV_X, EXP_Y, -1, EXP, open_win=(TI, CYC))
 # PEEP/Pmax 弁：吸気中は閉じてブロワの送るガスを患者へ向け、呼気中は呼気を呼吸バッグへ通しながら呼気終末の圧（PEEP）を保つ
 # 2026-11-02：ばねで弁板を押さえた一方向弁（ドーム弁）の断面に。呼気の圧がばねの力（設定値）を超えたときだけ開く
