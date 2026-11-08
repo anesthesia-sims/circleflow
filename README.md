@@ -12,6 +12,8 @@
 
 ![上昇式ベローズの 1 呼吸：吸気で駆動ガスがベローズを押し下げ、呼気でベローズが上がる。橙の粒は CO₂ を含むガス](docs/demo-ja.gif)
 
+**動画（YouTube、無音・30 秒）**：4 方式を 1 呼吸ずつ https://youtu.be/VjnTtLzGURc ／ 日英简繁の再生リスト https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
+
 ## できること
 
 - **4 つの方式を比べる**：麻酔器の人工呼吸器は、ガスをためる場所と押す力で、ベローズ式（双回路。上昇式と下降式）・ピストン式（単回路）・ブロワ（タービン）式（単回路）・ボリュームリフレクタ式に分けられます。このページでは、ベローズ式（上昇式。駆動ガスがベローズを押し下げる）、ピストン式（モーターがピストンを動かす。新鮮ガス・デカップリング弁つき）、ブロワ（タービン）式（モーターが回すラジアルファンが回路の中で流れと圧を作る。デカップリング弁はなく、ガス供給は電子制御のガスミキサー）、ボリュームリフレクタ式（リフレクタガス（O₂）が、長い管にためたガスを膜なしで押し出す。ガス供給は電子制御のガスモジュールと注入式の気化器）を、タブで切り替えて比べられます。
@@ -145,6 +147,8 @@ An educational simulator that shows the gas inside an anesthesia machine as indi
 
 ![One breath with ascending bellows: drive gas pushes the bellows down during inspiration, and the bellows rises during expiration. Orange particles are gas containing CO₂](docs/demo-en.gif)
 
+**Video (YouTube, no sound, 30 s)**: one breath with each of the 4 types https://youtu.be/dgp2vyZNb7E ／ playlist in 4 languages https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
+
 ## What you can do
 
 - **Compare four ventilator types**: anesthesia ventilators are classified by where the gas is stored and what pushes it: bellows (double circuit; ascending or descending), piston (single circuit), blower/turbine (single circuit) and volume reflector. This page covers all four: the bellows (ascending; drive gas pushes the bellows down), the piston type (a motor drives the piston; with a fresh gas decoupling valve), the blower (turbine) type (a motor-driven radial fan inside the circuit creates the flow and pressure; no decoupling valve, and the gas supply is an electronically controlled gas mixer), and the volume reflector type (reflector gas, O₂, pushes the gas stored in a long tube with no membrane between them; the gas supply is electronically controlled gas modules with an injection vaporizer). Switch between them with the tabs.
@@ -275,6 +279,8 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 **打开页面**：https://anesthesia-sims.github.io/circleflow/zh/ （简体中文）／ https://anesthesia-sims.github.io/circleflow/ （日本語）／ https://anesthesia-sims.github.io/circleflow/en/ （English）／ https://anesthesia-sims.github.io/circleflow/zh-tw/ （繁體中文）
 
 ![风箱式（上升式）的一次呼吸：吸气时驱动气体把风箱向下压，呼气时风箱上升。橙色粒子为含 CO₂ 的气体](docs/demo-zh.gif)
+
+**视频（YouTube，无声，30 秒）**：4 种类型各一次呼吸 https://youtu.be/XdVZ6i-h8WI ／ 4 种语言的播放列表 https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
 
 ## 功能
 
@@ -408,6 +414,8 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 **開啟頁面**：https://anesthesia-sims.github.io/circleflow/zh-tw/ （繁體中文）／ https://anesthesia-sims.github.io/circleflow/ （日本語）／ https://anesthesia-sims.github.io/circleflow/en/ （English）／ https://anesthesia-sims.github.io/circleflow/zh/ （简体中文）
 
 ![風箱式（上升式）的一次呼吸：吸氣時驅動氣體把風箱向下壓，吐氣時風箱上升。橙色粒子為含 CO₂ 的氣體](docs/demo-tw.gif)
+
+**影片（YouTube，無聲，30 秒）**：4 種類型各一次呼吸 https://youtu.be/PbC5Vafza9w ／ 4 種語言的播放清單 https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
 
 ## 功能
 
