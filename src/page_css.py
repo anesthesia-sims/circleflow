@@ -29,6 +29,15 @@ CSS = r"""
     border:1.5px solid var(--blue); background:#fff; color:var(--blue); display:inline-flex; align-items:center; gap:6px; }
   .top button .q { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%;
     background:var(--blue); color:#fff; font-weight:700; font-size:13px; }
+  /* 上の帯が入りきらないときに段階的に短くする（2026-11-08。段階は page_js.py が帯の幅を測って付ける）：
+     s1 副題を消す → s2 言語を EN・简・繁 に → s3 ボタンを短い表記に → s4 文字と余白を狭い画面と同じに → s5 2 行に折り返す。
+     下の @media（max-width:640px）は画面全体の幅で決まるので、幅 800 px の iframe や、背の低い画面で本文が細いときには効かず、右端が切れていた */
+  .top.s1 h1 span { display:none; }
+  .top.s2 a.lang .full { display:none; } .top.s2 a.lang .short { display:inline; }
+  .top.s3 button .full, .top.s3 button .q { display:none; } .top.s3 button .short { display:inline; }
+  .top.s4 { gap:4px; } .top.s4 h1 { font-size:18px; } .top.s4 a.lang { font-size:13px; margin-right:0; }
+  .top.s4 button { font-size:12.5px; padding:5px 6px; }
+  .top.s5 { flex-wrap:wrap; row-gap:6px; }   /* それでも入らない幅（320 px ほど。WordPress をスマートフォンで見たときの iframe）では 2 行に折り返す */
   .bar { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin:0 0 8px; }
   .seg { display:inline-flex; border:1.5px solid var(--blue); border-radius:8px; overflow:hidden; }
   .seg button { font-size:14px; padding:5px 11px; cursor:pointer; border:none; background:#fff; color:var(--blue); }

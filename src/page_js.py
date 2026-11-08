@@ -626,6 +626,22 @@ MAIN_JS = r"""
     if (e.key === 'ArrowLeft') { t = Math.max(0, t - 0.1); setPlaying(false); }
     if (e.key === '?') tour.open();
   });
+  // ---------- 上の帯（題名・言語・使い方など）が入りきらないとき、段階的に短くする（2026-11-08） ----------
+  // 幅 800 px の iframe（東大麻酔科の WordPress）で右端の「くわしく」「全画面」が切れていた。必要な幅は言語とフォントで変わるので、
+  // 決まった幅で切り替えず、帯に入りきるかを測って s1〜s5 を順に足す（中身は page_css.py）。帯の幅が変わったときだけ測り直す
+  {
+    const head = document.querySelector('header.top'), steps = ['s1', 's2', 's3', 's4', 's5'];
+    let lastW = -1;
+    const fitTop = () => {
+      const w = head.clientWidth;
+      if (!w || w === lastW) return;   // 隠れた画面では幅 0。段階を変えて高さだけ変わったときは測り直さない
+      lastW = w;
+      head.classList.remove(...steps);
+      for (const s of steps) { if (head.scrollWidth <= head.clientWidth) break; head.classList.add(s); }
+    };
+    new ResizeObserver(fitTop).observe(head);
+    if (document.fonts) document.fonts.ready.then(() => { lastW = -1; fitTop(); });   // 文字の幅が決まってから測り直す
+  }
   // ---------- 埋め込み（2026-11-07 著者の依頼）：ほかのページの iframe に入っているとき、中身の高さを親のページへ知らせる ----------
   // 東大麻酔科の WordPress（AnesSimulator のページ）は ['setHeight', px] を受けて iframe の高さを合わせるので、同じ約束で送る。
   // 高さは body の大きさ（html の scrollHeight は iframe の高さを下回らないので、一度伸びた iframe が縮まなくなる）。

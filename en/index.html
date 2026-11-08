@@ -19,7 +19,7 @@
 <meta property="og:locale:alternate" content="zh_CN">
 <meta property="og:locale:alternate" content="zh_TW">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": ["LearningResource", "WebApplication"], "name": "CircleFlow: Gas Flow in the Anesthesia Machine and Breathing Circuit", "description": "A free, in-browser educational simulator that shows gas flow in the anesthesia machine and breathing circuit as moving particles. Bellows, piston, blower (turbine) and volume reflector ventilators; 17 scenarios.", "url": "https://anesthesia-sims.github.io/circleflow/en/", "image": "https://anesthesia-sims.github.io/circleflow/docs/og-en.png", "inLanguage": "en", "isAccessibleForFree": true, "license": "https://creativecommons.org/licenses/by/4.0/", "learningResourceType": "Simulation", "applicationCategory": "EducationalApplication", "operatingSystem": "Any (web browser)", "softwareVersion": "1.9.1", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "audience": [{"@type": "EducationalAudience", "audienceType": "Medical students"}, {"@type": "EducationalAudience", "audienceType": "Anesthesiology residents"}, {"@type": "EducationalAudience", "audienceType": "Clinical engineers"}, {"@type": "EducationalAudience", "audienceType": "Nurse anesthetists"}, {"@type": "EducationalAudience", "audienceType": "Respiratory therapists"}], "about": ["Anesthesia machine", "Breathing circuit (circle system)", "Anesthesia ventilator", "CO2 absorber"], "keywords": "anesthesia machine, breathing circuit, circle system, ventilator, bellows, piston, blower, volume reflector, medical education, simulation", "author": {"@type": "Person", "name": "Masaaki Asamoto", "alternateName": "朝元雅明", "sameAs": ["https://orcid.org/0000-0002-0770-2860", "https://researchmap.jp/masaaki_asamoto"], "affiliation": {"@type": "Organization", "name": "Department of Anesthesiology, Graduate School of Medicine, The University of Tokyo"}}, "identifier": "https://doi.org/10.5281/zenodo.24050136", "sameAs": ["https://doi.org/10.5281/zenodo.24050136", "https://github.com/anesthesia-sims/circleflow"], "translationOfWork": {"@id": "https://anesthesia-sims.github.io/circleflow/"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": ["LearningResource", "WebApplication"], "name": "CircleFlow: Gas Flow in the Anesthesia Machine and Breathing Circuit", "description": "A free, in-browser educational simulator that shows gas flow in the anesthesia machine and breathing circuit as moving particles. Bellows, piston, blower (turbine) and volume reflector ventilators; 17 scenarios.", "url": "https://anesthesia-sims.github.io/circleflow/en/", "image": "https://anesthesia-sims.github.io/circleflow/docs/og-en.png", "inLanguage": "en", "isAccessibleForFree": true, "license": "https://creativecommons.org/licenses/by/4.0/", "learningResourceType": "Simulation", "applicationCategory": "EducationalApplication", "operatingSystem": "Any (web browser)", "softwareVersion": "1.9.2", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "audience": [{"@type": "EducationalAudience", "audienceType": "Medical students"}, {"@type": "EducationalAudience", "audienceType": "Anesthesiology residents"}, {"@type": "EducationalAudience", "audienceType": "Clinical engineers"}, {"@type": "EducationalAudience", "audienceType": "Nurse anesthetists"}, {"@type": "EducationalAudience", "audienceType": "Respiratory therapists"}], "about": ["Anesthesia machine", "Breathing circuit (circle system)", "Anesthesia ventilator", "CO2 absorber"], "keywords": "anesthesia machine, breathing circuit, circle system, ventilator, bellows, piston, blower, volume reflector, medical education, simulation", "author": {"@type": "Person", "name": "Masaaki Asamoto", "alternateName": "朝元雅明", "sameAs": ["https://orcid.org/0000-0002-0770-2860", "https://researchmap.jp/masaaki_asamoto"], "affiliation": {"@type": "Organization", "name": "Department of Anesthesiology, Graduate School of Medicine, The University of Tokyo"}}, "identifier": "https://doi.org/10.5281/zenodo.24050136", "sameAs": ["https://doi.org/10.5281/zenodo.24050136", "https://github.com/anesthesia-sims/circleflow"], "translationOfWork": {"@id": "https://anesthesia-sims.github.io/circleflow/"}}</script>
 <link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/">
 <link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/">
 <link rel="alternate" hreflang="zh-TW" href="https://anesthesia-sims.github.io/circleflow/zh-tw/">
@@ -27,7 +27,7 @@
 <link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/">
 
 <script>if (self !== top) document.documentElement.classList.add('embedded');</script>
-<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.9.1';
+<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.9.2';
   fetch(new URL('../VERSION', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = v.trim(); if (!v || v === V || performance.now() > 3000) return;
     let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}
@@ -62,6 +62,15 @@
     border:1.5px solid var(--blue); background:#fff; color:var(--blue); display:inline-flex; align-items:center; gap:6px; }
   .top button .q { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%;
     background:var(--blue); color:#fff; font-weight:700; font-size:13px; }
+  /* 上の帯が入りきらないときに段階的に短くする（2026-11-08。段階は page_js.py が帯の幅を測って付ける）：
+     s1 副題を消す → s2 言語を EN・简・繁 に → s3 ボタンを短い表記に → s4 文字と余白を狭い画面と同じに → s5 2 行に折り返す。
+     下の @media（max-width:640px）は画面全体の幅で決まるので、幅 800 px の iframe や、背の低い画面で本文が細いときには効かず、右端が切れていた */
+  .top.s1 h1 span { display:none; }
+  .top.s2 a.lang .full { display:none; } .top.s2 a.lang .short { display:inline; }
+  .top.s3 button .full, .top.s3 button .q { display:none; } .top.s3 button .short { display:inline; }
+  .top.s4 { gap:4px; } .top.s4 h1 { font-size:18px; } .top.s4 a.lang { font-size:13px; margin-right:0; }
+  .top.s4 button { font-size:12.5px; padding:5px 6px; }
+  .top.s5 { flex-wrap:wrap; row-gap:6px; }   /* それでも入らない幅（320 px ほど。WordPress をスマートフォンで見たときの iframe）では 2 行に折り返す */
   .bar { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin:0 0 8px; }
   .seg { display:inline-flex; border:1.5px solid var(--blue); border-radius:8px; overflow:hidden; }
   .seg button { font-size:14px; padding:5px 11px; cursor:pointer; border:none; background:#fff; color:var(--blue); }
@@ -12729,7 +12738,7 @@
   </div>
 </div>
 <footer class="foot chrome">
-  CircleFlow © 2026 Masaaki Asamoto. Code: <a href="https://opensource.org/license/mit" rel="license">MIT</a>; figures and text: <a href="https://creativecommons.org/licenses/by/4.0/deed.en" rel="license">CC BY 4.0</a>. Source code: <a href="https://github.com/anesthesia-sims/circleflow">GitHub (anesthesia-sims/circleflow)</a>. Version 1.9.1<br>
+  CircleFlow © 2026 Masaaki Asamoto. Code: <a href="https://opensource.org/license/mit" rel="license">MIT</a>; figures and text: <a href="https://creativecommons.org/licenses/by/4.0/deed.en" rel="license">CC BY 4.0</a>. Source code: <a href="https://github.com/anesthesia-sims/circleflow">GitHub (anesthesia-sims/circleflow)</a>. Version 1.9.2<br>
   An educational schematic, not for clinical decisions or for operating or checking equipment. Not affiliated with any manufacturer. Gas color codes follow Japanese standards. Page views are counted without cookies (Cloudflare Web Analytics).<br>
   Acknowledgments: We thank Dr. Go Hirabayashi (Department of Anesthesiology, Teikyo University School of Medicine Hospital Mizonokuchi) for advice on the breathing circuit and ventilator types. Any errors are the author&rsquo;s own.<br>
   If you notice a mistake, please report it on <a href="https://github.com/anesthesia-sims/circleflow/issues/new">GitHub Issues</a> or by email (<a href="mailto:masaaki.asamoto@gmail.com?subject=CircleFlow">masaaki.asamoto@gmail.com</a>).
@@ -16188,6 +16197,22 @@ const L = Object.assign({"now": "What is happening now", "usedUp": "Exhausted", 
     if (e.key === 'ArrowLeft') { t = Math.max(0, t - 0.1); setPlaying(false); }
     if (e.key === '?') tour.open();
   });
+  // ---------- 上の帯（題名・言語・使い方など）が入りきらないとき、段階的に短くする（2026-11-08） ----------
+  // 幅 800 px の iframe（東大麻酔科の WordPress）で右端の「くわしく」「全画面」が切れていた。必要な幅は言語とフォントで変わるので、
+  // 決まった幅で切り替えず、帯に入りきるかを測って s1〜s5 を順に足す（中身は page_css.py）。帯の幅が変わったときだけ測り直す
+  {
+    const head = document.querySelector('header.top'), steps = ['s1', 's2', 's3', 's4', 's5'];
+    let lastW = -1;
+    const fitTop = () => {
+      const w = head.clientWidth;
+      if (!w || w === lastW) return;   // 隠れた画面では幅 0。段階を変えて高さだけ変わったときは測り直さない
+      lastW = w;
+      head.classList.remove(...steps);
+      for (const s of steps) { if (head.scrollWidth <= head.clientWidth) break; head.classList.add(s); }
+    };
+    new ResizeObserver(fitTop).observe(head);
+    if (document.fonts) document.fonts.ready.then(() => { lastW = -1; fitTop(); });   // 文字の幅が決まってから測り直す
+  }
   // ---------- 埋め込み（2026-11-07 著者の依頼）：ほかのページの iframe に入っているとき、中身の高さを親のページへ知らせる ----------
   // 東大麻酔科の WordPress（AnesSimulator のページ）は ['setHeight', px] を受けて iframe の高さを合わせるので、同じ約束で送る。
   // 高さは body の大きさ（html の scrollHeight は iframe の高さを下回らないので、一度伸びた iframe が縮まなくなる）。
