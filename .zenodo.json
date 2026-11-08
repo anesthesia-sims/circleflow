@@ -1,0 +1,23 @@
+{
+  "title": "CircleFlow: Gas Flow in the Anesthesia Machine and Breathing Circuit",
+  "upload_type": "software",
+  "description": "<p>A free, in-browser educational simulator that shows gas flow in the anesthesia machine and breathing circuit as moving particles. It covers bellows (ascending), piston, blower (turbine) and volume reflector ventilators in 17 scenarios, with Japanese, English and Simplified Chinese versions.</p><p>Simulator: <a href=\"https://anesthesia-sims.github.io/circleflow/\">https://anesthesia-sims.github.io/circleflow/</a> (English: <a href=\"https://anesthesia-sims.github.io/circleflow/en/\">/en/</a>, Simplified Chinese: <a href=\"https://anesthesia-sims.github.io/circleflow/zh/\">/zh/</a>)</p><p>Licenses: figures and text are licensed under CC BY 4.0; the program code (src/, tests/, build.sh, check.sh, and the HTML, CSS and JavaScript in the pages) is licensed under the MIT License (see LICENSE and LICENSE-CONTENT in the archive).</p>",
+  "creators": [
+    {
+      "name": "Asamoto, Masaaki",
+      "affiliation": "Department of Anesthesiology, Graduate School of Medicine, The University of Tokyo",
+      "orcid": "0000-0002-0770-2860"
+    }
+  ],
+  "license": "cc-by-4.0",
+  "keywords": [
+    "anesthesia",
+    "anesthesia machine",
+    "breathing circuit",
+    "circle system",
+    "ventilator",
+    "medical education",
+    "simulation",
+    "clinical engineering"
+  ]
+}
