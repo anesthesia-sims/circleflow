@@ -113,7 +113,10 @@ IMG_ALT = {"ja": "CircleFlow の画面：ベローズ式（上昇式）の麻酔
            "en": "CircleFlow screen: schematic of an anesthesia machine with an ascending bellows ventilator and the breathing circuit, with gas particles moving through the tubes",
            "zh": "CircleFlow 画面：风箱式（上升式）麻醉机和呼吸回路的示意图，气体粒子在管道中移动"}
 OG_LOCALE = {"ja": "ja_JP", "en": "en_US", "zh": "zh_CN"}
-META = f'<meta name="description" content="{DESC[LANG]}">\n'
+# Google Search Console の所有確認（URL プレフィックス https://anesthesia-sims.github.io/circleflow/。2026-11-08 著者が登録）
+GOOGLE_SITE_VERIFICATION = "-b0bVPpqGcbmjM_StmZRZlDOkRZqSF2LKK9xgnGD628"
+META = (f'<meta name="description" content="{DESC[LANG]}">\n'
+        f'<meta name="google-site-verification" content="{GOOGLE_SITE_VERIFICATION}">\n')
 if LANG in HREF and "ja" in HREF:
     _img = HREF["ja"] + f"docs/og-{LANG}.png"
     META += (f'<link rel="canonical" href="{HREF[LANG]}">\n'
