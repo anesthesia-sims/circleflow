@@ -8,13 +8,14 @@
 <link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/">
 
 <script>if (self !== top) document.documentElement.classList.add('embedded');</script>
-<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.8.0';
+<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.8.1';
   fetch(new URL('../VERSION', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = v.trim(); if (!v || v === V || performance.now() > 3000) return;
     let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}
     if (done === v) return; try { sessionStorage.setItem('circleflow-reloaded', v); } catch (e) {}
     location.reload();
   }).catch(() => {}); })();</script>
+<script>(() => { const l = location; if (!/^https?:$/.test(l.protocol) || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(l.hostname) || /[?&]t=/.test(l.search) || navigator.webdriver) return; const s = document.createElement('script'); s.defer = true; s.src = 'https://static.cloudflareinsights.com/beacon.min.js'; s.setAttribute('data-cf-beacon', '{"token": "8feb87c0f7044d6abf2d925dc0ec7cc1", "spa": false}'); document.head.appendChild(s); })();</script>
 <style>
   :root { --fg:#1a1a1a; --sub:#555; --bg:#ffffff; --blue:#1f5fae; --violet:#5e3fae; --line:#d9dde6; --red:#c62828; --panel:#ffffff; }
   * { box-sizing:border-box; }
@@ -12694,8 +12695,8 @@ body { font-family:'PingFang SC','Hiragino Sans GB','Noto Sans SC','Noto Sans CJ
   </div>
 </div>
 <footer class="foot chrome">
-  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。程序采用 <a href="https://opensource.org/license/mit" rel="license">MIT</a> 许可，图和文字采用 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hans" rel="license">CC BY 4.0</a> 许可。源代码：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版本 1.8.0<br>
-  本图为教学用示意图，不用于临床判断或设备操作。与任何特定厂商无关。气体识别色采用日本标准。<br>
+  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。程序采用 <a href="https://opensource.org/license/mit" rel="license">MIT</a> 许可，图和文字采用 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hans" rel="license">CC BY 4.0</a> 许可。源代码：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版本 1.8.1<br>
+  本图为教学用示意图，不用于临床判断或设备操作。与任何特定厂商无关。气体识别色采用日本标准。本页面使用 Cloudflare Web Analytics 统计浏览量，不使用 cookie。<br>
   致谢：帝京大学医学部附属沟口医院麻醉科的平林刚医生就呼吸回路和呼吸机的类型提供了建议。内容如有错误，由作者负责。<br>
   如发现错误，请在 <a href="https://github.com/anesthesia-sims/circleflow/issues/new">GitHub 的 Issue</a> 中提交，或发送邮件（<a href="mailto:masaaki.asamoto@gmail.com?subject=CircleFlow">masaaki.asamoto@gmail.com</a>）告知。
 </footer>

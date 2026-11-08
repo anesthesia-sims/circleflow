@@ -8,13 +8,14 @@
 <link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/">
 
 <script>if (self !== top) document.documentElement.classList.add('embedded');</script>
-<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.8.0';
+<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.8.1';
   fetch(new URL('../VERSION', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = v.trim(); if (!v || v === V || performance.now() > 3000) return;
     let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}
     if (done === v) return; try { sessionStorage.setItem('circleflow-reloaded', v); } catch (e) {}
     location.reload();
   }).catch(() => {}); })();</script>
+<script>(() => { const l = location; if (!/^https?:$/.test(l.protocol) || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(l.hostname) || /[?&]t=/.test(l.search) || navigator.webdriver) return; const s = document.createElement('script'); s.defer = true; s.src = 'https://static.cloudflareinsights.com/beacon.min.js'; s.setAttribute('data-cf-beacon', '{"token": "8feb87c0f7044d6abf2d925dc0ec7cc1", "spa": false}'); document.head.appendChild(s); })();</script>
 <style>
   :root { --fg:#1a1a1a; --sub:#555; --bg:#ffffff; --blue:#1f5fae; --violet:#5e3fae; --line:#d9dde6; --red:#c62828; --panel:#ffffff; }
   * { box-sizing:border-box; }
@@ -12709,8 +12710,8 @@
   </div>
 </div>
 <footer class="foot chrome">
-  CircleFlow © 2026 Masaaki Asamoto. Code: <a href="https://opensource.org/license/mit" rel="license">MIT</a>; figures and text: <a href="https://creativecommons.org/licenses/by/4.0/deed.en" rel="license">CC BY 4.0</a>. Source code: <a href="https://github.com/anesthesia-sims/circleflow">GitHub (anesthesia-sims/circleflow)</a>. Version 1.8.0<br>
-  An educational schematic, not for clinical decisions or for operating or checking equipment. Not affiliated with any manufacturer. Gas color codes follow Japanese standards.<br>
+  CircleFlow © 2026 Masaaki Asamoto. Code: <a href="https://opensource.org/license/mit" rel="license">MIT</a>; figures and text: <a href="https://creativecommons.org/licenses/by/4.0/deed.en" rel="license">CC BY 4.0</a>. Source code: <a href="https://github.com/anesthesia-sims/circleflow">GitHub (anesthesia-sims/circleflow)</a>. Version 1.8.1<br>
+  An educational schematic, not for clinical decisions or for operating or checking equipment. Not affiliated with any manufacturer. Gas color codes follow Japanese standards. Page views are counted without cookies (Cloudflare Web Analytics).<br>
   Acknowledgments: We thank Dr. Go Hirabayashi (Department of Anesthesiology, Teikyo University School of Medicine Hospital Mizonokuchi) for advice on the breathing circuit and ventilator types. Any errors are the author&rsquo;s own.<br>
   If you notice a mistake, please report it on <a href="https://github.com/anesthesia-sims/circleflow/issues/new">GitHub Issues</a> or by email (<a href="mailto:masaaki.asamoto@gmail.com?subject=CircleFlow">masaaki.asamoto@gmail.com</a>).
 </footer>

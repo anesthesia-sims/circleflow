@@ -120,6 +120,25 @@ VCHECK = ("<script>(() => { if (location.protocol !== 'http:' && location.protoc
           "    if (done === v) return; try { sessionStorage.setItem('circleflow-reloaded', v); } catch (e) {}\n"
           "    location.reload();\n"
           "  }).catch(() => {}); })();</script>")
+# 閲覧数の計測（2026-11-08 著者の依頼）：Cloudflare Web Analytics（cookie を使わず、個人を特定する情報を集めない）。
+# CF_TOKEN は Cloudflare の管理画面で anesthesia-sims.github.io を足したときに出るサイトのトークン（ページに載る公開の値）。
+# 空なら計測の script もページ下の一文も出さない。数えないとき：ファイルとして開いたとき、手元の確認（localhost・127.0.0.1）、
+# コマ撮り（?t=）、自動操作のブラウザ（navigator.webdriver。ヘッドレス Chrome での画像撮りなど）
+CF_TOKEN = os.environ.get("CIRCLEFLOW_CF_TOKEN", "")
+COUNT = ""
+if CF_TOKEN:
+    assert re.fullmatch(r"[0-9a-f]{32}", CF_TOKEN), "CF_TOKEN は 32 桁の 16 進数"
+    COUNT = ("<script>(() => { const l = location;"
+             " if (!/^https?:$/.test(l.protocol) || /^(localhost|127\\.0\\.0\\.1|\\[::1\\])$/.test(l.hostname)"
+             " || /[?&]t=/.test(l.search) || navigator.webdriver) return;"
+             " const s = document.createElement('script'); s.defer = true; s.src = 'https://static.cloudflareinsights.com/beacon.min.js';"
+             " s.setAttribute('data-cf-beacon', '{\"token\": \"" + CF_TOKEN + "\", \"spa\": false}');"
+             " document.head.appendChild(s); })();</script>\n")
+COUNT_NOTE = {"ja": "閲覧数を cookie を使わずに数えています（Cloudflare Web Analytics）。",
+              "en": " Page views are counted without cookies (Cloudflare Web Analytics).",
+              "zh": "本页面使用 Cloudflare Web Analytics 统计浏览量，不使用 cookie。"}
+BODY_MID = BODY_MID.replace("@@COUNTNOTE@@", COUNT_NOTE[LANG] if CF_TOKEN else "")
+assert "@@COUNTNOTE@@" not in BODY_TOP + BODY_MID
 html = """<!doctype html>
 <html lang="@@HTMLLANG@@"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -127,7 +146,7 @@ html = """<!doctype html>
 """ + ALT + """
 """ + EMBED + """
 """ + VCHECK + """
-<style>""" + CSS + FONT_CSS + """</style></head>""" + BODY_TOP + FIGS + BODY_MID + """
+""" + COUNT + """<style>""" + CSS + FONT_CSS + """</style></head>""" + BODY_TOP + FIGS + BODY_MID + """
 <script>""" + GEOS + SIM_PRE + """</script>
 """ + "".join(f"<script>\n{_js}\n</script>\n" for _js in SIMS) + """<script>
 """ + TERMS + L_JS + MAIN_JS + """

@@ -35,6 +35,8 @@ args() {    # args 言語：17 の場面の「名前 svg 経路データ」
     printf '%s build/%s/%s.svg build/%s/%s.json ' "$name" "$1" "$name" "$1" "$name"
   done
 }
+# 閲覧数の計測（Cloudflare Web Analytics、cookie なし）のサイトのトークン（ページに載る公開の値）。CIRCLEFLOW_CF_TOKEN= と空にして実行すると計測なしで作る。リポジトリを複製して公開するときは自分のトークンに替えるか空にする
+export CIRCLEFLOW_CF_TOKEN="${CIRCLEFLOW_CF_TOKEN-8feb87c0f7044d6abf2d925dc0ec7cc1}"
 SIMS="src/sim_common.js src/sim_bellows.js src/sim_piston.js src/sim_reflector.js src/sim_blower.js"
 # 公開する URL（GitHub Pages）。言語版どうしの印（hreflang）に使う
 URL=https://anesthesia-sims.github.io/circleflow/
