@@ -121,7 +121,7 @@
 
 ## 著作者
 
-朝元雅明（Masaaki Asamoto）、麻酔科医。東京大学大学院医学系研究科 麻酔科学（[ORCID 0000-0002-0770-2860](https://orcid.org/0000-0002-0770-2860)）
+朝元雅明（Masaaki Asamoto）、麻酔科医。東京大学大学院医学系研究科 麻酔科学（[ORCID 0000-0002-0770-2860](https://orcid.org/0000-0002-0770-2860)・[researchmap](https://researchmap.jp/masaaki_asamoto)）
 
 ## 謝辞
 
@@ -252,7 +252,7 @@ To cite it in papers or teaching materials, you can also use `CITATION.cff` ("Ci
 
 ## Author
 
-Masaaki Asamoto (朝元雅明), anesthesiologist, Department of Anesthesiology, Graduate School of Medicine, The University of Tokyo ([ORCID 0000-0002-0770-2860](https://orcid.org/0000-0002-0770-2860))
+Masaaki Asamoto (朝元雅明), anesthesiologist, Department of Anesthesiology, Graduate School of Medicine, The University of Tokyo ([ORCID 0000-0002-0770-2860](https://orcid.org/0000-0002-0770-2860), [researchmap](https://researchmap.jp/masaaki_asamoto?lang=en))
 
 ## Acknowledgments
 
@@ -385,7 +385,7 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 
 ## 作者
 
-朝元雅明（Masaaki Asamoto），麻醉科医生，东京大学大学院医学系研究科 麻醉科学（[ORCID 0000-0002-0770-2860](https://orcid.org/0000-0002-0770-2860)）
+朝元雅明（Masaaki Asamoto），麻醉科医生，东京大学大学院医学系研究科 麻醉科学（[ORCID 0000-0002-0770-2860](https://orcid.org/0000-0002-0770-2860)，[researchmap](https://researchmap.jp/masaaki_asamoto?lang=en)）
 
 ## 致谢
 
@@ -518,7 +518,7 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 
 ## 作者
 
-朝元雅明（Masaaki Asamoto），麻醉科醫師，東京大學大學院醫學系研究科 麻醉科學（[ORCID 0000-0002-0770-2860](https://orcid.org/0000-0002-0770-2860)）
+朝元雅明（Masaaki Asamoto），麻醉科醫師，東京大學大學院醫學系研究科 麻醉科學（[ORCID 0000-0002-0770-2860](https://orcid.org/0000-0002-0770-2860)，[researchmap](https://researchmap.jp/masaaki_asamoto?lang=en)）
 
 ## 致謝
 

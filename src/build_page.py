@@ -147,7 +147,7 @@ if LANG in HREF and "ja" in HREF:
         "about": ["Anesthesia machine", "Breathing circuit (circle system)", "Anesthesia ventilator", "CO2 absorber"],
         "keywords": "anesthesia machine, breathing circuit, circle system, ventilator, bellows, piston, blower, volume reflector, medical education, simulation",
         "author": {"@type": "Person", "name": "Masaaki Asamoto", "alternateName": "朝元雅明",
-                   "sameAs": "https://orcid.org/0000-0002-0770-2860",
+                   "sameAs": ["https://orcid.org/0000-0002-0770-2860", "https://researchmap.jp/masaaki_asamoto"],
                    "affiliation": {"@type": "Organization", "name": "Department of Anesthesiology, Graduate School of Medicine, The University of Tokyo"}},
         "identifier": "https://doi.org/10.5281/zenodo.24050136",
         "sameAs": ["https://doi.org/10.5281/zenodo.24050136", "https://github.com/anesthesia-sims/circleflow"],
