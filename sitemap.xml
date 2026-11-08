@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://anesthesia-sims.github.io/circleflow/</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/"/>
+  </url>
+  <url>
+    <loc>https://anesthesia-sims.github.io/circleflow/en/</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/"/>
+  </url>
+  <url>
+    <loc>https://anesthesia-sims.github.io/circleflow/zh/</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/"/>
+  </url>
+</urlset>

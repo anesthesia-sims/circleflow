@@ -104,6 +104,27 @@ BODY_TOP = BODY_TOP.replace("@@LANGNOTE@@", _note)
 ALT = "".join(f'<link rel="alternate" hreflang="{HTMLLANG[k]}" href="{v}">\n' for k, v in sorted(HREF.items()))
 if "ja" in HREF:
     ALT += f'<link rel="alternate" hreflang="x-default" href="{HREF["ja"]}">\n'
+# 検索結果の説明と、SNS でリンクを共有したときのプレビュー（2026-11-08 著者の依頼：英語圏・中華圏へ広めるための土台）。
+# 画像は docs/og-ja.png・og-en.png・og-zh.png（1200×630 の 2 倍。ベローズ式の吸気 1.0 秒のコマで、図の枠全体）
+DESC = {"ja": "麻酔器と呼吸回路の中のガスを、1 粒ずつ動く粒で見せる無料の教育用シミュレーター。ベローズ式・ピストン式・ブロワ（タービン）式・ボリュームリフレクタ式の 4 方式、17 場面。ブラウザで動きます。",
+        "en": "A free, in-browser educational simulator that shows gas flow in the anesthesia machine and breathing circuit as moving particles. Bellows, piston, blower (turbine) and volume reflector ventilators; 17 scenarios.",
+        "zh": "免费的教学用模拟器，用移动的粒子显示麻醉机和呼吸回路中的气体流动。风箱式、活塞式、鼓风机（涡轮）式和容量反射器式 4 种类型，共 17 个场景，在浏览器中运行。"}
+IMG_ALT = {"ja": "CircleFlow の画面：ベローズ式（上昇式）の麻酔器と呼吸回路の模式図。ガスの粒が管の中を動く",
+           "en": "CircleFlow screen: schematic of an anesthesia machine with an ascending bellows ventilator and the breathing circuit, with gas particles moving through the tubes",
+           "zh": "CircleFlow 画面：风箱式（上升式）麻醉机和呼吸回路的示意图，气体粒子在管道中移动"}
+OG_LOCALE = {"ja": "ja_JP", "en": "en_US", "zh": "zh_CN"}
+META = f'<meta name="description" content="{DESC[LANG]}">\n'
+if LANG in HREF and "ja" in HREF:
+    _img = HREF["ja"] + f"docs/og-{LANG}.png"
+    META += (f'<link rel="canonical" href="{HREF[LANG]}">\n'
+             '<meta property="og:type" content="website">\n<meta property="og:site_name" content="CircleFlow">\n'
+             f'<meta property="og:title" content="{TITLE}">\n<meta property="og:description" content="{DESC[LANG]}">\n'
+             f'<meta property="og:url" content="{HREF[LANG]}">\n<meta property="og:image" content="{_img}">\n'
+             '<meta property="og:image:width" content="2400">\n<meta property="og:image:height" content="1260">\n'
+             f'<meta property="og:image:alt" content="{IMG_ALT[LANG]}">\n<meta property="og:locale" content="{OG_LOCALE[LANG]}">\n'
+             + "".join(f'<meta property="og:locale:alternate" content="{OG_LOCALE[k]}">\n' for k in ("ja", "en", "zh") if k != LANG and k in HREF)
+             + '<meta name="twitter:card" content="summary_large_image">\n')
+assert '"' not in "".join(DESC.values()) + "".join(IMG_ALT.values()) + TITLE
 BODY_TOP = BODY_TOP.replace("@@LANG@@", " ".join(f'<a class="lang" href="{u}" hreflang="{HTMLLANG[k]}" lang="{HTMLLANG[k]}">'
                                                  f'<span class="full">{LINK_NAME[k][0]}</span><span class="short">{LINK_NAME[k][1]}</span></a>' for k, u in OTHER.items()))   # 狭い画面では短い表記（2026-11-05）。中国語版を足して 2 つに（2026-11-08）
 # 新しい版の確認（2026-11-05 著者の依頼）：GitHub Pages は HTML を 10 分キャッシュしてよいと指示するので、開いたときに VERSION を
@@ -143,7 +164,7 @@ html = """<!doctype html>
 <html lang="@@HTMLLANG@@"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>""" + TITLE + """</title>
-""" + ALT + """
+""" + META + ALT + """
 """ + EMBED + """
 """ + VCHECK + """
 """ + COUNT + """<style>""" + CSS + FONT_CSS + """</style></head>""" + BODY_TOP + FIGS + BODY_MID + """
