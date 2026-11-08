@@ -12,7 +12,7 @@
 
 ![上昇式ベローズの 1 呼吸：吸気で駆動ガスがベローズを押し下げ、呼気でベローズが上がる。橙の粒は CO₂ を含むガス](docs/demo-ja.gif)
 
-**動画（YouTube、無音・30 秒）**：4 方式を 1 呼吸ずつ https://youtu.be/VjnTtLzGURc ／ 日英简繁の再生リスト https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
+**見どころの動画（YouTube、字幕で解説・無音）**：[ガスを送り出すしくみ](https://youtu.be/C0_AuUW4l1Q)・[気化器の違い](https://youtu.be/wedRxkuPTf0)・[吸気の始めに戻るのは前の呼気](https://youtu.be/1oSxdA134Eg)・[呼気中の新鮮ガスの行き先](https://youtu.be/QbqKkxXhsuI)・[吸気中の新鮮ガスと 1 回換気量](https://youtu.be/NgVe-xltPYk)・[吸収剤の減り方と交換](https://youtu.be/HB5ilvPAD3U)・[回路のガスが足りないとき](https://youtu.be/wGmLR-wsUAg)。日英简繁の再生リスト https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
 
 ## できること
 
@@ -147,7 +147,7 @@ An educational simulator that shows the gas inside an anesthesia machine as indi
 
 ![One breath with ascending bellows: drive gas pushes the bellows down during inspiration, and the bellows rises during expiration. Orange particles are gas containing CO₂](docs/demo-en.gif)
 
-**Video (YouTube, no sound, 30 s)**: one breath with each of the 4 types https://youtu.be/dgp2vyZNb7E ／ playlist in 4 languages https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
+**Highlight videos (YouTube, captions, no sound)**: [How the ventilator delivers gas](https://youtu.be/kYbh_VpUiB4) · [How the vaporizers differ](https://youtu.be/WtTrybtloyg) · [The first gas back into the alveoli is the previous breath](https://youtu.be/oHWHcVxsrgY) · [Where fresh gas goes during expiration](https://youtu.be/_iGxRY1Niag) · [Fresh gas during inspiration and tidal volume](https://youtu.be/s3WvODqBXBs) · [How the absorbent is used up and changed](https://youtu.be/OVKeCcPuaiM) · [When the circuit runs short of gas](https://youtu.be/wp1ReGx1z4I). Playlist in 4 languages: https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
 
 ## What you can do
 
@@ -280,7 +280,7 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 
 ![风箱式（上升式）的一次呼吸：吸气时驱动气体把风箱向下压，呼气时风箱上升。橙色粒子为含 CO₂ 的气体](docs/demo-zh.gif)
 
-**视频（YouTube，无声，30 秒）**：4 种类型各一次呼吸 https://youtu.be/XdVZ6i-h8WI ／ 4 种语言的播放列表 https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
+**看点视频（YouTube，字幕解说，无声）**：[送气的机制](https://youtu.be/1jT6aV-9gXY)、[蒸发器的区别](https://youtu.be/G5jntfZQ1JI)、[吸气开始时先回去的是上一次的呼出气](https://youtu.be/T1aONVGZo4I)、[呼气期新鲜气体的去向](https://youtu.be/Ej0VHtF9ks0)、[吸气期的新鲜气体与潮气量](https://youtu.be/jeVvQ8mgX3Q)、[吸收剂的消耗与更换](https://youtu.be/7bVceWcUe5I)、[回路中气体不足时](https://youtu.be/yVUNvxxHue0)。4 种语言的播放列表 https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
 
 ## 功能
 
@@ -415,7 +415,7 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 
 ![風箱式（上升式）的一次呼吸：吸氣時驅動氣體把風箱向下壓，吐氣時風箱上升。橙色粒子為含 CO₂ 的氣體](docs/demo-tw.gif)
 
-**影片（YouTube，無聲，30 秒）**：4 種類型各一次呼吸 https://youtu.be/PbC5Vafza9w ／ 4 種語言的播放清單 https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
+**重點影片（YouTube，字幕解說，無聲）**：[送氣的機制](https://youtu.be/Ds_UqghfZiE)、[揮發器的差異](https://youtu.be/zEw3NsTKOqs)、[吸氣開始時先回去的是上一次的吐氣](https://youtu.be/jOffN9Kklhg)、[吐氣期新鮮氣體的去向](https://youtu.be/XBRrUSCCSTs)、[吸氣期的新鮮氣體與潮氣容積](https://youtu.be/TjJxKgGH3dU)、[吸收劑的消耗與更換](https://youtu.be/6Y7V59dTgTQ)、[迴路中氣體不足時](https://youtu.be/pr1Sh_6a9EI)。4 種語言的播放清單 https://www.youtube.com/playlist?list=PLbPGX6JSmBkk
 
 ## 功能
 
