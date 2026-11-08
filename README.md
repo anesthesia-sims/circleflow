@@ -138,11 +138,19 @@ An educational simulator that shows the gas inside an anesthesia machine as indi
 
 ## What you can do
 
-- **Compare four ventilator types**: anesthesia ventilators are classified by where the gas is stored and what pushes it: bellows (double circuit; ascending or descending), piston (single circuit), blower/turbine (single circuit) and volume reflector. This page covers all four: the bellows (ascending; drive gas pushes the bellows down), the piston type (a motor drives the piston; with a fresh gas decoupling valve), the blower (turbine) type (a motor-driven radial fan inside the circuit creates the flow and pressure; no decoupling valve, and the gas supply is an electronically controlled gas mixer), and the volume reflector type (reflector gas, O₂, pushes the gas stored in a long tube with no membrane between them). Switch between them with the tabs.
+- **Compare four ventilator types**: anesthesia ventilators are classified by where the gas is stored and what pushes it: bellows (double circuit; ascending or descending), piston (single circuit), blower/turbine (single circuit) and volume reflector. This page covers all four: the bellows (ascending; drive gas pushes the bellows down), the piston type (a motor drives the piston; with a fresh gas decoupling valve), the blower (turbine) type (a motor-driven radial fan inside the circuit creates the flow and pressure; no decoupling valve, and the gas supply is an electronically controlled gas mixer), and the volume reflector type (reflector gas, O₂, pushes the gas stored in a long tube with no membrane between them; the gas supply is electronically controlled gas modules with an injection vaporizer). Switch between them with the tabs.
 - **See CO₂ by color**: black particles are gas without CO₂, orange particles are gas with CO₂ (exhaled gas). Particles pick up CO₂ in the alveoli and lose it in the CO₂ absorber. Gray particles are the reflector gas (O₂) of the volume reflector type, in direct contact with the patient-side gas.
 - **Follow a particle**: click a particle to show its path as a red trail.
 - **Watch the absorbent being used up**: as the absorbent takes up CO₂, its indicator changes from white to purple (time is compressed; speed up to 4× or 16×). Once it is exhausted, CO₂ returns to the inspiratory side (hardly at all in the scenes with high fresh gas flow). Press Replace for fresh absorbent. The bellows figure also shows, closed, the absorber bypass found on some machines (a channel around the absorber for changing the absorbent without stopping ventilation).
 - **Switch scenes**: fresh gas (High / Low flow) and ventilation (Ventilator / Manual). With the volume reflector on the ventilator you can also choose Too low, where fresh gas is less than the patient's uptake and reflector gas (O₂) is seen entering the circuit. Together with the four types, there are 17 scenes. In manual ventilation you squeeze the reservoir bag, and excess gas leaves through the APL valve (the PEEP/APL valve on the volume reflector type).
+
+![Manual ventilation (ascending bellows): left, inspiration as the bag is squeezed; right, expiration as the bag inflates and the APL valve opens](docs/screenshot-manual-en.png)
+
+![Piston type, Exp 2: the piston descends and draws in bag gas and fresh gas](docs/screenshot-piston-en.png)
+
+![Volume reflector, expiration: exhaled and fresh gas enter the reflector, and O₂ and the oldest gas at the far end leave through the PEEP/APL valve to the scavenging system](docs/screenshot-reflector-en.png)
+
+![Blower (turbine) type, inspiration: the fan draws bag gas through the absorber; it joins the fresh gas and goes to the patient](docs/screenshot-blower-en.png)
 
 ## How to use
 
@@ -260,6 +268,14 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 - **观察吸收剂的消耗**：吸收了 CO₂ 的吸收剂，其指示剂颜色由白变紫（时间经过压缩显示，可用 4 倍、16 倍快进）。用尽后 CO₂ 会回到吸气侧（新鲜气体高流量的场景中几乎不会回来）。点击“更换”可换上新的吸收剂。风箱式的图中以关闭状态画出了部分机型所具有的吸收罐旁路（为不停止通气而更换吸收剂的绕行通路）。
 - **切换场景**：可以切换新鲜气体（高流量／低流量）和通气方式（机械通气／手动通气）。容量反射器式的机械通气中还可以选择新鲜气体少于患者摄取量的“不足”，可以看到反射器气体（O₂）进入回路。加上类型，共有 17 个场景。手动通气时用手挤压储气囊进行通气，多余气体经 APL 阀（容量反射器式为 PEEP/APL 阀）排出。
 
+![手动通气（风箱式（上升式））：左为吸气时用手挤压储气囊，右为呼气时储气囊膨胀、APL 阀开启](docs/screenshot-manual-zh.png)
+
+![活塞式的呼气②：活塞下行，吸入储气囊内的气体和新鲜气体](docs/screenshot-piston-zh.png)
+
+![容量反射器式的呼气：呼出气和新鲜气体进入反射器，远端的 O₂ 和旧气体经 PEEP/APL 阀排至废气清除系统](docs/screenshot-reflector-zh.png)
+
+![鼓风机（涡轮）式的吸气：风扇经吸收罐抽取储气囊内的气体，与新鲜气体汇合后送往患者](docs/screenshot-blower-zh.png)
+
 ## 使用方法
 
 用浏览器打开 `zh/index.html` 即可运行（不需要联网，也不需要其他文件）。日文版为 `index.html`，英文版为 `en/index.html`，可通过标题旁的链接切换。日文版在浏览器语言不是日语时，会用一行提示介绍英文版（中文浏览器则介绍中文版），不会自动跳转。
@@ -298,6 +314,8 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 ./check.sh    # 检查 17 个场景的粒子运动（Node.js）
 ```
 
+发布新版本时，修改 `VERSION` 后重新生成，并打上 git 标签（`v1.2.10` 的形式）。版本号第 2 位变化时，在“更新记录”中加一行。
+
 `check.sh` 对每个场景显示：粒子没有跑出管道、倒回后状态相同、潮气量（每次呼吸进入肺泡的粒子数）、吸收剂用尽前的呼吸次数。
 
 | 文件 | 作用 |
@@ -324,13 +342,13 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 | 版本 | 日期 | 内容 |
 |---|---|---|
 | 1.8 | 2026-11-08 | 新增中文（简体）版（`zh/index.html`）：图中文字、画面、部件说明、场景说明和导览。图的识别色保留日本的颜色，在中心供气和气瓶的说明中写明中国的颜色（管道 GB 50751，气瓶 GB/T 7144）。浏览器语言为中文时，日文版会介绍中文版 |
-| 1.7 | 2026-11-05〜08 | 根据平林刚医生的建议新增：吸收罐旁路（风箱式的图中以关闭状态画出部分机型的绕行通路；“看点”中在第 2 次呼吸打开、第 4 次呼吸关闭进行演示）；“详细说明”中新增“回路气体不足时”一节；鼓风机式的图中补画外部空气进气阀（防负压）；补充说明 4 种类型都有不停止通气即可更换吸收剂的机型（GE・Mindray・Flow-i 的旁路，Dräger 的 CLIC 适配器）。“看点”重组为 32 步。1.7.5：嵌入其他页面的 iframe 时，把内容高度通知父页面。1.7.6：鼓风机式的吸气阀在机械通气的呼气期间也因循环气流而稍微开启。1.7.7：英文版的中心供气和气瓶说明中写明识别色因国家而异（ISO 和美国的例子） |
-| 1.6 | 2026-11-05 | 新增第 4 种类型“鼓风机（涡轮）式”（Dräger Perseus 型），共 17 个场景。在吸气侧管路中放置电机驱动的径向风扇，没有新鲜气体隔离阀，新鲜气体在鼓风机出口与吸气阀之间加入。储气囊在机械通气期间也作为储气部分。供气为电子控制的气体混合器和可变旁路式蒸发器。依据 Miller's Anesthesia 第 10 版第 20 章、Dräger 专利 US9399104B2 和 Perseus A500 的资料。1.6.1：加入机械通气呼气期间鼓风机缓慢旋转维持的小循环气流（约 0.6 L/min）。1.6.2：“看点”中增加鼓风机式的步骤 |
-| 1.5 | 2026-11-05 | 支持智能手机：两指放大、单指拖动图；竖屏窄屏可切换“全图・供气・呼吸回路”显示范围；横屏提示和“全屏”按钮。1.5.4：在风箱式驱动气体（O₂）管路末端加上 O₂ 识别色色带。1.5.5：类型名称改为“风箱式（上升式）”，“详细说明”中加入呼吸机的分类 |
-| 1.4 | 2026-11-05 | 新增“看点”导览：自动切换类型和场景，介绍平时不易注意的细节。打开时如有新版本则自动重新加载一次；导览可用按键操作 |
-| 1.3 | 2026-11-04 | 容量反射器式的供气按实机（Flow-i）的构成改为电子控制的气体模块、注射式蒸发器和控制单元；机械通气的新鲜气体主要在吸气期间流入（一次呼吸的 2/3 在吸气期间）。新增新鲜气体少于患者摄取量、反射器气体（O₂）进入回路的“不足”场景（共 13 个场景）。修正说明中过于绝对的表述，蒸发器中 O₂ 和 N₂O 都会经过蒸发室和旁路 |
-| 1.2 | 2026-11-03〜04 | 容量反射器式新增手动通气场景（共 12 个场景）。统一 3 种类型图的宽度和布局，智能手机上把操作区合并为切换按钮。修正多余气体的路径、粒子速度、氧化亚氮供气的显示等 |
-| 1.1 | 2026-11-03 | 新增容量反射器式（Getinge Flow-i 型）的机械通气 2 个场景。整理说明文字 |
+| 1.7 | 2026-11-05 | 根据平林刚医生的建议新增两项。①吸收罐旁路（风箱式的图。把部分机型具有的绕行通路连同旋塞一起画出，用“旁路”按钮开闭。打开后粒子不经过吸收剂，CO₂ 回到患者，工作中用红色标签提示。倒回后也在相同时刻开闭）。1.7.1：根据作者的判断取消按钮和“看点”中的步骤，只在图中以关闭状态画出并加以说明（25 步）。1.7.2：在鼓风机式的图中补画外部空气进气阀（防负压），“回路气体不足时”改为活塞式和鼓风机式都会打开该阀。补充说明 4 种类型都有可在通气中更换吸收剂的机型（GE・Mindray・Flow-i 的旁路，Dräger 的 CLIC 适配器）。1.7.3：把“看点”重组为 32 步，开头加入“送气的机制”（4 种类型），吸收剂一节加入“不停止通气更换吸收剂”，最后加入“回路气体不足时”（4 种类型，包括活塞式和鼓风机式的外部空气进气阀），并整理蒸发器步骤中鼓风机式的重复。1.7.4：在“看点”的“不停止通气更换吸收剂”一步中，旁路阀在第 2 次呼吸打开、第 4 次呼吸关闭（低流量・等速。旋塞转动，粒子经绕行通路，CO₂ 到达吸气侧。按模拟时间预约，离开该步时连同记录一起清除）。②“详细说明”中加入“回路气体不足时”一节（风箱升不起来・呼气相快速充氧，活塞式和鼓风机式的储气囊瘪下，容量反射器式不易察觉），吸收剂一节加入旁路的段落。风箱和储气囊的说明中也补充了注意点。1.7.5（11-07）：嵌入其他页面的 iframe 时，用 `postMessage(['setHeight', px])` 把内容高度通知父页面，不再根据画面高度决定宽度（用于嵌入东京大学麻醉科的网站）。1.7.6（11-07）：鼓风机式的吸气阀在机械通气的呼气期间也因循环气流而稍微开启，粒子从阀片下方穿过（吸气期间开得更大）。1.7.7（11-08）：英文版的中心供气和气瓶说明中加入气体识别色因国家而异（ISO 和美国的例子） |
+| 1.6 | 2026-11-05 | 新增第 4 种类型“鼓风机（涡轮）式”（Dräger Perseus 型）（新鲜气体 高流量／低流量 × 机械通气／手动通气 的 4 个场景，共 17 个场景）。在吸气侧管路中放置电机驱动的径向风扇代替活塞和气缸，没有新鲜气体隔离阀，新鲜气体在鼓风机出口与吸气阀之间加入。储气囊在机械通气期间也作为储气部分。供气为电子控制的气体混合器（每种气体一个模块）和可变旁路式蒸发器。新增鼓风机和气体混合器的说明、比较表的第 5 列，“看点”导览中增加 4 步（共 22 步）。依据 Miller's Anesthesia 第 10 版第 20 章、Dräger 专利 US9399104B2 和 Perseus A500 的资料。1.6.1：加入机械通气呼气期间鼓风机缓慢旋转维持的小循环气流（约 0.6 L/min）。新鲜气体不经鼓风机逆流，而是随循环气流经吸气阀绕过 Y 形接头，从呼气侧进入储气囊（吸气阀在呼气期间也稍微开启）。呼出气先到达储气囊，因此高流量时吸收剂也会在二十多次呼吸内用尽。1.6.2：“看点”中增加鼓风机式的 3 步（吸收剂的消耗方式、蒸发器的区别、鼓风机吸气时转得快・呼气时转得慢；共 25 步） |
+| 1.5 | 2026-11-05 | 支持智能手机。可用两指放大、单指拖动图，竖屏窄屏可切换“全图・供气・呼吸回路”的显示范围（从呼吸回路开始）。新增横屏提示和“全屏”按钮，横屏时把操作区合并为一行。窄屏时“看点”导览会移到所示的范围。1.5.1：窄屏的“看点”中，从当前范围连续移到下一范围，高亮框和对话框一起移动（不再先回到全图再放大；范围的宽高比与所示细节相符）。1.5.2：只要有全屏函数就显示“全屏”按钮（iPhone 的 Safari 中原先不显示），按下后不能全屏的浏览器则隐藏该按钮。1.5.3：修正 iPhone 的 Safari 中两指放大后单指拖动变成页面滚动的问题。1.5.4：在风箱式（上升式）驱动气体（O₂）管路的末端加上 O₂ 识别色色带。1.5.5：类型名称改为“风箱式（上升式）”，“详细说明”中加入呼吸机的分类（风箱式・活塞式・鼓风机（涡轮）式・容量反射器式，双回路与单回路） |
+| 1.4 | 2026-11-05 | 新增“看点”导览。自动切换类型和场景，介绍 9 个平时不易注意的细节。1.4.1：打开时如有新版本，自动重新加载一次。1.4.2：把“看点”改为按类型切换比较的 18 步（新增蒸发器的区别）。1.4.3：导览可用按键操作（Esc 关闭，← BS 后退，→ Enter 空格 前进）。1.4.5：在“使用说明”导览中加入对“看点”的介绍 |
+| 1.3 | 2026-11-04 | 容量反射器式的供气按实机（Flow-i）的构成，用电子控制的气体模块、注射式蒸发器和控制单元代替流量计和可变旁路式蒸发器。机械通气的新鲜气体改为主要在吸气期间流入（一次呼吸的 2/3 在吸气期间）。新增新鲜气体少于患者摄取量、反射器气体（O₂）进入回路的“不足”场景（共 13 个场景）。修正说明中过于绝对的表述（上升式风箱的负压、APL 阀开启的条件、反射器两端的气体），蒸发器中 O₂ 和 N₂O 都会经过蒸发室和旁路。1.3.1：修正从管道到气体模块的管路中断和供气路径上粒子间距的紊乱，所有场景的潮气量统一为 13 个粒子。1.3.2：容量反射器式的机械通气中，气体模块上游的粒子匀速流动，吸气期间流量增大的变化由模块的阀产生。1.3.4〜1.3.11：反射器气体改为从气体模块流入，把模块内部重画为带阀座的 L 形，把电磁线圈重画为铁芯两侧绕组的断面（通电时为黑色）。用灰色方块表示推动用的气体（反射器气体和上升式风箱的驱动气体），把反射器气体所在范围的管腔涂成浅灰色（指针悬停时显示名称）。修正未画出的部件边缘。“不足”场景从 O₂ 几次呼吸后就到达肺泡的状态开始，在肺泡中 O₂ 粒子也保持方块显示 |
+| 1.2 | 2026-11-03〜04 | 容量反射器式新增手动通气场景（共 12 个场景）。统一 3 种类型图的宽度和布局，智能手机上把操作区合并为切换按钮。修正多余气体的路径、从储气囊流出的粒子速度、氧化亚氮供气的显示等。容量反射器式的新鲜气体改为匀速流入，呼气期间逆向经过吸收罐进入反射器 |
+| 1.1 | 2026-11-03 | 新增容量反射器式（Getinge Flow-i 型）（机械通气的 2 个场景）。把说明文字整理为面向读者的表述 |
 | 1.0 | 2026-11-02 | 公开。上升式风箱和活塞式的 8 个场景，日文版和英文版，部件说明和使用说明导览 |
 
 表格按版本号的第 2 位汇总。细小的修正（第 3 位）记录在 git 的标签和历史中。当前版本为 `VERSION` 的值，也显示在页面底部。
