@@ -8,7 +8,7 @@ authors:
     orcid: "https://orcid.org/0000-0002-0770-2860"
     affiliation: "Department of Anesthesiology, Graduate School of Medicine, The University of Tokyo"
     website: "https://researchmap.jp/masaaki_asamoto"
-version: "1.9.1"
+version: "1.9.2"
 doi: "10.5281/zenodo.24050136"
 date-released: "2026-11-08"
 url: "https://anesthesia-sims.github.io/circleflow/"
