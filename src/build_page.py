@@ -131,6 +131,30 @@ if LANG in HREF and "ja" in HREF:
              f'<meta property="og:image:alt" content="{IMG_ALT[LANG]}">\n<meta property="og:locale" content="{OG_LOCALE[LANG]}">\n'
              + "".join(f'<meta property="og:locale:alternate" content="{OG_LOCALE[k]}">\n' for k in ("ja", "en", "zh", "tw") if k != LANG and k in HREF)
              + '<meta name="twitter:card" content="summary_large_image">\n')
+    # 検索エンジン向けの構造化データ（schema.org。2026-11-08 著者の依頼「周知に役立つ対応」）：無料の教材であること・対象・著者・DOI・言語版の関係
+    import json as _json
+    _ld = {
+        "@context": "https://schema.org",
+        "@type": ["LearningResource", "WebApplication"],
+        "name": TITLE, "description": DESC[LANG], "url": HREF[LANG], "image": _img,
+        "inLanguage": HTMLLANG[LANG], "isAccessibleForFree": True,
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "learningResourceType": "Simulation", "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any (web browser)", "softwareVersion": "@@VERSION@@",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "audience": [{"@type": "EducationalAudience", "audienceType": a} for a in
+                     ("Medical students", "Anesthesiology residents", "Clinical engineers", "Nurse anesthetists", "Respiratory therapists")],
+        "about": ["Anesthesia machine", "Breathing circuit (circle system)", "Anesthesia ventilator", "CO2 absorber"],
+        "keywords": "anesthesia machine, breathing circuit, circle system, ventilator, bellows, piston, blower, volume reflector, medical education, simulation",
+        "author": {"@type": "Person", "name": "Masaaki Asamoto", "alternateName": "朝元雅明",
+                   "sameAs": "https://orcid.org/0000-0002-0770-2860",
+                   "affiliation": {"@type": "Organization", "name": "Department of Anesthesiology, Graduate School of Medicine, The University of Tokyo"}},
+        "identifier": "https://doi.org/10.5281/zenodo.24050136",
+        "sameAs": ["https://doi.org/10.5281/zenodo.24050136", "https://github.com/anesthesia-sims/circleflow"],
+    }
+    if LANG != "ja":
+        _ld["translationOfWork"] = {"@id": HREF["ja"]}
+    META += '<script type="application/ld+json">' + _json.dumps(_ld, ensure_ascii=False) + "</script>\n"
 assert '"' not in "".join(DESC.values()) + "".join(IMG_ALT.values()) + TITLE
 BODY_TOP = BODY_TOP.replace("@@LANG@@", " ".join(f'<a class="lang" href="{u}" hreflang="{HREFLANG[k]}" lang="{HTMLLANG[k]}">'
                                                  f'<span class="full">{LINK_NAME[k][0]}</span><span class="short">{LINK_NAME[k][1]}</span></a>' for k, u in OTHER.items()))   # 狭い画面では短い表記（2026-11-05）。中国語版を足して 2 つに（2026-11-08）
