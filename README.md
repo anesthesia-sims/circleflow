@@ -85,7 +85,7 @@
 - 教育用の模式図です。臨床の判断や、実際の麻酔器の操作・点検に用いるものではありません。内容について保証はありません。
 - 部品の形・位置・弁の構成は機種によって異なります。ピストン式は Dräger Fabius 型、ボリュームリフレクタ式は Getinge（Maquet）Flow-i 型の構成を参考にしていますが、特定のメーカーや機種とは関係ありません。
 - ガスの量（粒の数）や時間、吸収剤の容量は、見やすさのために縮めたり整えたりした値です。実際の機種どうしの性能の比較ではありません。
-- 配管とボンベの識別色は日本の規格に従っています（配管：O₂ 緑・空気 黄・N₂O 青、ボンベ：O₂ 黒・そのほか灰）。
+- 配管とボンベの識別色は日本の規格に従っています（配管：O₂ 緑・空気 黄・N₂O 青、ボンベ：O₂ 黒・そのほか灰）。識別色は国によって違います。ISO の規格（欧州など。中国の配管も同じ）では、配管は O₂ 白・空気 黒と白・N₂O 青、医療用のボンベは胴が白で肩にガスの色（O₂ 白・N₂O 青・空気 黒と白）です。米国では、配管は O₂ 緑・空気 黄・N₂O 青、ボンベは O₂ 緑・N₂O 青です。
 
 ## 更新記録
 
@@ -200,7 +200,7 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 - This is an educational schematic. It is not for clinical decisions or for operating or checking real anesthesia machines, and comes with no warranty.
 - The shape and position of parts and the valve arrangement vary between machines. The piston type is modeled on the Dräger Fabius layout and the volume reflector type on the Getinge (Maquet) Flow-i, but neither is affiliated with any manufacturer or model.
 - Gas volumes (number of particles), timing and absorbent capacity are scaled or adjusted for clarity; they do not compare the performance of real machines.
-- Gas color codes follow Japanese standards (pipelines: O₂ green, air yellow, N₂O blue; cylinders: O₂ black, others gray).
+- Gas color codes follow Japanese standards (pipelines: O₂ green, air yellow, N₂O blue; cylinders: O₂ black, others gray). Color codes differ by country. Under ISO standards (used in Europe and elsewhere; China's pipelines use the same colors), pipelines are O₂ white, air black and white and N₂O blue, and medical cylinders have a white body with the gas color on the shoulder (O₂ white, N₂O blue, air black and white). In the US, pipelines are O₂ green, air yellow and N₂O blue, and cylinders are O₂ green and N₂O blue.
 
 ## Changelog
 
