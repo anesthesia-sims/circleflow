@@ -28,7 +28,7 @@ T3 = CYC - 0.3             # ピストンが下がりきる時刻（5.7〜6 秒�
 _FLAGS = set(sys.argv[4:])
 LOW_FLOW = "low" in _FLAGS
 MANUAL = "manual" in _FLAGS               # 用手換気の場面（ピストンは止まり、呼吸バッグを手で押して換気する。2026-11-02）
-LANG = "en" if "en" in _FLAGS else "zh" if "zh" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
+LANG = "en" if "en" in _FLAGS else "zh" if "zh" in _FLAGS else "tw" if "tw" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
 svg.configure(LANG, "p")
 FG_RATE = 0.5 if LOW_FLOW else 2.0     # 新鮮ガス（粒/秒）。上昇式ベローズの図と同じ値
 VT_P = 13                  # ピストンが送る量＝患者に入る量（粒）。デカップリング弁があるので新鮮ガスの量によらない

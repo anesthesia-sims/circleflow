@@ -17,14 +17,16 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:locale:alternate" content="ja_JP">
 <meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="zh_TW">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/">
 <link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/">
+<link rel="alternate" hreflang="zh-TW" href="https://anesthesia-sims.github.io/circleflow/zh-tw/">
 <link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/">
 <link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/">
 
 <script>if (self !== top) document.documentElement.classList.add('embedded');</script>
-<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.8.3';
+<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.9.0';
   fetch(new URL('../VERSION', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = v.trim(); if (!v || v === V || performance.now() > 3000) return;
     let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}
@@ -181,12 +183,12 @@
   /* 狭い画面と、背の低い画面（スマートフォンの横向き。2026-11-05 に追加：操作部を 1 段にして図の高さを残す） */
   @media (max-width:640px), (max-height:500px) {
     .wrap { max-width:none; padding:10px 12px 16px; }   /* 画面の高さから決めた幅（最小 620 px）をやめ、画面の幅いっぱいに */
-    .top { gap:5px; }
+    .top { gap:4px; }   /* 言語リンクが 3 つになったので詰める（2026-11-08、日本語版の 375 px で 11 px はみ出した） */
     .top h1 { font-size:18px; }
     .top h1 span { display:none; }
     .top a.lang { font-size:13px; margin-right:0; }
     .top a.lang .full, .top button .full { display:none; } .top a.lang .short, .top button .short { display:inline; }
-    .top button { font-size:12.5px; padding:5px 7px; }
+    .top button { font-size:12.5px; padding:5px 6px; }
     .top button .q { display:none; }
     .bar { display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
     #typeSeg, #ventGrp, #flowGrp { display:none; }
@@ -223,7 +225,7 @@ body { font-family:'PingFang SC','Hiragino Sans GB','Noto Sans SC','Noto Sans CJ
 <body><div class="wrap">
 <header class="top chrome">
   <h1>CircleFlow<span>麻醉机与呼吸回路中的气体流动</span></h1>
-  <a class="lang" href="../" hreflang="ja" lang="ja"><span class="full">日本語</span><span class="short">JA</span></a> <a class="lang" href="../en/" hreflang="en" lang="en"><span class="full">English</span><span class="short">EN</span></a>
+  <a class="lang" href="../" hreflang="ja" lang="ja"><span class="full">日本語</span><span class="short">JA</span></a> <a class="lang" href="../en/" hreflang="en" lang="en"><span class="full">English</span><span class="short">EN</span></a> <a class="lang" href="../zh-tw/" hreflang="zh-TW" lang="zh-Hant-TW"><span class="full">繁體中文</span><span class="short">繁</span></a>
   <button id="helpBtn" aria-label="使用说明"><span class="q">?</span>使用说明</button>
   <button id="hlBtn">看点</button>
   <button id="moreBtn">详细说明</button>
@@ -12711,7 +12713,7 @@ body { font-family:'PingFang SC','Hiragino Sans GB','Noto Sans SC','Noto Sans CJ
   </div>
 </div>
 <footer class="foot chrome">
-  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。程序采用 <a href="https://opensource.org/license/mit" rel="license">MIT</a> 许可，图和文字采用 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hans" rel="license">CC BY 4.0</a> 许可。源代码：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版本 1.8.3<br>
+  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。程序采用 <a href="https://opensource.org/license/mit" rel="license">MIT</a> 许可，图和文字采用 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hans" rel="license">CC BY 4.0</a> 许可。源代码：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版本 1.9.0<br>
   本图为教学用示意图，不用于临床判断或设备操作。与任何特定厂商无关。气体识别色采用日本标准。本页面使用 Cloudflare Web Analytics 统计浏览量，不使用 cookie。<br>
   致谢：帝京大学医学部附属沟口医院麻醉科的平林刚医生就呼吸回路和呼吸机的类型提供了建议。内容如有错误，由作者负责。<br>
   如发现错误，请在 <a href="https://github.com/anesthesia-sims/circleflow/issues/new">GitHub 的 Issue</a> 中提交，或发送邮件（<a href="mailto:masaaki.asamoto@gmail.com?subject=CircleFlow">masaaki.asamoto@gmail.com</a>）告知。

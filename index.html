@@ -17,14 +17,16 @@
 <meta property="og:locale" content="ja_JP">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/">
 <link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/">
+<link rel="alternate" hreflang="zh-TW" href="https://anesthesia-sims.github.io/circleflow/zh-tw/">
 <link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/">
 <link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/">
 
 <script>if (self !== top) document.documentElement.classList.add('embedded');</script>
-<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.8.3';
+<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.9.0';
   fetch(new URL('VERSION', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = v.trim(); if (!v || v === V || performance.now() > 3000) return;
     let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}
@@ -181,12 +183,12 @@
   /* 狭い画面と、背の低い画面（スマートフォンの横向き。2026-11-05 に追加：操作部を 1 段にして図の高さを残す） */
   @media (max-width:640px), (max-height:500px) {
     .wrap { max-width:none; padding:10px 12px 16px; }   /* 画面の高さから決めた幅（最小 620 px）をやめ、画面の幅いっぱいに */
-    .top { gap:5px; }
+    .top { gap:4px; }   /* 言語リンクが 3 つになったので詰める（2026-11-08、日本語版の 375 px で 11 px はみ出した） */
     .top h1 { font-size:18px; }
     .top h1 span { display:none; }
     .top a.lang { font-size:13px; margin-right:0; }
     .top a.lang .full, .top button .full { display:none; } .top a.lang .short, .top button .short { display:inline; }
-    .top button { font-size:12.5px; padding:5px 7px; }
+    .top button { font-size:12.5px; padding:5px 6px; }
     .top button .q { display:none; }
     .bar { display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
     #typeSeg, #ventGrp, #flowGrp { display:none; }
@@ -220,10 +222,10 @@
 </style></head>
 <body><div class="wrap">
 <div class="langnote chrome" id="langNote" hidden><span id="langNoteMsg"></span><a id="langNoteA"></a><button id="langNoteX" aria-label="Close">✕</button></div>
-<script>(() => { const n = document.getElementById("langNote"); let off = false; try { off = localStorage.getItem("circleflow-langnote-off") === "1"; } catch (e) {} const ls = (navigator.languages || [navigator.language]).map(l => l || ""); const ja = ls.some(l => /^ja/i.test(l)); if (ja || off || /[?&]t=/.test(location.search)) return; const L = { en: { href: "en/", msg: "This page is also available in English.", a: "English version", lang: "en" }, zh: { href: "zh/", msg: "本页面也有简体中文版。", a: "中文版", lang: "zh-Hans" } }; const first = ls.find(l => /^(zh|en)/i.test(l)) || "en"; const k = (/^zh/i.test(first) && L.zh) ? "zh" : "en"; const c = L[k]; if (!c) return; n.lang = c.lang; document.getElementById("langNoteMsg").textContent = c.msg; const a = document.getElementById("langNoteA"); a.textContent = c.a; a.href = c.href; a.hreflang = c.lang; n.hidden = false; document.getElementById("langNoteX").onclick = () => { n.hidden = true; try { localStorage.setItem("circleflow-langnote-off", "1"); } catch (e) {} }; })();</script>
+<script>(() => { const n = document.getElementById("langNote"); let off = false; try { off = localStorage.getItem("circleflow-langnote-off") === "1"; } catch (e) {} const ls = (navigator.languages || [navigator.language]).map(l => l || ""); const ja = ls.some(l => /^ja/i.test(l)); if (ja || off || /[?&]t=/.test(location.search)) return; const L = { en: { href: "en/", msg: "This page is also available in English.", a: "English version", lang: "en" }, zh: { href: "zh/", msg: "本页面也有简体中文版。", a: "简体中文版", lang: "zh-Hans" }, tw: { href: "zh-tw/", msg: "本頁面也有繁體中文版。", a: "繁體中文版", lang: "zh-Hant-TW" } }; const first = ls.find(l => /^(zh|en)/i.test(l)) || "en"; const k = /^zh/i.test(first) ? ((/^zh-(tw|hk|mo|hant)/i.test(first) && L.tw) ? "tw" : (L.zh ? "zh" : "en")) : "en"; const c = L[k]; if (!c) return; n.lang = c.lang; document.getElementById("langNoteMsg").textContent = c.msg; const a = document.getElementById("langNoteA"); a.textContent = c.a; a.href = c.href; a.hreflang = c.lang; n.hidden = false; document.getElementById("langNoteX").onclick = () => { n.hidden = true; try { localStorage.setItem("circleflow-langnote-off", "1"); } catch (e) {} }; })();</script>
 <header class="top chrome">
   <h1>CircleFlow<span>麻酔器と呼吸回路のガスの流れ</span></h1>
-  <a class="lang" href="en/" hreflang="en" lang="en"><span class="full">English</span><span class="short">EN</span></a> <a class="lang" href="zh/" hreflang="zh-Hans" lang="zh-Hans"><span class="full">中文</span><span class="short">中</span></a>
+  <a class="lang" href="en/" hreflang="en" lang="en"><span class="full">English</span><span class="short">EN</span></a> <a class="lang" href="zh/" hreflang="zh-Hans" lang="zh-Hans"><span class="full">简体中文</span><span class="short">简</span></a> <a class="lang" href="zh-tw/" hreflang="zh-TW" lang="zh-Hant-TW"><span class="full">繁體中文</span><span class="short">繁</span></a>
   <button id="helpBtn" aria-label="使い方"><span class="q">?</span>使い方</button>
   <button id="hlBtn">見どころ</button>
   <button id="moreBtn">くわしく</button>
@@ -12711,7 +12713,7 @@
   </div>
 </div>
 <footer class="foot chrome">
-  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。プログラムは <a href="https://opensource.org/license/mit" rel="license">MIT</a>、図と文章は <a href="https://creativecommons.org/licenses/by/4.0/deed.ja" rel="license">CC BY 4.0</a>。ソースコード：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版 1.8.3<br>
+  CircleFlow © 2026 朝元雅明（Masaaki Asamoto）。プログラムは <a href="https://opensource.org/license/mit" rel="license">MIT</a>、図と文章は <a href="https://creativecommons.org/licenses/by/4.0/deed.ja" rel="license">CC BY 4.0</a>。ソースコード：<a href="https://github.com/anesthesia-sims/circleflow">GitHub（anesthesia-sims/circleflow）</a>。版 1.9.0<br>
   教育用の模式図で、臨床の判断や機器の操作に用いるものではありません。特定のメーカーとは関係ありません。閲覧数を cookie を使わずに数えています（Cloudflare Web Analytics）。<br>
   謝辞：帝京大学医学部附属溝口病院 麻酔科の平林剛先生から、呼吸回路と人工呼吸器の方式について助言をいただきました。内容の誤りは著者の責任です。<br>
   もし間違いに気づかれましたら、<a href="https://github.com/anesthesia-sims/circleflow/issues/new">GitHub の Issue</a> へ投稿していただくか、メール（<a href="mailto:masaaki.asamoto@gmail.com?subject=CircleFlow">masaaki.asamoto@gmail.com</a>）でご連絡をお願いします。

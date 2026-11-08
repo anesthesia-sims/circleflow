@@ -11,7 +11,7 @@
   --lang zh：中国語（簡体字）版（文は page_zh.py、図は zh を付けて作った SVG。2026-11-08）
   --other 言語=URL：見出しの横に、ほかの言語のページへのリンクを置く（繰り返し指定できる）。日本語版では、ブラウザの言語が
     日本語でないときに英語版か中国語版の案内を 1 行出す（自動では移らない）
-  --href-ja・--href-en・--href-zh：公開する URL。付けると、言語版どうしの印（<link rel="alternate" hreflang>）を入れる
+  --href-ja・--href-en・--href-zh・--href-tw：公開する URL。付けると、言語版どうしの印（<link rel="alternate" hreflang>）を入れる
   名前は bellows・bellowsLow・bellowsMan・bellowsLowMan・piston・pistonLow・pistonMan・pistonLowMan の 8 つ
 （bellows* は figure_bellows.py、piston* は figure_piston.py で作る。low を付けると低流量、manual を付けると用手換気、en で英語）
 ?type=（名前）&t=秒 を付けて開くと、その時刻で止めた 1 コマになる（動画のコマ撮り用）。"""
@@ -33,7 +33,7 @@ while ARGS and ARGS[0].startswith("--"):
     elif _opt == "--other":
         _k, _u = _val.split("=", 1)
         OTHER[_k] = _u
-    elif _opt in ("--href-ja", "--href-en", "--href-zh"):
+    elif _opt in ("--href-ja", "--href-en", "--href-zh", "--href-tw"):
         HREF[_opt[-2:]] = _val
 
 
@@ -68,7 +68,7 @@ GEOS = "window.SCENE_GEO = {" + ",\n".join(f'"{k}": {SCENES[k][1]}' for k in SUF
 
 
 TITLE, SIM_PRE = "CircleFlow：麻酔器と呼吸回路のガスの流れ", ""
-if LANG in ("en", "zh"):                          # 英語版・中国語版：日本語版の HTML の文を置き換え、解説・画面の文をその言語にする
+if LANG in ("en", "zh", "tw"):                          # 英語版・中国語版：日本語版の HTML の文を置き換え、解説・画面の文をその言語にする
     import importlib
     page_l = importlib.import_module("page_" + LANG)
     for _a, _b in page_l.HTML_PAIRS:
@@ -79,13 +79,14 @@ if LANG in ("en", "zh"):                          # 英語版・中国語版：�
     _left = [t for t in _left if re.search(r"[\u3040-\u9fff]" if LANG == "en" else r"[\u3040-\u30fa\u30fc-\u30ff]", t)]
     assert not _left, f"{LANG} 版に日本語が残っている：{_left}"
     TITLE, TERMS, L_JS, SIM_PRE = page_l.TITLE, TERMS + page_l.terms_js(), page_l.l_js(), page_l.sim_text_js()
-HTMLLANG = {"ja": "ja", "en": "en", "zh": "zh-Hans"}
-FONT_CSS = ("\nbody { font-family:" + __import__("palette").FONT_ZH + "; }\n") if LANG == "zh" else ""
-LINK_NAME = {"ja": ("日本語", "JA"), "en": ("English", "EN"), "zh": ("中文", "中")}   # 狭い画面の短い表記：日本語版の見出しが 375 px に収まるよう 1 字に（2026-11-08）
+HTMLLANG = {"ja": "ja", "en": "en", "zh": "zh-Hans", "tw": "zh-Hant-TW"}
+HREFLANG = {"ja": "ja", "en": "en", "zh": "zh-Hans", "tw": "zh-TW"}   # 言語版どうしの印（検索エンジンが受け付ける言語-地域の形）
+FONT_CSS = ("\nbody { font-family:" + {"zh": __import__("palette").FONT_ZH, "tw": __import__("palette").FONT_TW}[LANG] + "; }\n") if LANG in ("zh", "tw") else ""
+LINK_NAME = {"ja": ("日本語", "JA"), "en": ("English", "EN"), "zh": ("简体中文", "简"), "tw": ("繁體中文", "繁")}   # 狭い画面の短い表記：日本語版の見出しが 375 px に収まるよう 1 字に（2026-11-08）
 # 日本語版で、ブラウザの言語が日本語でないときだけ、中国語なら中国語版、それ以外は英語版を案内する（自動では移らない。閉じたら出さない）
 _note = ""
 if LANG == "ja" and OTHER:
-    _msg = {"en": ("This page is also available in English.", "English version"), "zh": ("本页面也有简体中文版。", "中文版")}
+    _msg = {"en": ("This page is also available in English.", "English version"), "zh": ("本页面也有简体中文版。", "简体中文版"), "tw": ("本頁面也有繁體中文版。", "繁體中文版")}
     _note = ('<div class="langnote chrome" id="langNote" hidden><span id="langNoteMsg"></span>'
              '<a id="langNoteA"></a><button id="langNoteX" aria-label="Close">✕</button></div>\n'
              '<script>(() => { const n = document.getElementById("langNote"); let off = false;'
@@ -93,26 +94,29 @@ if LANG == "ja" and OTHER:
              ' const ls = (navigator.languages || [navigator.language]).map(l => l || "");'
              ' const ja = ls.some(l => /^ja/i.test(l));'
              ' if (ja || off || /[?&]t=/.test(location.search)) return;'
-             ' const L = { ' + ", ".join(f'{k}: {{ href: "{OTHER[k]}", msg: "{_msg[k][0]}", a: "{_msg[k][1]}", lang: "{HTMLLANG[k]}" }}' for k in ("en", "zh") if k in OTHER) + ' };'
-             ' const first = ls.find(l => /^(zh|en)/i.test(l)) || "en"; const k = (/^zh/i.test(first) && L.zh) ? "zh" : "en"; const c = L[k]; if (!c) return;'
+             ' const L = { ' + ", ".join(f'{k}: {{ href: "{OTHER[k]}", msg: "{_msg[k][0]}", a: "{_msg[k][1]}", lang: "{HTMLLANG[k]}" }}' for k in ("en", "zh", "tw") if k in OTHER) + ' };'
+             ' const first = ls.find(l => /^(zh|en)/i.test(l)) || "en";'
+             ' const k = /^zh/i.test(first) ? ((/^zh-(tw|hk|mo|hant)/i.test(first) && L.tw) ? "tw" : (L.zh ? "zh" : "en")) : "en"; const c = L[k]; if (!c) return;'
              ' n.lang = c.lang; document.getElementById("langNoteMsg").textContent = c.msg;'
              ' const a = document.getElementById("langNoteA"); a.textContent = c.a; a.href = c.href; a.hreflang = c.lang; n.hidden = false;'
              ' document.getElementById("langNoteX").onclick = () => { n.hidden = true;'
              ' try { localStorage.setItem("circleflow-langnote-off", "1"); } catch (e) {} }; })();</script>\n')
 BODY_TOP = BODY_TOP.replace("@@LANGNOTE@@", _note)
 # 言語版どうしの印（検索エンジン向け）
-ALT = "".join(f'<link rel="alternate" hreflang="{HTMLLANG[k]}" href="{v}">\n' for k, v in sorted(HREF.items()))
+ALT = "".join(f'<link rel="alternate" hreflang="{HREFLANG[k]}" href="{v}">\n' for k, v in sorted(HREF.items()))
 if "ja" in HREF:
     ALT += f'<link rel="alternate" hreflang="x-default" href="{HREF["ja"]}">\n'
 # 検索結果の説明と、SNS でリンクを共有したときのプレビュー（2026-11-08 著者の依頼：英語圏・中華圏へ広めるための土台）。
-# 画像は docs/og-ja.png・og-en.png・og-zh.png（1200×630 の 2 倍。ベローズ式の吸気 1.0 秒のコマで、図の枠全体）
+# 画像は docs/og-ja.png・og-en.png・og-zh.png・og-tw.png（1200×630 の 2 倍。ベローズ式の吸気 1.0 秒のコマで、図の枠全体）
 DESC = {"ja": "麻酔器と呼吸回路の中のガスを、1 粒ずつ動く粒で見せる無料の教育用シミュレーター。ベローズ式・ピストン式・ブロワ（タービン）式・ボリュームリフレクタ式の 4 方式、17 場面。ブラウザで動きます。",
         "en": "A free, in-browser educational simulator that shows gas flow in the anesthesia machine and breathing circuit as moving particles. Bellows, piston, blower (turbine) and volume reflector ventilators; 17 scenarios.",
-        "zh": "免费的教学用模拟器，用移动的粒子显示麻醉机和呼吸回路中的气体流动。风箱式、活塞式、鼓风机（涡轮）式和容量反射器式 4 种类型，共 17 个场景，在浏览器中运行。"}
+        "zh": "免费的教学用模拟器，用移动的粒子显示麻醉机和呼吸回路中的气体流动。风箱式、活塞式、鼓风机（涡轮）式和容量反射器式 4 种类型，共 17 个场景，在浏览器中运行。",
+        "tw": "免費的教學用模擬器，用移動的粒子顯示麻醉機和呼吸迴路中的氣體流動。風箱式、活塞式、鼓風機（渦輪）式和容積反射器式 4 種類型，共 17 個情境，在瀏覽器中執行。"}
 IMG_ALT = {"ja": "CircleFlow の画面：ベローズ式（上昇式）の麻酔器と呼吸回路の模式図。ガスの粒が管の中を動く",
            "en": "CircleFlow screen: schematic of an anesthesia machine with an ascending bellows ventilator and the breathing circuit, with gas particles moving through the tubes",
-           "zh": "CircleFlow 画面：风箱式（上升式）麻醉机和呼吸回路的示意图，气体粒子在管道中移动"}
-OG_LOCALE = {"ja": "ja_JP", "en": "en_US", "zh": "zh_CN"}
+           "zh": "CircleFlow 画面：风箱式（上升式）麻醉机和呼吸回路的示意图，气体粒子在管道中移动",
+           "tw": "CircleFlow 畫面：風箱式（上升式）麻醉機和呼吸迴路的示意圖，氣體粒子在管路中移動"}
+OG_LOCALE = {"ja": "ja_JP", "en": "en_US", "zh": "zh_CN", "tw": "zh_TW"}
 # Google Search Console の所有確認（URL プレフィックス https://anesthesia-sims.github.io/circleflow/。2026-11-08 著者が登録）
 GOOGLE_SITE_VERIFICATION = "-b0bVPpqGcbmjM_StmZRZlDOkRZqSF2LKK9xgnGD628"
 META = (f'<meta name="description" content="{DESC[LANG]}">\n'
@@ -125,10 +129,10 @@ if LANG in HREF and "ja" in HREF:
              f'<meta property="og:url" content="{HREF[LANG]}">\n<meta property="og:image" content="{_img}">\n'
              '<meta property="og:image:width" content="2400">\n<meta property="og:image:height" content="1260">\n'
              f'<meta property="og:image:alt" content="{IMG_ALT[LANG]}">\n<meta property="og:locale" content="{OG_LOCALE[LANG]}">\n'
-             + "".join(f'<meta property="og:locale:alternate" content="{OG_LOCALE[k]}">\n' for k in ("ja", "en", "zh") if k != LANG and k in HREF)
+             + "".join(f'<meta property="og:locale:alternate" content="{OG_LOCALE[k]}">\n' for k in ("ja", "en", "zh", "tw") if k != LANG and k in HREF)
              + '<meta name="twitter:card" content="summary_large_image">\n')
 assert '"' not in "".join(DESC.values()) + "".join(IMG_ALT.values()) + TITLE
-BODY_TOP = BODY_TOP.replace("@@LANG@@", " ".join(f'<a class="lang" href="{u}" hreflang="{HTMLLANG[k]}" lang="{HTMLLANG[k]}">'
+BODY_TOP = BODY_TOP.replace("@@LANG@@", " ".join(f'<a class="lang" href="{u}" hreflang="{HREFLANG[k]}" lang="{HTMLLANG[k]}">'
                                                  f'<span class="full">{LINK_NAME[k][0]}</span><span class="short">{LINK_NAME[k][1]}</span></a>' for k, u in OTHER.items()))   # 狭い画面では短い表記（2026-11-05）。中国語版を足して 2 つに（2026-11-08）
 # 新しい版の確認（2026-11-05 著者の依頼）：GitHub Pages は HTML を 10 分キャッシュしてよいと指示するので、開いたときに VERSION を
 # キャッシュを使わずに取り、ページに埋めた版と違えば 1 回だけ再読み込みする。ファイルとして開いたとき・通信できないときは何もしない。
@@ -160,7 +164,8 @@ if CF_TOKEN:
              " document.head.appendChild(s); })();</script>\n")
 COUNT_NOTE = {"ja": "閲覧数を cookie を使わずに数えています（Cloudflare Web Analytics）。",
               "en": " Page views are counted without cookies (Cloudflare Web Analytics).",
-              "zh": "本页面使用 Cloudflare Web Analytics 统计浏览量，不使用 cookie。"}
+              "zh": "本页面使用 Cloudflare Web Analytics 统计浏览量，不使用 cookie。",
+              "tw": "本頁面使用 Cloudflare Web Analytics 統計瀏覽量，不使用 cookie。"}
 BODY_MID = BODY_MID.replace("@@COUNTNOTE@@", COUNT_NOTE[LANG] if CF_TOKEN else "")
 assert "@@COUNTNOTE@@" not in BODY_TOP + BODY_MID
 html = """<!doctype html>

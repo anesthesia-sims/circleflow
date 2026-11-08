@@ -151,12 +151,12 @@ CSS = r"""
   /* 狭い画面と、背の低い画面（スマートフォンの横向き。2026-11-05 に追加：操作部を 1 段にして図の高さを残す） */
   @media (max-width:640px), (max-height:500px) {
     .wrap { max-width:none; padding:10px 12px 16px; }   /* 画面の高さから決めた幅（最小 620 px）をやめ、画面の幅いっぱいに */
-    .top { gap:5px; }
+    .top { gap:4px; }   /* 言語リンクが 3 つになったので詰める（2026-11-08、日本語版の 375 px で 11 px はみ出した） */
     .top h1 { font-size:18px; }
     .top h1 span { display:none; }
     .top a.lang { font-size:13px; margin-right:0; }
     .top a.lang .full, .top button .full { display:none; } .top a.lang .short, .top button .short { display:inline; }
-    .top button { font-size:12.5px; padding:5px 7px; }
+    .top button { font-size:12.5px; padding:5px 6px; }
     .top button .q { display:none; }
     .bar { display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
     #typeSeg, #ventGrp, #flowGrp { display:none; }

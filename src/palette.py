@@ -8,6 +8,8 @@
 FONT = "'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif"
 # 中国語（簡体字）版の字体（2026-11-08）。日本語の字体で簡体字を出すと、字形が日本式になったり別の字体に混ざったりするので分ける
 FONT_ZH = "'PingFang SC','Hiragino Sans GB','Noto Sans SC','Noto Sans CJK SC','Microsoft YaHei',sans-serif"
+# 繁体字（台湾）版の字体（2026-11-08）
+FONT_TW = "'PingFang TC','Hiragino Sans CNS','Noto Sans TC','Noto Sans CJK TC','Microsoft JhengHei',sans-serif"
 K = "#1a1a1a"            # 黒（墨）
 B = "#1f5fae"            # 2色目（青）：動く部品
 B_TINT = "#d6e4f5"       # 青の淡い網

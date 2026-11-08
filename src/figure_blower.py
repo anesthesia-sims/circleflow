@@ -29,7 +29,7 @@ W, H = 1340, 860           # ピストン式と同じ
 _FLAGS = set(sys.argv[4:])
 LOW_FLOW = "low" in _FLAGS
 MANUAL = "manual" in _FLAGS               # 用手換気の場面（ブロワは止まり、呼吸バッグを手で押して換気する）
-LANG = "en" if "en" in _FLAGS else "zh" if "zh" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py）
+LANG = "en" if "en" in _FLAGS else "zh" if "zh" in _FLAGS else "tw" if "tw" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py）
 svg.configure(LANG, "w")                    # w：英語の文字の表で、ピストン式（p）の調整を引き継ぐ
 FG_RATE = 0.5 if LOW_FLOW else 2.0     # 新鮮ガス（粒/秒）。ほかの方式と同じ値。ガスミキサーは一定に流す
 VT_P = 13                  # 患者に入る量（粒）。デカップリング弁がないので吸気中の新鮮ガスも患者へ届くが、実機は流量センサーで換気量を一定に

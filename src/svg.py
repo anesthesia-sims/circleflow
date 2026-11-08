@@ -4,18 +4,19 @@
 図の要素は add() で out に積み、最後に "\n".join(out) で書き出す。管（pipe）は外形を先に全部描いてから内腔を重ねるので、
 pipe() はいったん PIPES にためて、flush_pipes() の戻り値を out の決まった位置（PIPE_MARK）に差し込む。
 SMIL のアニメーションは 1 周期 CYC 秒（吸気 TI 秒＋呼気）。
-使う前に configure(lang, family) を呼ぶ（en なら図の中の文字を labels_en.py で英語に、zh なら labels_zh.py で中国語（簡体字）に置き換える）。"""
+使う前に configure(lang, family) を呼ぶ（en なら図の中の文字を labels_en.py で英語に、zh なら labels_zh.py で中国語（簡体字）に、tw なら labels_tw.py で中国語（繁体字・台湾）に置き換える）。"""
 import math
 
 import labels_en
 import labels_zh
-from palette import FONT, FONT_ZH, K, B
+import labels_tw
+from palette import FONT, FONT_TW, FONT_ZH, K, B
 
 CYC = 6.0                  # 1 周期（吸気 2 秒＋呼気 4 秒）
 TI = 2.0                   # 吸気時間
 GAS_W = 12                 # 管の太さ（外形）。内腔は 5 px 細い
 
-LANG = "ja"                # "ja"・"en"・"zh"
+LANG = "ja"                # "ja"・"en"・"zh"・"tw"
 FAMILY = "b"               # 図の方式：b＝上昇式ベローズ、p＝ピストン式（英語の文字の表で、方式ごとに違う文字を選ぶため）
 
 out = []
@@ -29,13 +30,13 @@ def configure(lang="ja", family="b"):
 
 
 def text(s, x, y, size=19, anchor="start", weight=400, color=K, halo=True):
-    if LANG in ("en", "zh"):
-        s, _o = labels_en.en(FAMILY, s) if LANG == "en" else labels_zh.zh(FAMILY, s)
+    if LANG in ("en", "zh", "tw"):
+        s, _o = {"en": labels_en.en, "zh": labels_zh.zh, "tw": labels_tw.tw}[LANG](FAMILY, s)
         size, anchor = _o.get("size", size), _o.get("anchor", anchor)
         x, y = x + _o.get("dx", 0), y + _o.get("dy", 0)
     h = ' stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke"' if halo else ""
     add(f'<text x="{x}" y="{y}" font-size="{size}" font-weight="{weight}" fill="{color}" '
-        f'text-anchor="{anchor}" font-family="{FONT_ZH if LANG == "zh" else FONT}"{h}>{s}</text>')
+        f'text-anchor="{anchor}" font-family="{FONT_ZH if LANG == "zh" else FONT_TW if LANG == "tw" else FONT}"{h}>{s}</text>')
 
 
 def pipe(pts, inner="#fff", w=GAS_W):

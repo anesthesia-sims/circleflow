@@ -5,6 +5,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/"/>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://anesthesia-sims.github.io/circleflow/zh-tw/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/"/>
   </url>
   <url>
@@ -12,6 +13,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/"/>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://anesthesia-sims.github.io/circleflow/zh-tw/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/"/>
   </url>
   <url>
@@ -19,6 +21,15 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/"/>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://anesthesia-sims.github.io/circleflow/zh-tw/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/"/>
+  </url>
+  <url>
+    <loc>https://anesthesia-sims.github.io/circleflow/zh-tw/</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://anesthesia-sims.github.io/circleflow/zh-tw/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/"/>
   </url>
 </urlset>

@@ -17,14 +17,16 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="ja_JP">
 <meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="alternate" hreflang="en" href="https://anesthesia-sims.github.io/circleflow/en/">
 <link rel="alternate" hreflang="ja" href="https://anesthesia-sims.github.io/circleflow/">
+<link rel="alternate" hreflang="zh-TW" href="https://anesthesia-sims.github.io/circleflow/zh-tw/">
 <link rel="alternate" hreflang="zh-Hans" href="https://anesthesia-sims.github.io/circleflow/zh/">
 <link rel="alternate" hreflang="x-default" href="https://anesthesia-sims.github.io/circleflow/">
 
 <script>if (self !== top) document.documentElement.classList.add('embedded');</script>
-<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.8.3';
+<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '1.9.0';
   fetch(new URL('../VERSION', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = v.trim(); if (!v || v === V || performance.now() > 3000) return;
     let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}
@@ -181,12 +183,12 @@
   /* 狭い画面と、背の低い画面（スマートフォンの横向き。2026-11-05 に追加：操作部を 1 段にして図の高さを残す） */
   @media (max-width:640px), (max-height:500px) {
     .wrap { max-width:none; padding:10px 12px 16px; }   /* 画面の高さから決めた幅（最小 620 px）をやめ、画面の幅いっぱいに */
-    .top { gap:5px; }
+    .top { gap:4px; }   /* 言語リンクが 3 つになったので詰める（2026-11-08、日本語版の 375 px で 11 px はみ出した） */
     .top h1 { font-size:18px; }
     .top h1 span { display:none; }
     .top a.lang { font-size:13px; margin-right:0; }
     .top a.lang .full, .top button .full { display:none; } .top a.lang .short, .top button .short { display:inline; }
-    .top button { font-size:12.5px; padding:5px 7px; }
+    .top button { font-size:12.5px; padding:5px 6px; }
     .top button .q { display:none; }
     .bar { display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
     #typeSeg, #ventGrp, #flowGrp { display:none; }
@@ -221,7 +223,7 @@
 <body><div class="wrap">
 <header class="top chrome">
   <h1>CircleFlow<span>Gas flow in the anesthesia machine and breathing circuit</span></h1>
-  <a class="lang" href="../" hreflang="ja" lang="ja"><span class="full">日本語</span><span class="short">JA</span></a> <a class="lang" href="../zh/" hreflang="zh-Hans" lang="zh-Hans"><span class="full">中文</span><span class="short">中</span></a>
+  <a class="lang" href="../" hreflang="ja" lang="ja"><span class="full">日本語</span><span class="short">JA</span></a> <a class="lang" href="../zh/" hreflang="zh-Hans" lang="zh-Hans"><span class="full">简体中文</span><span class="short">简</span></a> <a class="lang" href="../zh-tw/" hreflang="zh-TW" lang="zh-Hant-TW"><span class="full">繁體中文</span><span class="short">繁</span></a>
   <button id="helpBtn" aria-label="How to use"><span class="q">?</span><span class="full">How to use</span><span class="short">Guide</span></button>
   <button id="hlBtn">Highlights</button>
   <button id="moreBtn"><span class="full">Learn more</span><span class="short">More</span></button>
@@ -12726,7 +12728,7 @@
   </div>
 </div>
 <footer class="foot chrome">
-  CircleFlow © 2026 Masaaki Asamoto. Code: <a href="https://opensource.org/license/mit" rel="license">MIT</a>; figures and text: <a href="https://creativecommons.org/licenses/by/4.0/deed.en" rel="license">CC BY 4.0</a>. Source code: <a href="https://github.com/anesthesia-sims/circleflow">GitHub (anesthesia-sims/circleflow)</a>. Version 1.8.3<br>
+  CircleFlow © 2026 Masaaki Asamoto. Code: <a href="https://opensource.org/license/mit" rel="license">MIT</a>; figures and text: <a href="https://creativecommons.org/licenses/by/4.0/deed.en" rel="license">CC BY 4.0</a>. Source code: <a href="https://github.com/anesthesia-sims/circleflow">GitHub (anesthesia-sims/circleflow)</a>. Version 1.9.0<br>
   An educational schematic, not for clinical decisions or for operating or checking equipment. Not affiliated with any manufacturer. Gas color codes follow Japanese standards. Page views are counted without cookies (Cloudflare Web Analytics).<br>
   Acknowledgments: We thank Dr. Go Hirabayashi (Department of Anesthesiology, Teikyo University School of Medicine Hospital Mizonokuchi) for advice on the breathing circuit and ventilator types. Any errors are the author&rsquo;s own.<br>
   If you notice a mistake, please report it on <a href="https://github.com/anesthesia-sims/circleflow/issues/new">GitHub Issues</a> or by email (<a href="mailto:masaaki.asamoto@gmail.com?subject=CircleFlow">masaaki.asamoto@gmail.com</a>).

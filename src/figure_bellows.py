@@ -27,7 +27,7 @@ W, H = 1340, 860           # 2026-11-03：ピストン式と同じ幅にそろ�
 _FLAGS = set(sys.argv[4:])
 LOW_FLOW = "low" in _FLAGS
 MANUAL = "manual" in _FLAGS               # 用手換気の場面（切替弁を用手に倒し、呼吸バッグを手で押して換気する。2026-11-02）
-LANG = "en" if "en" in _FLAGS else "zh" if "zh" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
+LANG = "en" if "en" in _FLAGS else "zh" if "zh" in _FLAGS else "tw" if "tw" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
 svg.configure(LANG, "b")
 # 新鮮ガス（粒/秒）。通常は 2（1 呼吸 12 粒、分時換気量に近い）。低流量は 0.5（1 呼吸 3 粒、分時換気量の約 1/4）
 FG_RATE = 0.5 if LOW_FLOW else 2.0
