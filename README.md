@@ -6,7 +6,7 @@
 
 麻酔器の中を流れるガスを、1 粒ずつ動く粒で見せる教育用のシミュレーターです。ガス供給機構・気化器から、循環式の呼吸回路（circle system）、人工呼吸器、患者の死腔・肺胞、二酸化炭素吸収装置、余剰ガス排出装置まで、1 呼吸（6 秒）のあいだのガスの動きを 1 つのページで追えます。臨床工学技士・医学生・研修医などの学習用に作りました。
 
-**ページを開く**：https://anesthesia-sims.github.io/circleflow/ ／ English: https://anesthesia-sims.github.io/circleflow/en/
+**ページを開く**：https://anesthesia-sims.github.io/circleflow/ ／ English: https://anesthesia-sims.github.io/circleflow/en/ ／ 简体中文: https://anesthesia-sims.github.io/circleflow/zh/
 
 ![上昇式ベローズの吸気中](docs/screenshot-bellows.png)
 
@@ -28,7 +28,7 @@
 
 ## 使い方
 
-`index.html` をブラウザで開くだけで動きます（インターネット接続も、ほかのファイルも要りません）。英語版は `en/index.html` で、見出しの横のリンクで行き来できます。
+`index.html` をブラウザで開くだけで動きます（インターネット接続も、ほかのファイルも要りません）。英語版は `en/index.html`、中国語（簡体字）版は `zh/index.html` で、見出しの横のリンクで行き来できます。日本語版は、ブラウザの言語が日本語でないときに英語版（中国語のブラウザでは中国語版）を 1 行で案内します（自動では移りません）。
 
 初めて学ぶ人向けに、画面には図と操作だけを置き、説明は必要なときに重ねて出します。
 
@@ -60,7 +60,7 @@
 図（SVG）と粒の経路データは Python のスクリプトが作り、粒の動きはブラウザの中で JavaScript が計算します。`src/` を直したら、次の 2 つで作り直して点検します。
 
 ```sh
-./build.sh    # build/ に 17 の場面の図と経路データを日本語・英語で作り、index.html と en/index.html にまとめる（Python 3、標準ライブラリだけ）
+./build.sh    # build/ に 17 の場面の図と経路データを日本語・英語・中国語で作り、index.html・en/index.html・zh/index.html にまとめる（Python 3、標準ライブラリだけ）
 ./check.sh    # 17 の場面の粒の動きを点検する（Node.js）
 ```
 
@@ -72,11 +72,11 @@
 |---|---|
 | `src/figure_bellows.py`・`src/figure_piston.py`・`src/figure_reflector.py`・`src/figure_blower.py` | ベローズ式（上昇式）／ピストン式／ボリュームリフレクタ式／ブロワ（タービン）式の図（SVG）と粒の経路データを作る（`low`：低流量、`short`：不足（リフレクタ式のみ）、`manual`：用手換気、`en`：英語） |
 | `src/palette.py`・`src/svg.py`・`src/parts.py`・`src/geometry.py` | 3 つの図で共通の、色、SVG の道具、部品（弁・バッグ・肺胞など）の描き方、折れ線の計算 |
-| `src/labels_en.py` | 図の中の文字の英語版（日本語との対応表と、文字の大きさ・位置の調整） |
+| `src/labels_en.py`・`src/labels_zh.py` | 図の中の文字の英語版・中国語（簡体字）版（日本語との対応表と、文字の大きさ・位置の調整） |
 | `src/sim_common.js`・`src/sim_bellows.js`・`src/sim_piston.js`・`src/sim_reflector.js`・`src/sim_blower.js` | 粒の動きのシミュレーション（ブラウザで動く）。共通部分と方式ごとの部分 |
 | `src/build_page.py` | 17 の場面を 1 つのページにまとめる（`--lang en` で英語版） |
 | `src/page_css.py`・`src/page_html.py`・`src/page_js.py`・`src/page_terms.py` | ページの見た目、HTML、操作の JavaScript、部品の解説と画面の文（日本語） |
-| `src/page_en.py` | ページの英語版の文（画面・部品の解説・場面の説明・使い方） |
+| `src/page_en.py`・`src/page_zh.py` | ページの英語版・中国語（簡体字）版の文（画面・部品の解説・場面の説明・使い方） |
 | `tests/check.js` | 1 つの場面の粒の動きの点検（`check.sh` が 17 の場面に対して回す） |
 | `tools/text_list.py` | ページに出る解説文をすべて Markdown に書き出す |
 
@@ -91,6 +91,7 @@
 
 | 版 | 日付 | 内容 |
 |---|---|---|
+| 1.8 | 2026-11-08 | 中国語（簡体字）版を追加（`zh/index.html`）。図の文字・画面・部品の解説・場面の説明・ツアーを中国語にした。図の識別色は日本の色のままで、中央配管とボンベの解説に中国の色（配管は GB 50751、ボンベは GB/T 7144）を書いた。日本語版は、ブラウザの言語が中国語なら中国語版を案内する |
 | 1.7 | 2026-11-05 | 平林剛先生の提案で 2 つ追加。①吸収装置のバイパス（ベローズ式の図。一部の機種にある迂回路を栓つきで描き、「バイパス」ボタンで開閉。開くと粒は吸収剤を通らず CO₂ が患者へ戻り、作動中は赤い札で知らせる。巻き戻しても同じ時刻に開閉）。1.7.1：著者の判断でボタンと見どころの段をなくし、図に閉じた姿で描いて解説するだけに（25 段）。1.7.2：ブロワ式の図に外気取り込み弁（陰圧防止）を描き足し、「回路のガスが足りないとき」をピストン式・ブロワ式とも弁が開く形に。換気中に吸収剤を交換できる仕組みが 4 方式すべての機種にあること（GE・Mindray・Flow-i のバイパス、Dräger の CLIC アダプター）を追記。1.7.3：見どころを 32 段に組み直し、冒頭に「ガスを送り出すしくみ」（4 方式）、吸収剤の節に「換気を止めずに吸収剤を交換する」、最後に「回路のガスが足りないとき」（4 方式。ピストン式・ブロワ式の外気取り込み弁を含む）を加え、気化器の段のブロワ式の重複を整理。1.7.4：見どころの「換気を止めずに吸収剤を交換する」の段で、バイパス弁を 2 呼吸目に開いて 4 呼吸目に閉じる（低流量・等速。栓が回り、粒が迂回路を通って CO₂ が吸気側へ。シミュレーションの時刻で予約し、段を離れると記録ごと消す）。②「くわしく」に「回路のガスが足りないとき」の節（ベローズが上がらない・呼気相でフラッシュ、ピストン式とブロワ式はバッグがぺちゃんこ、リフレクタ式は気づきにくい）と吸収剤の節にバイパスの段落。ベローズと呼吸バッグの解説にも注意点を追記。1.7.5（11-07）：ほかのページの iframe に入れたとき、中身の高さを親へ `postMessage(['setHeight', px])` で知らせ、画面の高さから幅を決めるのをやめた（東大麻酔科のサイトへの埋め込み用）。1.7.6（11-07）：ブロワ式の吸気弁は、人工呼吸の呼気中も循環流で少し開き、粒が弁板の下をくぐって通る（吸気中はそれより大きく開く）。1.7.7（11-08）：英語版の中央配管とボンベの解説に、ガスの識別色は国によって違うこと（ISO と米国の例）を加えた |
 | 1.6 | 2026-11-05 | 4 つ目の方式「ブロワ（タービン）式」（Dräger Perseus 型）を追加（新鮮ガス 多め／低流量 × 人工呼吸／用手換気の 4 場面、全 17 場面）。ピストン・シリンダーの代わりにモーターで回るラジアルファンを吸気側の管に置き、新鮮ガス・デカップリング弁はなく、新鮮ガスはブロワの出口と吸気弁のあいだで加わる。呼吸バッグは人工呼吸中もリザーバー。ガス供給は電子制御のガスミキサー（ガスごとのモジュール）と可変バイパス式の気化器。ブロワとガスミキサーの解説、比較表の 5 列目、見どころのツアーに 4 段（22 段に）。Miller's Anesthesia 10e 第 20 章・Dräger 特許 US9399104B2・Perseus A500 の資料にもとづく。1.6.1：人工呼吸の呼気中にブロワがゆっくり回って保つ小さな循環流（約 0.6 L/分）を入れた。新鮮ガスはブロワを逆流せず、循環流に乗って吸気弁から Y ピースを回り、呼気側から呼吸バッグへ入る（吸気弁は呼気中も少し開く）。呼気がバッグに先に届くので、多めでも吸収剤が 20 数呼吸で使い切られる。1.6.2：見どころにブロワ式の段を 3 つ追加（吸収剤の減り方、気化器の違い、ブロワは吸気で速く・呼気でゆっくり回る。25 段） |
 | 1.5 | 2026-11-05 | スマートフォン対応。図を 2 本指で拡大、指でずらせるようにし、縦向きの狭い画面では「全体・ガス供給・呼吸回路」の表示範囲を切り替えられる（呼吸回路から始まる）。横向きの案内と「全画面」ボタンを追加し、横向きでは操作部を 1 段にまとめた。狭い画面では見どころのツアーが示す範囲へ寄る。1.5.1：狭い画面の見どころで、いまの範囲から次の範囲へ連続して寄り、穴と吹き出しが一緒に動くようにした（全体へ戻ってから寄り直さない。範囲の縦横比は示す細部に合わせる）。1.5.2：「全画面」ボタンは全画面にする関数があれば出し（iPhone の Safari で出ていなかった）、押しても全画面にならないブラウザでは隠す。1.5.3：2 本指で広げたあとの 1 本指のずらしが、iPhone の Safari でページのスクロールになっていたのを直した。1.5.4：上昇式ベローズの駆動ガス（O₂）の管の先端に、O₂ の識別色の帯を付けた。1.5.5：方式の名前を「ベローズ式（上昇式）」に改め、「くわしく」に人工呼吸器の分類（ベローズ式・ピストン式・ブロワ（タービン）式・ボリュームリフレクタ式、双回路と単回路）を加えた |
@@ -131,7 +132,7 @@
 
 An educational simulator that shows the gas inside an anesthesia machine as individual moving particles. From the gas supply and vaporizers, through the circle breathing system, the ventilator, the patient's dead space and alveoli, the CO₂ absorber and the scavenging system, you can follow how gas moves during one breath (6 s) on a single page. It was made for clinical engineers, medical students and residents.
 
-**Open the simulator**: https://anesthesia-sims.github.io/circleflow/en/ (English) ／ https://anesthesia-sims.github.io/circleflow/ (Japanese)
+**Open the simulator**: https://anesthesia-sims.github.io/circleflow/en/ (English) ／ https://anesthesia-sims.github.io/circleflow/ (Japanese) ／ https://anesthesia-sims.github.io/circleflow/zh/ (Simplified Chinese)
 
 ![English version: ascending bellows during inspiration](docs/screenshot-en.png)
 
@@ -145,7 +146,7 @@ An educational simulator that shows the gas inside an anesthesia machine as indi
 
 ## How to use
 
-Just open `en/index.html` (English) or `index.html` (Japanese) in a browser; no internet connection or other files are needed. A link next to the title switches languages. When the Japanese page is opened in a browser whose language is not Japanese, it shows a one-line notice pointing to the English version (it does not redirect).
+Just open `en/index.html` (English), `index.html` (Japanese) or `zh/index.html` (Simplified Chinese) in a browser; no internet connection or other files are needed. A link next to the title switches languages. When the Japanese page is opened in a browser whose language is not Japanese, it shows a one-line notice pointing to the English version, or to the Chinese version in a Chinese-language browser (it does not redirect).
 
 For beginners, the screen shows only the figure and the controls; explanations appear on top only when you ask for them.
 
@@ -175,7 +176,7 @@ Example for the parent page (paste as is into a WordPress Custom HTML block):
 Python scripts draw the figures (SVG) and the particle paths; JavaScript computes the particle motion in the browser. After editing `src/`, rebuild and check with:
 
 ```sh
-./build.sh    # builds the 17 scenes in Japanese and English and writes index.html and en/index.html (Python 3, standard library only)
+./build.sh    # builds the 17 scenes in Japanese, English and Chinese and writes index.html, en/index.html and zh/index.html (Python 3, standard library only)
 ./check.sh    # checks the particle motion in all 17 scenes (Node.js)
 ```
 
@@ -187,11 +188,11 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 |---|---|
 | `src/figure_bellows.py`, `src/figure_piston.py`, `src/figure_reflector.py`, `src/figure_blower.py` | Draw the figure (SVG) and particle paths for each ventilator type, bellows (ascending) / piston / volume reflector / blower (`low`: low flow, `short`: too low (reflector only), `manual`: manual ventilation, `en`: English labels) |
 | `src/palette.py`, `src/svg.py`, `src/parts.py`, `src/geometry.py` | Shared by the three figures: colors, SVG helpers, part drawings (valves, bag, alveoli, …), polyline math |
-| `src/labels_en.py` | English labels for the figures (mapping from Japanese, with per-label size and position) |
+| `src/labels_en.py`, `src/labels_zh.py` | English and Simplified Chinese labels for the figures (mapping from Japanese, with per-label size and position) |
 | `src/sim_common.js`, `src/sim_bellows.js`, `src/sim_piston.js`, `src/sim_reflector.js`, `src/sim_blower.js` | Particle simulation (runs in the browser): shared part and the four ventilator types |
 | `src/build_page.py` | Combines the 17 scenes into one page (`--lang en` for English) |
 | `src/page_css.py`, `src/page_html.py`, `src/page_js.py`, `src/page_terms.py` | Page styles, HTML, interaction script, and the Japanese explanations and UI text |
-| `src/page_en.py` | English page text (controls, part explanations, scene narration, tour) |
+| `src/page_en.py`, `src/page_zh.py` | English and Simplified Chinese page text (controls, part explanations, scene narration, tour) |
 | `tests/check.js` | Particle check for one scene (`check.sh` runs it for all 17) |
 | `tools/text_list.py` | Writes all explanation text shown on a page to Markdown |
 
@@ -206,6 +207,7 @@ For each scene, `check.sh` reports that no particle leaves its tube, that rewind
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.8 | 2026-11-08 | Added a Simplified Chinese version (`zh/index.html`): figure labels, controls, part explanations, scene narration and tours. The figures keep the Japanese color codes; the pipeline and cylinder explanations give the Chinese colors (pipelines GB 50751, cylinders GB/T 7144). The Japanese page points Chinese-language browsers to the Chinese version |
 | 1.7 | 2026-11-05 | Two additions suggested by Dr. Go Hirabayashi. (1) The absorber bypass on the bellows figure: a channel around the absorber found on some machines, drawn with its valve and opened or closed with the Bypass button; while open, particles skip the absorbent and CO₂ returns to the patient, with a red warning chip, and rewinding reproduces the same timing. 1.7.1: the button and the Highlights step were dropped; the bypass is drawn closed and explained only (25 steps). 1.7.2: the auxiliary air valve (vacuum relief) was added to the blower figure, the short-of-gas section now says both piston and blower open it, and the text notes that machines of all four types can change the absorbent during ventilation (bypass on GE, Mindray and Flow-i; the CLIC adapter on Dräger). 1.7.3: the Highlights tour was rebuilt into 32 steps, opening with how each of the four types delivers gas, adding a step on changing the absorbent without stopping ventilation, and closing with what happens on each type when the circuit runs short of gas (including the auxiliary air valve on the piston and blower types); the blower overlap in the vaporizer steps was tidied. 1.7.4: in the Highlights step on changing the absorbent, the bypass valve now opens on the second breath and closes on the fourth (low flow, normal speed); the plug turns, particles take the bypass and CO₂ reaches the inspiratory side. The timing is booked in simulation time and erased when the step is left. (2) A Learn more section on what happens when the circuit runs short of gas (the bellows fails to rise and the circuit is refilled with the flush during expiration; on the piston and blower types the bag goes flat; the reflector type is easy to miss) and a paragraph on the bypass in the absorbent section, plus the cautions in the bellows and reservoir bag explanations. 1.7.5 (Nov 7): when embedded in an iframe, the page reports its content height to the parent with `postMessage(['setHeight', px])` and no longer sizes its width from the window height (for embedding in the University of Tokyo anesthesiology site). 1.7.6 (Nov 7): on the blower type, the inspiratory valve stays slightly open during expiration in mechanical ventilation because of the circulating flow, and particles pass under the disc (it opens wider during inspiration). 1.7.7 (Nov 8): the English explanations of the pipeline and cylinders now note that gas color codes differ by country, with the ISO and US colors |
 | 1.6 | 2026-11-05 | A fourth ventilator type, the blower (turbine) type modeled on the Dräger Perseus (High / Low flow × Ventilator / Manual, 4 scenes; 17 scenes in all). A motor-driven radial fan in the inspiratory line replaces the piston and cylinder; there is no fresh gas decoupling valve, and fresh gas joins between the blower outlet and the inspiratory valve. The reservoir bag stays in the circuit during ventilation. The gas supply is an electronically controlled gas mixer (one module per gas) with a variable-bypass vaporizer. Explanations for the blower and the gas mixer, a fifth column in the comparison table, and four more Highlights steps (22). Based on Miller's Anesthesia 10e ch. 20, Dräger patent US9399104B2 and Perseus A500 documentation. 1.6.1: during expiration on the ventilator the blower keeps turning slowly and maintains a small circle flow (about 0.6 L/min); fresh gas no longer flows back through the blower but rides this flow through the inspiratory valve (slightly open during expiration) and round the Y-piece into the reservoir bag. Because exhaled gas reaches the bag first, the absorbent is now used up in a little over 20 breaths even at high flow. 1.6.2: three more Highlights steps for the blower (absorbent use, vaporizers, and the blower turning fast on inspiration and slowly on expiration; 25 steps) |
 | 1.5 | 2026-11-05 | Phone support: pinch to zoom and drag to move the figure; on narrow portrait screens the view can be switched between All, Gas supply and Circuit (starting with the circuit). A hint to turn the phone sideways and a Full screen button; in landscape the controls fold into one row. On narrow screens the Highlights tour zooms to each detail. 1.5.1: on narrow screens the Highlights tour now zooms continuously from one detail to the next, with the spotlight and the bubble moving together (no jump back to the whole figure; the view's aspect follows each detail). 1.5.2: the Full screen button is shown whenever the browser has a fullscreen function (it was missing on iPhone Safari) and hides itself in browsers where pressing it has no effect. 1.5.3: after pinching, a one-finger drag scrolled the page instead of moving the figure on iPhone Safari; fixed. 1.5.4: the drive gas (O₂) inlet of the ascending bellows now ends in a band in the O₂ pipeline color. 1.5.5: the type is now named Bellows (ascending), and Learn more opens with the classification of anesthesia ventilators (bellows, piston, blower/turbine, volume reflector; double and single circuit) |

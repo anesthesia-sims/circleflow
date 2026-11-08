@@ -6,11 +6,12 @@
 その部品を拡大して解説、時刻のバーを押すとその場面の説明、「使い方」で画面の上を指が動いて操作を順に見せる。
 長い説明は「くわしく」の中。初めて開いたときは「使い方」を自動で出す（?notour で出さない）。
 ?term=inspValve のように部品の名前（TERMS のキー）を付けて開くと、その部品の解説を開いた状態になる。
-使い方: python3 build_page.py [--lang en] [--other 別の言語のページの URL] out.html sim_common.js sim_bellows.js sim_piston.js  名前 svg geo ...
+使い方: python3 build_page.py [--lang en|zh] [--other 言語=URL ...] out.html sim_common.js sim_bellows.js sim_piston.js  名前 svg geo ...
   --lang en：英語版（文は page_en.py、図は生成スクリプトに en を付けて作った英語の SVG を渡す。2026-11-02）
-  --other：見出しの横に、もう一方の言語のページへのリンクを置く。日本語版では、ブラウザの言語が日本語でないときに
-    英語版の案内を 1 行出す（自動では移らない）
-  --href-ja・--href-en：公開する URL。付けると、言語版どうしの印（<link rel="alternate" hreflang>）を入れる
+  --lang zh：中国語（簡体字）版（文は page_zh.py、図は zh を付けて作った SVG。2026-11-08）
+  --other 言語=URL：見出しの横に、ほかの言語のページへのリンクを置く（繰り返し指定できる）。日本語版では、ブラウザの言語が
+    日本語でないときに英語版か中国語版の案内を 1 行出す（自動では移らない）
+  --href-ja・--href-en・--href-zh：公開する URL。付けると、言語版どうしの印（<link rel="alternate" hreflang>）を入れる
   名前は bellows・bellowsLow・bellowsMan・bellowsLowMan・piston・pistonLow・pistonMan・pistonLowMan の 8 つ
 （bellows* は figure_bellows.py、piston* は figure_piston.py で作る。low を付けると低流量、manual を付けると用手換気、en で英語）
 ?type=（名前）&t=秒 を付けて開くと、その時刻で止めた 1 コマになる（動画のコマ撮り用）。"""
@@ -24,14 +25,15 @@ from page_js import MAIN_JS
 from page_terms import L_JS, TERMS
 
 ARGS = sys.argv[1:]
-LANG, OTHER, HREF = "ja", None, {}
+LANG, OTHER, HREF = "ja", {}, {}
 while ARGS and ARGS[0].startswith("--"):
     _opt, _val = ARGS.pop(0), ARGS.pop(0)
     if _opt == "--lang":
         LANG = _val
     elif _opt == "--other":
-        OTHER = _val
-    elif _opt in ("--href-ja", "--href-en"):
+        _k, _u = _val.split("=", 1)
+        OTHER[_k] = _u
+    elif _opt in ("--href-ja", "--href-en", "--href-zh"):
         HREF[_opt[-2:]] = _val
 
 
@@ -66,33 +68,44 @@ GEOS = "window.SCENE_GEO = {" + ",\n".join(f'"{k}": {SCENES[k][1]}' for k in SUF
 
 
 TITLE, SIM_PRE = "CircleFlow：麻酔器と呼吸回路のガスの流れ", ""
-if LANG == "en":                                   # 英語版：日本語版の HTML の文を置き換え、解説・画面の文を英語にする
-    import page_en
-    for _a, _b in page_en.HTML_PAIRS:
+if LANG in ("en", "zh"):                          # 英語版・中国語版：日本語版の HTML の文を置き換え、解説・画面の文をその言語にする
+    import importlib
+    page_l = importlib.import_module("page_" + LANG)
+    for _a, _b in page_l.HTML_PAIRS:
         assert (BODY_TOP + BODY_MID).count(_a) == 1, _a
         BODY_TOP, BODY_MID = BODY_TOP.replace(_a, _b), BODY_MID.replace(_a, _b)
     _left = re.findall(r"[^\x00-\u2fff]+", re.sub(r"<svg.*?</svg>", "", BODY_TOP + BODY_MID, flags=re.S))
-    _left = [t for t in _left if re.search(r"[\u3040-\u9fff]", t)]
-    assert not _left, f"英語版に日本語が残っている：{_left}"
-    TITLE, TERMS, L_JS, SIM_PRE = page_en.TITLE, TERMS + page_en.terms_js(), page_en.l_js(), page_en.sim_text_js()
-_other = "ja" if LANG == "en" else "en"
-# 日本語版で、ブラウザの言語が日本語でないときだけ英語版を案内する（自動では移らない。閉じたら出さない）
+    # 中国語版は漢字が残っても日本語とは限らないので、かなだけを調べる（置き換え残しは HTML_PAIRS が日本語版と同じ組であることで防ぐ）
+    _left = [t for t in _left if re.search(r"[\u3040-\u9fff]" if LANG == "en" else r"[\u3040-\u30fa\u30fc-\u30ff]", t)]
+    assert not _left, f"{LANG} 版に日本語が残っている：{_left}"
+    TITLE, TERMS, L_JS, SIM_PRE = page_l.TITLE, TERMS + page_l.terms_js(), page_l.l_js(), page_l.sim_text_js()
+HTMLLANG = {"ja": "ja", "en": "en", "zh": "zh-Hans"}
+FONT_CSS = ("\nbody { font-family:" + __import__("palette").FONT_ZH + "; }\n") if LANG == "zh" else ""
+LINK_NAME = {"ja": ("日本語", "JA"), "en": ("English", "EN"), "zh": ("中文", "中")}   # 狭い画面の短い表記：日本語版の見出しが 375 px に収まるよう 1 字に（2026-11-08）
+# 日本語版で、ブラウザの言語が日本語でないときだけ、中国語なら中国語版、それ以外は英語版を案内する（自動では移らない。閉じたら出さない）
 _note = ""
 if LANG == "ja" and OTHER:
-    _note = (f'<div class="langnote chrome" id="langNote" lang="en" hidden><span>This page is also available in English.</span>'
-             f'<a href="{OTHER}" hreflang="en">English version</a><button id="langNoteX" aria-label="Close">✕</button></div>\n'
+    _msg = {"en": ("This page is also available in English.", "English version"), "zh": ("本页面也有简体中文版。", "中文版")}
+    _note = ('<div class="langnote chrome" id="langNote" hidden><span id="langNoteMsg"></span>'
+             '<a id="langNoteA"></a><button id="langNoteX" aria-label="Close">✕</button></div>\n'
              '<script>(() => { const n = document.getElementById("langNote"); let off = false;'
              ' try { off = localStorage.getItem("circleflow-langnote-off") === "1"; } catch (e) {}'
-             ' const ja = (navigator.languages || [navigator.language]).some(l => /^ja/i.test(l || ""));'
-             ' if (!ja && !off && !/[?&]t=/.test(location.search)) n.hidden = false;'
+             ' const ls = (navigator.languages || [navigator.language]).map(l => l || "");'
+             ' const ja = ls.some(l => /^ja/i.test(l));'
+             ' if (ja || off || /[?&]t=/.test(location.search)) return;'
+             ' const L = { ' + ", ".join(f'{k}: {{ href: "{OTHER[k]}", msg: "{_msg[k][0]}", a: "{_msg[k][1]}", lang: "{HTMLLANG[k]}" }}' for k in ("en", "zh") if k in OTHER) + ' };'
+             ' const first = ls.find(l => /^(zh|en)/i.test(l)) || "en"; const k = (/^zh/i.test(first) && L.zh) ? "zh" : "en"; const c = L[k]; if (!c) return;'
+             ' n.lang = c.lang; document.getElementById("langNoteMsg").textContent = c.msg;'
+             ' const a = document.getElementById("langNoteA"); a.textContent = c.a; a.href = c.href; a.hreflang = c.lang; n.hidden = false;'
              ' document.getElementById("langNoteX").onclick = () => { n.hidden = true;'
              ' try { localStorage.setItem("circleflow-langnote-off", "1"); } catch (e) {} }; })();</script>\n')
 BODY_TOP = BODY_TOP.replace("@@LANGNOTE@@", _note)
 # 言語版どうしの印（検索エンジン向け）
-ALT = "".join(f'<link rel="alternate" hreflang="{k}" href="{v}">\n' for k, v in sorted(HREF.items()))
+ALT = "".join(f'<link rel="alternate" hreflang="{HTMLLANG[k]}" href="{v}">\n' for k, v in sorted(HREF.items()))
 if "ja" in HREF:
     ALT += f'<link rel="alternate" hreflang="x-default" href="{HREF["ja"]}">\n'
-BODY_TOP = BODY_TOP.replace("@@LANG@@", f'<a class="lang" href="{OTHER}" hreflang="{_other}" lang="{_other}"><span class="full">{"日本語" if _other == "ja" else "English"}</span><span class="short">{"JA" if _other == "ja" else "EN"}</span></a>' if OTHER else "")   # 狭い画面では短い表記（2026-11-05）
+BODY_TOP = BODY_TOP.replace("@@LANG@@", " ".join(f'<a class="lang" href="{u}" hreflang="{HTMLLANG[k]}" lang="{HTMLLANG[k]}">'
+                                                 f'<span class="full">{LINK_NAME[k][0]}</span><span class="short">{LINK_NAME[k][1]}</span></a>' for k, u in OTHER.items()))   # 狭い画面では短い表記（2026-11-05）。中国語版を足して 2 つに（2026-11-08）
 # 新しい版の確認（2026-11-05 著者の依頼）：GitHub Pages は HTML を 10 分キャッシュしてよいと指示するので、開いたときに VERSION を
 # キャッシュを使わずに取り、ページに埋めた版と違えば 1 回だけ再読み込みする。ファイルとして開いたとき・通信できないときは何もしない。
 # 開いて 3 秒以上たっていたら（操作を始めている）再読み込みしない。同じ版への再読み込みは 1 回だけ（公開直後に VERSION だけ先に新しくなる
@@ -101,7 +114,7 @@ BODY_TOP = BODY_TOP.replace("@@LANG@@", f'<a class="lang" href="{OTHER}" hreflan
 # CSS が当たる前に html に embedded を付ける（画面の高さから幅を決めるのをやめる。高さの通知は page_js.py）
 EMBED = "<script>if (self !== top) document.documentElement.classList.add('embedded');</script>"
 VCHECK = ("<script>(() => { if (location.protocol !== 'http:' && location.protocol !== 'https:') return; const V = '@@VERSION@@';\n"
-          "  fetch(new URL('" + ("../VERSION" if LANG == "en" else "VERSION") + "', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {\n"
+          "  fetch(new URL('" + ("../VERSION" if LANG != "ja" else "VERSION") + "', location.href), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {\n"
           "    v = v.trim(); if (!v || v === V || performance.now() > 3000) return;\n"
           "    let done = ''; try { done = sessionStorage.getItem('circleflow-reloaded'); } catch (e) {}\n"
           "    if (done === v) return; try { sessionStorage.setItem('circleflow-reloaded', v); } catch (e) {}\n"
@@ -114,11 +127,11 @@ html = """<!doctype html>
 """ + ALT + """
 """ + EMBED + """
 """ + VCHECK + """
-<style>""" + CSS + """</style></head>""" + BODY_TOP + FIGS + BODY_MID + """
+<style>""" + CSS + FONT_CSS + """</style></head>""" + BODY_TOP + FIGS + BODY_MID + """
 <script>""" + GEOS + SIM_PRE + """</script>
 """ + "".join(f"<script>\n{_js}\n</script>\n" for _js in SIMS) + """<script>
 """ + TERMS + L_JS + MAIN_JS + """
 </script>
 </body></html>"""
 VERSION = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "VERSION"), encoding="utf-8").read().strip()   # 版（ページの下に出す）
-open(OUT, "w", encoding="utf-8").write(html.replace("@@HTMLLANG@@", LANG, 1).replace("@@VERSION@@", VERSION))
+open(OUT, "w", encoding="utf-8").write(html.replace("@@HTMLLANG@@", HTMLLANG[LANG], 1).replace("@@VERSION@@", VERSION))

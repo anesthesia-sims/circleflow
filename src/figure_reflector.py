@@ -32,7 +32,7 @@ _FLAGS = set(sys.argv[4:])
 SHORT = "short" in _FLAGS                   # 「不足」の場面：新鮮ガスは低流量と同じ、患者の取り込みがそれより多い（1.3）
 LOW_FLOW = "low" in _FLAGS or SHORT
 MANUAL = "manual" in _FLAGS                 # 用手換気の場面：呼吸バッグをリフレクタの奥の端につなぎ、リフレクタガスを止める（2026-11-03）
-LANG = "en" if "en" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
+LANG = "en" if "en" in _FLAGS else "zh" if "zh" in _FLAGS else "ja"       # en：図の中の文字を英語にする（labels_en.py。2026-11-02）
 svg.configure(LANG, "r")
 # 新鮮ガス。1 呼吸あたりの粒の数はほかの方式と同じ（多め 12 粒、低流量 3 粒）。FG_RATE は平均の流量（粒/秒）。人工呼吸ではガスモジュールが
 # 主に吸気中に流し（下の FG_I・FG_E。1.3）、呼気中に届いた分は吸収装置を逆向きに通ってリフレクタへ入る（1.2.9 の著者の判断：新鮮ガスの管には
