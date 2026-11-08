@@ -10,7 +10,7 @@
 
 **ページを開く**：https://anesthesia-sims.github.io/circleflow/ ／ English: https://anesthesia-sims.github.io/circleflow/en/ ／ 简体中文: https://anesthesia-sims.github.io/circleflow/zh/ ／ 繁體中文: https://anesthesia-sims.github.io/circleflow/zh-tw/
 
-![上昇式ベローズの吸気中](docs/screenshot-bellows.png)
+![上昇式ベローズの 1 呼吸：吸気で駆動ガスがベローズを押し下げ、呼気でベローズが上がる。橙の粒は CO₂ を含むガス](docs/demo-ja.gif)
 
 ## できること
 
@@ -143,7 +143,7 @@ An educational simulator that shows the gas inside an anesthesia machine as indi
 
 **Open the simulator**: https://anesthesia-sims.github.io/circleflow/en/ (English) ／ https://anesthesia-sims.github.io/circleflow/ (Japanese) ／ https://anesthesia-sims.github.io/circleflow/zh/ (Simplified Chinese) ／ https://anesthesia-sims.github.io/circleflow/zh-tw/ (Traditional Chinese, Taiwan)
 
-![English version: ascending bellows during inspiration](docs/screenshot-en.png)
+![One breath with ascending bellows: drive gas pushes the bellows down during inspiration, and the bellows rises during expiration. Orange particles are gas containing CO₂](docs/demo-en.gif)
 
 ## What you can do
 
@@ -274,7 +274,7 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 
 **打开页面**：https://anesthesia-sims.github.io/circleflow/zh/ （简体中文）／ https://anesthesia-sims.github.io/circleflow/ （日本語）／ https://anesthesia-sims.github.io/circleflow/en/ （English）／ https://anesthesia-sims.github.io/circleflow/zh-tw/ （繁體中文）
 
-![简体中文版：风箱式（上升式）吸气中](docs/screenshot-zh.png)
+![风箱式（上升式）的一次呼吸：吸气时驱动气体把风箱向下压，呼气时风箱上升。橙色粒子为含 CO₂ 的气体](docs/demo-zh.gif)
 
 ## 功能
 
@@ -407,7 +407,7 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 
 **開啟頁面**：https://anesthesia-sims.github.io/circleflow/zh-tw/ （繁體中文）／ https://anesthesia-sims.github.io/circleflow/ （日本語）／ https://anesthesia-sims.github.io/circleflow/en/ （English）／ https://anesthesia-sims.github.io/circleflow/zh/ （简体中文）
 
-![繁體中文版：風箱式（上升式）吸氣中](docs/screenshot-tw.png)
+![風箱式（上升式）的一次呼吸：吸氣時驅動氣體把風箱向下壓，吐氣時風箱上升。橙色粒子為含 CO₂ 的氣體](docs/demo-tw.gif)
 
 ## 功能
 
