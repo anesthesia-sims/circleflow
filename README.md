@@ -4,6 +4,8 @@
 
 **日本語** ｜ [English](#english) ｜ [简体中文](#chinese)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24050136.svg)](https://doi.org/10.5281/zenodo.24050136)
+
 麻酔器の中を流れるガスを、1 粒ずつ動く粒で見せる教育用のシミュレーターです。ガス供給機構・気化器から、循環式の呼吸回路（circle system）、人工呼吸器、患者の死腔・肺胞、二酸化炭素吸収装置、余剰ガス排出装置まで、1 呼吸（6 秒）のあいだのガスの動きを 1 つのページで追えます。臨床工学技士・医学生・研修医などの学習用に作りました。
 
 **ページを開く**：https://anesthesia-sims.github.io/circleflow/ ／ English: https://anesthesia-sims.github.io/circleflow/en/ ／ 简体中文: https://anesthesia-sims.github.io/circleflow/zh/
@@ -112,9 +114,9 @@
 
 図や文章を使うときは、次のように出典を示してください。
 
-> 朝元雅明（Masaaki Asamoto）「CircleFlow：麻酔器と呼吸回路のガスの流れ」CC BY 4.0
+> 朝元雅明（Masaaki Asamoto）「CircleFlow：麻酔器と呼吸回路のガスの流れ」CC BY 4.0. https://doi.org/10.5281/zenodo.24050136
 
-論文や教材で引用するときは、`CITATION.cff` の書式も使えます（GitHub のリポジトリの画面の「Cite this repository」）。
+論文や教材で引用するときは、`CITATION.cff` の書式も使えます（GitHub のリポジトリの画面の「Cite this repository」）。ソースの各版は Zenodo に保存してあります（DOI 10.5281/zenodo.24050136 はすべての版をまとめたもので、版ごとの DOI は Zenodo の記録の画面にあります）。
 
 ## 著作者
 
@@ -133,6 +135,8 @@
 # CircleFlow: Gas Flow in the Anesthesia Machine and Breathing Circuit
 
 [日本語](#japanese) ｜ **English** ｜ [简体中文](#chinese)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24050136.svg)](https://doi.org/10.5281/zenodo.24050136)
 
 An educational simulator that shows the gas inside an anesthesia machine as individual moving particles. From the gas supply and vaporizers, through the circle breathing system, the ventilator, the patient's dead space and alveoli, the CO₂ absorber and the scavenging system, you can follow how gas moves during one breath (6 s) on a single page. It was made for clinical engineers, medical students and residents.
 
@@ -240,9 +244,9 @@ The table lists minor versions; patch releases are recorded as git tags. The cur
 
 When you use the figures or text, please credit them as:
 
-> Masaaki Asamoto, "CircleFlow: Gas Flow in the Anesthesia Machine and Breathing Circuit", CC BY 4.0
+> Masaaki Asamoto, "CircleFlow: Gas Flow in the Anesthesia Machine and Breathing Circuit", CC BY 4.0. https://doi.org/10.5281/zenodo.24050136
 
-To cite it in papers or teaching materials, you can also use `CITATION.cff` ("Cite this repository" on the GitHub repository page).
+To cite it in papers or teaching materials, you can also use `CITATION.cff` ("Cite this repository" on the GitHub repository page). Each release is archived on Zenodo (DOI 10.5281/zenodo.24050136 covers all versions; each version's DOI is listed on the Zenodo record page).
 
 ## Author
 
@@ -261,6 +265,8 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 # CircleFlow：麻醉机与呼吸回路中的气体流动
 
 [日本語](#japanese) ｜ [English](#english) ｜ **简体中文**
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24050136.svg)](https://doi.org/10.5281/zenodo.24050136)
 
 这是一个教学用模拟器，用一个个移动的粒子来显示麻醉机内流动的气体。从供气系统、蒸发器，到循环式呼吸回路（circle system）、呼吸机、患者的死腔和肺泡、二氧化碳吸收罐、废气清除系统，可以在一个页面上追踪一次呼吸（6 秒）期间气体的运动。供临床工程师、医学生、住院医师等学习使用。
 
@@ -370,9 +376,9 @@ If you notice a mistake, please report it on [GitHub Issues](https://github.com/
 
 使用图或文字时，请按如下方式注明出处。
 
-> 朝元雅明（Masaaki Asamoto），《CircleFlow：麻醉机与呼吸回路中的气体流动》，CC BY 4.0
+> 朝元雅明（Masaaki Asamoto），《CircleFlow：麻醉机与呼吸回路中的气体流动》，CC BY 4.0. https://doi.org/10.5281/zenodo.24050136
 
-在论文或教材中引用时，也可以使用 `CITATION.cff` 的格式（GitHub 仓库页面上的“Cite this repository”）。
+在论文或教材中引用时，也可以使用 `CITATION.cff` 的格式（GitHub 仓库页面上的“Cite this repository”）。各版本的源代码存档于 Zenodo（DOI 10.5281/zenodo.24050136 涵盖所有版本，各版本的 DOI 见 Zenodo 记录页面）。
 
 ## 作者
 
